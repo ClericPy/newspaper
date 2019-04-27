@@ -34,6 +34,7 @@
 | 13   | [Python Insider](https://blog.python.org/)                   | 3    | 英文 | X    | 官方开发进度, 被官博包含, 所以不收.                   |
 | 14   | [Brett Cannon](https://snarky.ca/)                           | 3    | 英文 | =    | 核心开发者, 头像一看就眼熟啊                          |
 | 15   | [Encode](https://www.encode.io/)                             | 3    | 英文 | =    | 知名 Python 开源组织                                  |
+| 69   | [机器之心](https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time)                      | 3    | 中文 | =    | 知名公众号                                            |
 | 68   | [Python猫](https://zhuanlan.zhihu.com/pythonCat)             | 3    | 中文 | =    | 2018 年末比较热情的博主, 原创                         |
 | 16   | [Python之美](https://zhuanlan.zhihu.com/python-cn)           | 3    | 中文 | =    | 早期文章较多, 创业以后更新不太多了                    |
 | 17   | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3    | 中文 | =    | 推文类站点. 虽然原创不多, 但是质量还算可以            |
