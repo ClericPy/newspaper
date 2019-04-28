@@ -1,0 +1,3 @@
+import newspaper
+
+newspaper.main()
