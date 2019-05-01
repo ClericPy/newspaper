@@ -1,8 +1,11 @@
 import abc
+import asyncio
+import typing
 
 import aiomysql
+from torequests.utils import json, md5
 
-from .config import db_instance, global_configs
+from .config import global_configs
 
 
 class Storage(object, metaclass=abc.ABCMeta):
@@ -12,29 +15,117 @@ class Storage(object, metaclass=abc.ABCMeta):
         self.ensure_table()
 
     @abc.abstractmethod
-    def ensure_table(self, *args, **kwargs):
+    async def ensure_table(self, *args, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def add_article(self, *args, **kwargs):
+    async def add_article(self, *args, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def del_article(self, *args, **kwargs):
+    async def del_article(self, *args, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_article(self, *args, **kwargs):
+    async def update_article(self, *args, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def query_article(self, *args, **kwargs):
+    async def query_article(self, *args, **kwargs):
         raise NotImplementedError
 
 
 class MySQLStorage(Storage):
-    """连接 mysql 线上数据库"""
-    create_table_sql = '''CREATE TABLE `articles` (
+    """连接 mysql 线上数据库, 目前不需要读写分离, 因为只初始化一次, 所以不需要单例.
+
+    example::
+
+        
+    """
+
+    def __init__(self, mysql_config):
+        self.host = mysql_config['mysql_host']
+        self.port = mysql_config['mysql_port']
+        self.user = mysql_config['mysql_user']
+        self.password = mysql_config['mysql_password']
+        self.db = mysql_config['mysql_db']
+        self.connect_args = dict(host=self.host,
+                                 port=self.port,
+                                 user=self.user,
+                                 password=self.password,
+                                 db=self.db,
+                                 loop=asyncio.get_event_loop())
+        self.pool = None
+
+    async def get_pool(self):
+        if self.pool and not self.pool._closed:
+            return self.pool
+        self.pool = await aiomysql.create_pool(**self.connect_args)
+        return self.pool
+
+    async def execute(self,
+                      sql: str,
+                      args: typing.Union[list, dict] = None,
+                      fetchall: bool = True,
+                      cursor_class: aiomysql.Cursor = aiomysql.DictCursor
+                     ) -> typing.Any:
+        """简单的通过 sql 获取数据.
+        
+        :param sql: query 的 sql 语句
+        :type sql: str
+        :param args: query 语句的参数, defaults to None
+        :type args: typing.Union[list, dict], optional
+        :param fetchall: 是否全部取出来, 默认为 True, 调用 fetchall; 如果设为 None(默认), 只返回受影响的行数; 如果设为 False, 则调用 fetchone
+        :type fetchall: bool, optional
+        :param cursor_class: 默认使用字典表示一行数据, defaults to aiomysql.DictCursor
+        :type cursor_class: aiomysql.Cursor, optional
+        :return: 返回 fetchmany / fetchone 的结果
+        :rtype: typing.Any
+        """
+        conn_pool = await self.get_pool()
+        async with conn_pool.acquire() as conn:
+            async with conn.cursor(cursor_class) as cur:
+                result = await cur.execute('desc articles', args)
+                if fetchall:
+                    return await cur.fetchall()
+                elif fetchall is False:
+                    return await cur.fetchone()
+                elif fetchall is None:
+                    return result
+
+    async def executemany(self,
+                          sql: str,
+                          args: list = None,
+                          fetchall: bool = True,
+                          cursor_class: aiomysql.Cursor = aiomysql.DictCursor
+                         ) -> typing.Any:
+        """简单的通过 sql 获取数据.
+        
+        :param sql: query 的 sql 语句
+        :type sql: str
+        :param args: query 语句的参数, 只能为 list, defaults to None
+        :type args: list, optional
+        :param fetchall: 是否全部取出来, 默认为 True, 调用 fetchall; 如果设为 None(默认), 只返回受影响的行数; 如果设为 False, 则调用 fetchone
+        :type fetchall: bool, optional
+        :param cursor_class: 默认使用字典表示一行数据, defaults to aiomysql.DictCursor
+        :type cursor_class: aiomysql.Cursor, optional
+        :return: 返回 fetchmany / fetchone 的结果
+        :rtype: typing.Any
+        """
+        conn_pool = await self.get_pool()
+        async with conn_pool.acquire() as conn:
+            async with conn.cursor(cursor_class) as cur:
+                result = await cur.execute('desc articles', args)
+                if fetchall:
+                    return await cur.fetchall()
+                elif fetchall is False:
+                    return await cur.fetchone()
+                elif fetchall is None:
+                    return result
+
+    @property
+    def create_article_table_sql(self):
+        return '''CREATE TABLE `articles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` char(32) CHARACTER SET latin1 NOT NULL COMMENT '通过 url 计算的 md5',
   `title` varchar(128) NOT NULL DEFAULT '无题' COMMENT '文章标题',
@@ -50,28 +141,23 @@ class MySQLStorage(Storage):
   UNIQUE KEY `key` (`key`),
   KEY `create_index` (`ts_create`),
   FULLTEXT KEY `full_text_index` (`title`,`desc`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'''
-
-    def __init__(self):
-        self.host = global_configs['mysql_host']
-        self.port = global_configs['mysql_port']
-        self.user = global_configs['mysql_user']
-        self.password = global_configs['mysql_password']
-        self.db = global_configs['mysql_db']
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据'
+'''
 
     def ensure_table(self, *args, **kwargs):
+        """判断是否 db 里有 articles 表, 如果没有, 创建它"""
         raise NotImplementedError
 
-    def add_article(self, *args, **kwargs):
+    async def add_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def del_article(self, *args, **kwargs):
+    async def del_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def update_article(self, *args, **kwargs):
+    async def update_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def query_article(self, *args, **kwargs):
+    async def query_article(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -79,59 +165,37 @@ class Sqlite3Storage(Storage):
     """本地数据库, 主要用来备份线上数据避免阿里云翻车或者迁移的时候用."""
 
     # TODO
-
-    def ensure_table(self, *args, **kwargs):
+    async def ensure_table(self, *args, **kwargs):
         raise NotImplementedError
 
-    def add_article(self, *args, **kwargs):
+    async def add_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def del_article(self, *args, **kwargs):
+    async def del_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def update_article(self, *args, **kwargs):
+    async def update_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def query_article(self, *args, **kwargs):
+    async def query_article(self, *args, **kwargs):
         raise NotImplementedError
 
 
 class MongoDBStorage(Storage):
     """连接免费的 mongolab 数据库, 之后迁移到 heroku 的时候使用它."""
+
     # TODO
-
-    def ensure_table(self, *args, **kwargs):
+    async def ensure_table(self, *args, **kwargs):
         raise NotImplementedError
 
-    def add_article(self, *args, **kwargs):
+    async def add_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def del_article(self, *args, **kwargs):
+    async def del_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def update_article(self, *args, **kwargs):
+    async def update_article(self, *args, **kwargs):
         raise NotImplementedError
 
-    def query_article(self, *args, **kwargs):
+    async def query_article(self, *args, **kwargs):
         raise NotImplementedError
-
-
-def choose_db(db_instance: str):
-    """根据 config 的 db_instance 确定要使用什么数据库
-
-    :param db_instance: 数据库类型
-    :type db_instance: str
-    :raises RuntimeError: 如果没有存储器, 则直接报错无法执行
-    """
-    if db_instance == 'mysql':
-        db = MySQLStorage()
-    elif db_instance == 'sqlite':
-        db = Sqlite3Storage()
-    elif db_instance == 'mongodb':
-        db = MongoDBStorage()
-    else:
-        raise RuntimeError('bad db_instance %s' % db_instance)
-    return db
-
-
-db = choose_db(db_instance=db_instance)

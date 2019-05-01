@@ -5,11 +5,15 @@ name = "pypi"
 
 [dev-packages]
 pytest = "*"
+flake8 = "*"
+yapf = "*"
 
 [packages]
 torequests = "*"
 responder = "*"
 aiomysql = "*"
+lxml = "*"
+cssselect = "*"
 
 [requires]
 python_version = "3.7"

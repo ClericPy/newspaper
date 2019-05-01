@@ -105,3 +105,4 @@ venv.bak/
 
 # local test python script
 temp.py
+.vscode
