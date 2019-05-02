@@ -117,7 +117,7 @@ async def python_news() -> dict:
             except Exception:
                 logger.error('python_news_history crawl failed: %s' %
                              traceback.format_exc())
-    logger.info(f'{source_name}: crawled {len(articles)} articles')
+    logger.info(f'[{source_name}]: crawled {len(articles)} articles')
     return {'source_name': source_name, 'articles': articles}
 
 
@@ -162,5 +162,5 @@ async def python_news_history() -> dict:
             except Exception:
                 logger.error('python_news_history crawl failed: %s' %
                              traceback.format_exc())
-    logger.info(f'{source_name}: crawled {len(articles)} articles')
+    logger.info(f'[{source_name}]: crawled {len(articles)} articles')
     return {'source_name': source_name, 'articles': articles}

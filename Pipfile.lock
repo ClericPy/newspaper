@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6c86204dd6d5426660883a9987fbaaa1e5611b53d94975b0444261da013754f4"
+            "sha256": "2c1f9f2e4cf9d6dfd9470aef1dae047f498d9fc6f87074948b7d68829577d6d5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -10,7 +10,7 @@
         "sources": [
             {
                 "name": "pypi",
-                "url": "https://pypi.douban.com/simple/",
+                "url": "https://pypi.org/simple",
                 "verify_ssl": true
             }
         ]
@@ -450,11 +450,11 @@
         },
         "torequests": {
             "hashes": [
-                "sha256:b6b2cd09c919c44ba29a310dbb61fbcc46c21bcac5e47c60f3e4b4c30a6f5d46",
-                "sha256:daeff19fe5dbbf114c05cb756f97ed73cc7b742c36d9a7009fd2b448d573da46"
+                "sha256:45de6c69b126b63bf93a77c9a701a7b3cc389eaf3177538a77722d6f0ae0033a",
+                "sha256:e347732231164b34aeb57f4060ac1392898f90dd6f5af1c8fa339159c6797eba"
             ],
             "index": "pypi",
-            "version": "==4.8.7"
+            "version": "==4.8.8"
         },
         "typesystem": {
             "hashes": [
@@ -464,16 +464,16 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0",
-                "sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3"
+                "sha256:2393a695cd12afedd0dcb26fe5d50d0cf248e5a66f75dbd89a3d4eb333a61af4",
+                "sha256:a637e5fae88995b256e3409dc4d52c2e2e0ba32c42a6365fee8bbd2238de3cfb"
             ],
-            "version": "==1.24.2"
+            "version": "==1.24.3"
         },
         "uvicorn": {
             "hashes": [
-                "sha256:181d47abddedd0f6e23eaeed97976bdce9ea1dbff0ec12385309cf4835783f6a"
+                "sha256:c10da7a54a6552279870900c881a2f1726314e2dd6270d4d3f9251683c643783"
             ],
-            "version": "==0.7.0"
+            "version": "==0.7.1"
         },
         "websockets": {
             "hashes": [

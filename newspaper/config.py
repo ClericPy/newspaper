@@ -5,7 +5,8 @@ import os
 
 def init_logger(logger_name):
     formatter_str = (
-        "%(asctime)s %(levelname)-5s %(filename)s(%(lineno)s): %(message)s")
+        "%(asctime)s %(levelname)-5s [%(name)s]%(filename)s(%(lineno)s): %(message)s"
+    )
     datefmt = "%Y-%m-%d %H:%M:%S"
     formatter = logging.Formatter(formatter_str, datefmt=datefmt)
     logger = logging.getLogger(logger_name)
@@ -25,3 +26,6 @@ if global_configs:
     global_configs = json.loads(global_configs)
 else:
     raise RuntimeError('environment variable `newspaper_config` not found')
+
+from .models import MySQLStorage
+db = MySQLStorage(global_configs['mysql_config'])

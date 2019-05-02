@@ -1,11 +1,10 @@
 #! python3
 
 import pathlib
-import traceback
 
 import responder
 
-from .config import api_logger, global_configs
+from .config import api_logger, db, global_configs
 
 static_dir = pathlib.Path(__file__).parent / 'static'
 templates_dir = pathlib.Path(__file__).parent / 'templates'
@@ -15,3 +14,9 @@ api = responder.API(static_dir=static_dir,
                     templates_dir=templates_dir)
 api.config = global_configs
 api.logger = api_logger
+api.db = db
+
+
+@api.on_event('startup')
+async def _ensure_article_table_exists():
+    await api.db._ensure_article_table_exists()

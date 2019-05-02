@@ -2,6 +2,7 @@
 启动后端 API 服务
 """
 from newspaper.server import api
+import asyncio
 
 
 def main():
