@@ -1,17 +1,35 @@
 import asyncio
 import json
+import traceback
 import typing
 import zlib
 from functools import wraps
 
+from lxml.html import fromstring
 from torequests.dummy import Requests
-from torequests.utils import ttime
+from torequests.utils import ptime, ttime, md5, time
 
-from ..config import global_configs
+from ..config import crawler_logger, global_configs
+from .sources import content_sources
 
 online_spiders = []
-
+history_spiders = []
+content_sources_dict = {i['title']: i for i in content_sources}
+logger = crawler_logger
 req = Requests()
+
+
+class null_tree:
+    text = ''
+
+    @classmethod
+    def text_content(cls):
+        return ''
+
+
+def get_url_key(url: str) -> str:
+    """通过 url 来计算 key, 一方面计算 md5, 另一方面净化无用参数."""
+    return md5(url)
 
 
 async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
@@ -19,12 +37,12 @@ async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
 
     例:
         async def test():
-            ss = await outlands_request({
+            text = await outlands_request({
                 'method': 'get',
                 'url': 'https://pyfound.blogspot.com/'
             }, 'u8')
-            print(ss)
-            return ss
+            print(text)
+            return text
     """
     data = json.dumps(request_dict)
     data = zlib.compress(data.encode('u8'))
@@ -49,14 +67,100 @@ def register_online(function: typing.Callable) -> typing.Callable:
     return function
 
 
+def register_history(function: typing.Callable) -> typing.Callable:
+    """把爬虫注册到历史文章抓取任务列表
+
+    :param function: 爬虫函数, 一般没有参数.
+    :type function: typing.Callable
+    :return: 爬虫函数, 一般没有参数.
+    :rtype: typing.Callable
+    """
+
+    history_spiders.append(function)
+    return function
+
+
 @register_online
-async def python_news() -> list:
-    """Python Latest News. 
-    全部历史文章:
-    https://pyfound.blogspot.com/search?updated-max=2007-01-04T10:00:00-05:00&max-results=9999"""
-    await asyncio.sleep(1)
-    return ['text']
+async def python_news() -> dict:
+    """Python Software Foundation News"""
+    source_name = 'Python Software Foundation News'
+    articles = []
+    seed = 'https://pyfound.blogspot.com/'
+    scode = await outlands_request({
+        'method': 'get',
+        'url': seed,
+    }, 'u8')
+    if scode:
+        tree = fromstring(scode)
+        for item in tree.cssselect('.blog-posts>.date-outer'):
+            try:
+                article = {
+                    'source': source_name,
+                    'level': content_sources_dict[
+                        'Python Software Foundation News']['level']
+                }
+                raw_pub_time = item.cssselect('.published')[0].get('title', '')
+                ts_publish = ttime(
+                    ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = item.cssselect(
+                    '.post-title.entry-title>a')[0].text
+                # 兼容下没有 desc 的情况
+                desc = (item.cssselect('.post-body.entry-content') or
+                        [null_tree])[0].text_content()
+                article['desc'] = desc.split('\n\n\n',
+                                             1)[0].strip().replace('\n', ' ')
+                article['url'] = item.cssselect(
+                    '.post-title.entry-title>a')[0].get('href', '')
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error('python_news_history crawl failed: %s' %
+                             traceback.format_exc())
+    logger.info(f'{source_name}: crawled {len(articles)} articles')
+    return {'source_name': source_name, 'articles': articles}
 
 
-if __name__ == "__main__":
-    print(f'online online_spiders: {len(online_spiders)}')
+# @register_history
+async def python_news_history() -> dict:
+    """Python Software Foundation News"""
+    source_name = 'Python Software Foundation News'
+    articles = []
+    current_year = int(time.strftime('%Y'))
+    for year in range(2006, current_year + 1):
+        seed = f'https://pyfound.blogspot.com/{year}/'
+        scode = await outlands_request({
+            'method': 'get',
+            'url': seed,
+        }, 'u8')
+        await asyncio.sleep(3)
+        if not scode:
+            continue
+        tree = fromstring(scode)
+        for item in tree.cssselect('.blog-posts>.date-outer'):
+            try:
+                article = {
+                    'source': source_name,
+                    'level': content_sources_dict[
+                        'Python Software Foundation News']['level']
+                }
+                raw_pub_time = item.cssselect('.published')[0].get('title', '')
+                ts_publish = ttime(
+                    ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = item.cssselect(
+                    '.post-title.entry-title>a')[0].text
+                # 兼容下没有 desc 的情况
+                desc = (item.cssselect('.post-body.entry-content') or
+                        [null_tree])[0].text_content()
+                article['desc'] = desc.split('\n\n\n',
+                                             1)[0].strip().replace('\n', ' ')
+                article['url'] = item.cssselect(
+                    '.post-title.entry-title>a')[0].get('href', '')
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error('python_news_history crawl failed: %s' %
+                             traceback.format_exc())
+    logger.info(f'{source_name}: crawled {len(articles)} articles')
+    return {'source_name': source_name, 'articles': articles}

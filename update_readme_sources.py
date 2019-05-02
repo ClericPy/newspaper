@@ -19,7 +19,7 @@ def main():
         data = [str(x)]
         title_link = f'[{item["title"]}]({item["url"]})'
         data.append(title_link)
-        data.append(item['level'])
+        data.append(str(item['level']))
         data.append(item['lang'])
         data.append(item['status'])
         data.append(item['desc'])

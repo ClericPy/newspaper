@@ -5,11 +5,13 @@ import traceback
 
 import responder
 
-from .config import get_logger, global_configs
+from .config import api_logger, global_configs
 
-api = responder.API(
-    static_dir=pathlib.Path(__file__).parent / 'static',
-    static_route='static',
-    templates_dir=pathlib.Path(__file__).parent / 'templates')
+static_dir = pathlib.Path(__file__).parent / 'static'
+templates_dir = pathlib.Path(__file__).parent / 'templates'
+
+api = responder.API(static_dir=static_dir,
+                    static_route='static',
+                    templates_dir=templates_dir)
 api.config = global_configs
-api.logger = get_logger('api')
+api.logger = api_logger

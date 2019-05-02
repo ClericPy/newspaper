@@ -3,7 +3,7 @@ import logging
 import os
 
 
-def get_logger(logger_name):
+def init_logger(logger_name):
     formatter_str = (
         "%(asctime)s %(levelname)-5s %(filename)s(%(lineno)s): %(message)s")
     datefmt = "%Y-%m-%d %H:%M:%S"
@@ -16,6 +16,9 @@ def get_logger(logger_name):
     logger.addHandler(hl)
     return logger
 
+
+api_logger = init_logger('api')
+crawler_logger = init_logger('crawler')
 
 global_configs = os.getenv('newspaper_config')
 if global_configs:

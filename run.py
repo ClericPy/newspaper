@@ -1,3 +1,7 @@
 import newspaper
+"""
+启动后端 API 服务
+"""
 
-newspaper.main()
+if __name__ == "__main__":
+    newspaper.main()
