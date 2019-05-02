@@ -1,11 +1,15 @@
 import abc
 import asyncio
 import typing
+import warnings
 
 import aiomysql
 from torequests.utils import json, print_info, ttime
 
 from .config import global_configs
+
+# 用了 insert ignore 还总是 warning, 又不想 insert try, 只好全禁掉了...
+warnings.filterwarnings('ignore', category=aiomysql.Warning)
 
 
 class Storage(object, metaclass=abc.ABCMeta):
@@ -77,13 +81,33 @@ class MySQLStorage(Storage):
         self.pool = await aiomysql.create_pool(**self.connect_args)
         return self.pool
 
+    async def _execute(self,
+                       cursor,
+                       execute_cmd: str,
+                       sql: str,
+                       args: typing.Union[list, dict] = None,
+                       fetchall: typing.Union[bool, None] = True,
+                       commit=False,
+                       cursor_class: aiomysql.Cursor = aiomysql.DictCursor):
+        """用来在指定 cursor 对象的时候执行语句"""
+        result = await getattr(cursor, execute_cmd)(sql, args)
+        if fetchall:
+            result = await cursor.fetchall()
+        elif fetchall is False:
+            result = await cursor.fetchone()
+        elif fetchall is None:
+            result = result
+        if commit:
+            await cursor.execute('COMMIT')
+        return result
+
     async def execute(self,
                       sql: str,
                       args: typing.Union[list, dict] = None,
                       fetchall: typing.Union[bool, None] = True,
                       commit=False,
-                      cursor_class: aiomysql.Cursor = aiomysql.DictCursor
-                     ) -> typing.Any:
+                      cursor_class: aiomysql.Cursor = aiomysql.DictCursor,
+                      cursor: aiomysql.Cursor = None) -> typing.Any:
         """简单的通过 sql 获取数据.
 
         :param sql: query 的 sql 语句
@@ -94,30 +118,37 @@ class MySQLStorage(Storage):
         :type fetchall: bool, optional
         :param cursor_class: 默认使用字典表示一行数据, defaults to aiomysql.DictCursor
         :type cursor_class: aiomysql.Cursor, optional
+        :param cursor: 现成的 cursor, 如果没有指定, 则去连接池里创建
+        :type cursor_class: aiomysql.Cursor
         :return: 返回 fetchmany / fetchone 的结果
         :rtype: typing.Any
         """
+        if cursor:
+            return await self._execute(cursor,
+                                       'execute',
+                                       sql=sql,
+                                       args=args,
+                                       fetchall=fetchall,
+                                       commit=commit,
+                                       cursor_class=cursor_class)
         conn_pool = await self.get_pool()
         async with conn_pool.acquire() as conn:
-            async with conn.cursor(cursor_class) as cur:
-                result = await cur.execute(sql, args)
-                if fetchall:
-                    result = await cur.fetchall()
-                elif fetchall is False:
-                    result = await cur.fetchone()
-                elif fetchall is None:
-                    result = result
-                if commit:
-                    await cur.execute('COMMIT')
-                return result
+            async with conn.cursor(cursor_class) as cursor:
+                return await self._execute(cursor,
+                                           'execute',
+                                           sql=sql,
+                                           args=args,
+                                           fetchall=fetchall,
+                                           commit=commit,
+                                           cursor_class=cursor_class)
 
     async def executemany(self,
                           sql: str,
                           args: list = None,
                           fetchall: typing.Union[bool, None] = True,
                           commit=False,
-                          cursor_class: aiomysql.Cursor = aiomysql.DictCursor
-                         ) -> typing.Any:
+                          cursor_class: aiomysql.Cursor = aiomysql.DictCursor,
+                          cursor: aiomysql.Cursor = None) -> typing.Any:
         """简单的通过 sql 获取数据.
         
         :param sql: query 的 sql 语句
@@ -131,19 +162,24 @@ class MySQLStorage(Storage):
         :return: 返回 fetchmany / fetchone 的结果
         :rtype: typing.Any
         """
+        if cursor:
+            return await self._execute(cursor,
+                                       'executemany',
+                                       sql=sql,
+                                       args=args,
+                                       fetchall=fetchall,
+                                       commit=commit,
+                                       cursor_class=cursor_class)
         conn_pool = await self.get_pool()
         async with conn_pool.acquire() as conn:
-            async with conn.cursor(cursor_class) as cur:
-                result = await cur.executemany(sql, args)
-                if fetchall:
-                    result = await cur.fetchall()
-                elif fetchall is False:
-                    result = await cur.fetchone()
-                elif fetchall is None:
-                    result = result
-                if commit:
-                    await cur.execute('COMMIT')
-                return result
+            async with conn.cursor(cursor_class) as cursor:
+                return await self._execute(cursor,
+                                           'executemany',
+                                           sql=sql,
+                                           args=args,
+                                           fetchall=fetchall,
+                                           commit=commit,
+                                           cursor_class=cursor_class)
 
     async def _ensure_article_table_exists(self):
         is_exists = await self.execute(
@@ -175,7 +211,7 @@ class MySQLStorage(Storage):
         await self.execute(sql, fetchall=None)
         print_info('`articles` table created.')
 
-    async def add_articles(self, articles: list):
+    async def add_articles(self, articles: list, cursor=None):
         """事先要注意保证 articles 的 keys 是一样的"""
         articles = self.ensure_articles(articles)
         if not articles:
@@ -184,8 +220,11 @@ class MySQLStorage(Storage):
         keys = ', '.join([f'`{key}`' for key in articles[0].keys()])
         value_keys = ','.join([f'%({key})s' for key in articles[0].keys()])
         sql = f'''insert ignore into `articles` ({keys}) values ({value_keys})'''
-        print_info(sql)
-        result = await self.executemany(sql, articles, fetchall=None, commit=1)
+        result = await self.executemany(sql,
+                                        articles,
+                                        fetchall=None,
+                                        commit=1,
+                                        cursor=cursor)
         return result
 
     async def del_articles(self, *args, **kwargs):

@@ -85,7 +85,7 @@ async def python_news() -> dict:
     """Python Software Foundation News"""
     source_name = 'Python Software Foundation News'
     articles = []
-    seed = 'https://pyfound.blogspot.com/'
+    seed = 'https://pyfound.blogspot.com/search?max-results=10'
     scode = await outlands_request({
         'method': 'get',
         'url': seed,

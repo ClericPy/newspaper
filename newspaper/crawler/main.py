@@ -9,6 +9,9 @@ from .spiders import online_spiders, history_spiders
 
 async def online_workflow():
     logger = crawler_logger
+    if not online_spiders:
+        logger.info('no online_spiders online.')
+        return
     # 确认 articles 表存在, 否则建表
     db = MySQLStorage(global_configs['mysql_config'])
     await db._ensure_article_table_exists()
@@ -23,10 +26,16 @@ async def online_workflow():
         if result:
             source_name, articles = result['source_name'], result['articles']
             insert_result = await db.add_articles(articles)
+            logger.info(
+                f'{source_name}: crawled {len(articles)} articles, inserted {insert_result}'
+            )
 
 
 async def history_workflow():
     logger = crawler_logger
+    if not history_spiders:
+        logger.info('ignore for no history_spiders online.')
+        return
     # 确认 articles 表存在, 否则建表
     db = MySQLStorage(global_configs['mysql_config'])
     await db._ensure_article_table_exists()
@@ -41,3 +50,6 @@ async def history_workflow():
         if result:
             source_name, articles = result['source_name'], result['articles']
             insert_result = await db.add_articles(articles)
+            logger.info(
+                f'{source_name}: crawled {len(articles)} articles, inserted {insert_result}'
+            )

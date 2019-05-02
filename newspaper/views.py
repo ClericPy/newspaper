@@ -1,4 +1,4 @@
-from .server import api
+from .api import api
 
 
 @api.route("/")
