@@ -1,16 +1,15 @@
 import abc
-import asyncio
 import datetime
 import typing
 import warnings
 
 import aiomysql
-from torequests.utils import json, ttime
 
-from .config import global_configs, logger
+from torequests.utils import ttime
+from .config import logger
 
 # 用了 insert ignore 还总是 warning, 又不想 insert try, 只好全禁掉了...
-# warnings.filterwarnings('ignore', category=aiomysql.Warning)
+warnings.filterwarnings('ignore', category=aiomysql.Warning)
 
 
 class Storage(object, metaclass=abc.ABCMeta):
@@ -250,21 +249,23 @@ class MySQLStorage(Storage):
                              query: str = None,
                              start_time: str = "",
                              end_time: str = "",
-                             sourse: str = "",
+                             source: str = "",
                              order_by: str = 'ts_publish',
                              sorting: str = 'desc',
                              limit: int = 10,
-                             offset: int = 0):
+                             offset: int = 0) -> dict:
         args = []
         where_list = []
         result = {}
+        source = str(source)
+        order_by = order_by.strip(' `')
         limit = min((self.max_limit, int(limit)))
         offset = int(offset)
-        order_by = order_by.strip(' `')
         if order_by not in self.articles_table_columns:
             order_by = 'ts_publish'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
+
         if start_time:
             where_list.append("`ts_publish` >= %s")
             args.append(start_time)
@@ -273,10 +274,10 @@ class MySQLStorage(Storage):
             where_list.append("`ts_publish` <= %s")
             args.append(end_time)
             result['end_time'] = end_time
-        if sourse:
-            where_list.append("`sourse` = %s")
-            args.append(sourse)
-            result['sourse'] = sourse
+        if source:
+            where_list.append("`source` = %s")
+            args.append(source)
+            result['source'] = source
         if query:
             where_list.append("MATCH(`title`, `desc`, `url`) AGAINST(%s)")
             args.append(query)
@@ -286,7 +287,7 @@ class MySQLStorage(Storage):
         result['offset'] = offset
         args.extend([limit + 1, offset])
         if where_list:
-            where_string = 'where ' ' and '.join(where_list)
+            where_string = 'where ' + ' and '.join(where_list)
         else:
             where_string = ''
         sql = f"SELECT * from articles {where_string} order by {order_by} {sorting} limit %s offset %s"
