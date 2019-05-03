@@ -468,3 +468,5 @@ content_sources = [{
     "status": "X",
     "desc": "文章质量啊~~~"
 }]
+
+content_sources_dict = {i['title']: i for i in content_sources}

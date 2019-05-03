@@ -9,13 +9,12 @@ from lxml.html import fromstring
 from torequests.dummy import Requests
 from torequests.utils import ptime, ttime, md5, time
 
-from ..config import crawler_logger, global_configs
-from .sources import content_sources
+from ..config import logger, global_configs
+from .sources import content_sources_dict
 
 online_spiders = []
 history_spiders = []
-content_sources_dict = {i['title']: i for i in content_sources}
-logger = crawler_logger
+logger = logger
 req = Requests()
 
 
@@ -81,9 +80,9 @@ def register_history(function: typing.Callable) -> typing.Callable:
 
 
 @register_online
-async def python_news() -> dict:
+async def python_news() -> list:
     """Python Software Foundation News"""
-    source_name = 'Python Software Foundation News'
+    source = 'Python Software Foundation News'
     articles = []
     seed = 'https://pyfound.blogspot.com/search?max-results=10'
     scode = await outlands_request({
@@ -95,7 +94,7 @@ async def python_news() -> dict:
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
                 article = {
-                    'source': source_name,
+                    'source': source,
                     'level': content_sources_dict[
                         'Python Software Foundation News']['level']
                 }
@@ -117,14 +116,14 @@ async def python_news() -> dict:
             except Exception:
                 logger.error('python_news_history crawl failed: %s' %
                              traceback.format_exc())
-    logger.info(f'[{source_name}]: crawled {len(articles)} articles')
-    return {'source_name': source_name, 'articles': articles}
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles
 
 
 # @register_history
-async def python_news_history() -> dict:
+async def python_news_history() -> list:
     """Python Software Foundation News"""
-    source_name = 'Python Software Foundation News'
+    source = 'Python Software Foundation News'
     articles = []
     current_year = int(time.strftime('%Y'))
     for year in range(2006, current_year + 1):
@@ -140,7 +139,7 @@ async def python_news_history() -> dict:
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
                 article = {
-                    'source': source_name,
+                    'source': source,
                     'level': content_sources_dict[
                         'Python Software Foundation News']['level']
                 }
@@ -162,5 +161,5 @@ async def python_news_history() -> dict:
             except Exception:
                 logger.error('python_news_history crawl failed: %s' %
                              traceback.format_exc())
-    logger.info(f'[{source_name}]: crawled {len(articles)} articles')
-    return {'source_name': source_name, 'articles': articles}
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles

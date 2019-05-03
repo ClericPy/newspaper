@@ -6,7 +6,7 @@ import asyncio
 
 
 def main():
-    api.run(address="localhost", port=8111, access_log=0)
+    api.run(address="127.0.0.1", port=9001, access_log=1, logger=api.logger)
 
 
 if __name__ == "__main__":
