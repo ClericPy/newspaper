@@ -32,13 +32,41 @@ def handle_exception_response(req, resp, err):
     resp.media = {"ok": False, "error": err_string}
 
 
-@api.route("/newspaper/articles.query")
+@api.route('/')
 async def index(req, resp):
+    api.redirect(resp,
+                 '/newspaper/articles.query.json',
+                 status_code=api.status_codes.HTTP_302)
+
+
+@api.route("/newspaper/articles.query.{output}")
+async def articles_query(req, resp, *, output):
+    """搜索文章
+    output 支持: html(默认), json, rss
+
+    支持参数:
+    query: str = None,
+    start_time: str = "",
+    end_time: str = "",
+    source: str = "",
+    order_by: str = 'ts_publish',
+    sorting: str = 'desc',
+    limit: int = 10,
+    offset: int = 0
+    """
     # TODO 因为 responder 坑爹的没继承 add_exception_handler, 只能自己拼 json 了...
-    params = dict(req.params.items())
     try:
+        params = dict(req.params.items())
         result = await api.db.query_articles(**params)
-        resp.media = handle_pagination_response(req.full_url, result)
+        if output == 'json':
+            resp.media = handle_pagination_response(req.full_url, result)
+        elif output == 'html':
+            resp.html = api.template('articles.html')
     except Exception as err:
         err.format_exc = traceback.format_exc()
         handle_exception_response(req, resp, err)
+
+
+@api.route('/static/favicon.ico')
+async def icon(req, resp):
+    api.redirect(resp, '/static/favicon.ico')

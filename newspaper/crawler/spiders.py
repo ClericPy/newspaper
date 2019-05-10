@@ -27,7 +27,15 @@ class null_tree:
 
 
 def get_url_key(url: str) -> str:
-    """通过 url 来计算 key, 一方面计算 md5, 另一方面净化无用参数."""
+    """通过 url 来计算 key, 一方面计算 md5, 另一方面净化无用参数.
+    以后再考虑要不要纯数字...
+    import hashlib
+    a = hashlib.md5(b'url')
+    b = a.hexdigest()
+    as_int = int(b, 16)
+    url_key = str(as_int)[5:][:20]
+    print(url_key)
+"""
     return md5(url)
 
 

@@ -106,7 +106,9 @@ class MySQLStorage(Storage):
                        cursor_class: aiomysql.Cursor = aiomysql.DictCursor):
         """用来在指定 cursor 对象的时候执行语句"""
         result = await getattr(cursor, execute_cmd)(sql, args)
-        logger.info(cursor._executed)
+        if isinstance(cursor._executed, str):
+            # 有时候是 bytesarray, 没什么必要看
+            logger.info(f'[Execute SQL]: {cursor._executed[:256]}')
         if fetchall:
             result = await cursor.fetchall()
         elif fetchall is False:
