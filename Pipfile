@@ -1,6 +1,6 @@
 [[source]]
-url = "https://pypi.douban.com/simple/"
-verify_ssl = true
+url = "https://pypi.doubanio.com/simple/"
+verify_ssl = false
 name = "pypi"
 
 [dev-packages]
