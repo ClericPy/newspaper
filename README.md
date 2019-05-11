@@ -21,7 +21,7 @@
 
 | 序号 | 名称 | 评分 | 语言 | 收录 | 描述 |
 | ---- | ---- | ---- | ---- | ---- | ---- |
-| 1 | [Python Software Foundation News](https://pyfound.blogspot.com/) | 4 | 英文 | = | [墙] 来自 Python 软件基金会的消息 |
+| 1 | [Python Software Foundation News](https://pyfound.blogspot.com/) | 4 | 英文 | √ | [墙] 来自 Python 软件基金会的消息 |
 | 2 | [Python Weekly](https://www.pythonweekly.com/) | 4 | 英文 | = | 必备周报 |
 | 3 | [PyCoder's Weekly](https://pycoders.com/issues) | 4 | 英文 | = | 必备周报 |
 | 4 | [Import Python](https://importpython.com/newsletter/archive/) | 4 | 英文 | = | 必备周报 |

@@ -34,10 +34,7 @@ def handle_exception_response(req, resp, err):
 
 @api.route('/')
 async def index(req, resp):
-    api.redirect(resp,
-                 '/newspaper/articles.query.json',
-                 status_code=api.status_codes.HTTP_302)
-
+    resp.text = 'NotImplemented'
 
 @api.route("/newspaper/articles.query.{output}")
 async def articles_query(req, resp, *, output):

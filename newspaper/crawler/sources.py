@@ -3,7 +3,7 @@ content_sources = [{
     "url": "https://pyfound.blogspot.com/",
     "level": 4,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "[墙] 来自 Python 软件基金会的消息"
 }, {
     "title": "Python Weekly",

@@ -95,6 +95,7 @@
             font-size: 1.2em;
             color: #2c3e50;
             border-bottom: 1px solid #e2e2e2;
+            margin: 0.5em;
         }
 
 
@@ -121,7 +122,7 @@
         }
 
         div.article .desc {
-            color: #68768A;
+            color: #999;
             padding-left: 0.2em;
             font-size: 0.9em;
 
@@ -139,7 +140,7 @@
         }
 
         div.article .article-source {
-            color: #68768A;
+            color: #999;
             font-size: 0.9em;
         }
 
@@ -166,6 +167,20 @@
 
         button[disabled] {
             cursor: not-allowed;
+        }
+
+        .star_level_1,
+        .star_level_2,
+        .star_level_3 {
+            color: #f1c40f;
+        }
+
+        .star_level_4 {
+            color: #f39c12;
+        }
+
+        .star_level_5 {
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -214,12 +229,15 @@
                 <div class="articles" id="articles">
                 </div>
                 <div style="text-align: center;">
-                    <button id="nextpage" style="margin: 0 auto; width: 95%; color: #2c3e50;border: 0;"
+                    <button id="nextpage"
+                        style="margin: 0 auto; width: 95%; color: #2c3e50;background-color: #fff;border: 0;"
                         onclick="load_next_page()">
                         <h3>Next Page</h3>
                     </button></div>
             </div>
         </div>
+        <br><br><br><br>
+        <hr>
     </div>
     <script>
         var next_url = window.location.href.replace('articles.query.html', 'articles.query.json')
@@ -237,7 +255,6 @@
             var articles = data.articles
             fill_form_params(data)
             next_url = data['next_url'] || ''
-            const level_colors = ['#2ecc71', '#27ae60', '#f1c40f', '#e67e22', '#d35400']
             const level_stars = ['★', '★★', '★★★', '★★★★', '★★★★★']
             var node = document.getElementById('articles')
             for (let index = 0; index < articles.length; index++) {
@@ -245,15 +262,14 @@
                 var child = document.createElement('div')
                 child.setAttribute('class', 'article')
                 child.setAttribute('article_id', item.id)
-                let level_color = level_colors[item.level - 1]
                 let stars = level_stars[item.level - 1]
                 child.innerHTML =
                     `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
                     <p class="desc">${item.desc}</p>
                     <p class="review">${item.review}</p>
                     <p class="article-source">
-                        <span class="ts_publish">${item.ts_publish}</span>
-                        <span class="stars" style="color: ${level_color}">${stars}</span>
+                        <span class="ts_publish">${item.ts_publish}</span> - 
+                        <span class="stars star_level_${item.level}">${stars}</span> - 
                         <span class="source">「${item.source}」</span>
                     </p>
 
