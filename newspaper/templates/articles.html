@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
+<!-- 省流量的极简乞丐版前端, 以后再考虑优化成使用 vue 框架的版本 -->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
-    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Python 文章列表</title>
+    <title>Python Timeline</title>
     <style>
         a[href^="http"]:empty::before {
             content: attr(href);
@@ -16,21 +16,271 @@
         body:before {
             content: "";
             position: fixed;
-            top: -10px;
+            top: -8px;
             left: 0;
             width: 100%;
-            height: 10px;
+            height: 8px;
             -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
             -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
             box-shadow: 0px 0px 10px rgba(0, 0, 0, .8);
-
             z-index: 100;
+        }
+
+        body {
+            margin: 0 0 0 0;
+        }
+
+        form>p {
+            margin: 5px 0 5px 0;
+        }
+
+        input {
+            border-color: #ecf0f1;
+        }
+
+        a {
+            color: #2e3135;
+            text-decoration: none;
+        }
+
+        #params,
+        #params-toggle {
+            display: none;
+        }
+
+        div.main-body {
+            width: 55%;
+            margin: 0 auto;
+        }
+
+        #params-toggle:checked+#params {
+            display: block;
+        }
+
+        div.articles-main {
+            display: flex;
+            flex-direction: row-reverse;
+            flex-wrap: nowrap;
+
+        }
+
+        div.container {
+            width: 70%;
+        }
+
+        div.articles {
+            width: 100%;
+            /* margin: 0 auto; */
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: stretch;
+            align-content: stretch;
+            padding: 10px 10px 0 10px;
+
+            background-color: var(--box-background-color);
+            border-radius: var(--box-border-radius);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, .1);
+            border-bottom: 1px solid #e2e2e2;
+        }
+
+        div.side {
+            width: 30%;
+            margin-left: 1em;
+        }
+
+        div.side li {
+            list-style: square;
+            font-size: 1.2em;
+            color: #2c3e50;
+            border-bottom: 1px solid #e2e2e2;
+        }
+
+
+        div.head {
+            background-color: #34495e;
+            margin: auto;
+            padding: 2px;
+            text-align: center;
+        }
+
+        div.head a {
+            color: #ecf0f1;
+            text-decoration: none;
+            text-shadow: black 8px 8px 8px;
+        }
+
+        div.article {
+            border-bottom: 1px dashed #95a5a6;
+            padding: 0 5px 0 5px;
+        }
+
+        div.article .title {
+            margin-bottom: 0;
+        }
+
+        div.article .desc {
+            color: #68768A;
+            padding-left: 0.2em;
+            font-size: 0.9em;
+
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        div.article p.desc:hover {
+            overflow: auto;
+            text-overflow: ellipsis;
+            -webkit-line-clamp: 999;
+        }
+
+        div.article .article-source {
+            color: #68768A;
+            font-size: 0.9em;
+        }
+
+
+
+        @media (max-width: 900px) {
+            div.articles-main {
+                flex-direction: column;
+            }
+
+            div.main-body {
+                width: 100%;
+            }
+
+            div.container {
+                width: 100%;
+            }
+
+            div.side {
+                width: 100%;
+                margin: 0 auto;
+            }
+        }
+
+        button[disabled] {
+            cursor: not-allowed;
         }
     </style>
 </head>
 
 <body>
+    <div class="main-body">
+        <div class="head">
+            <h1><a href="/newspaper/articles.query.html">Python Timeline</a></h1>
+        </div>
+        <div class="articles-main">
 
+            <div class="side">
+                <div></div>
+                <ul>
+
+                    <label for="params-toggle" type="button">
+                        <li>Settings</li>
+                    </label>
+                    <input type="checkbox" id="params-toggle" />
+                    <form id="params" action="./articles.query.html" method="get">
+                        <p>query:</p>
+                        <input name="query" id="form_query" placeholder="" type="text">
+                        <p>start_time:</p>
+                        <input name="start_time" id="form_start_time" placeholder="1970-01-01 08:00:00" type="text">
+                        <p>end_time:</p>
+                        <input name="end_time" id="form_end_time" placeholder="1970-01-01 08:00:00" type="text">
+                        <p>source:</p>
+                        <input name="source" id="form_source" placeholder="" type="text">
+                        <p>order_by:</p>
+                        <input name="order_by" id="form_order_by" placeholder="" type="text">
+                        <p>sorting:</p>
+                        <input name="sorting" id="form_sorting" placeholder="" type="text">
+                        <p>limit:</p>
+                        <input name="limit" id="form_limit" placeholder="" type="text">
+                        <p>offset:</p>
+                        <input name="offset" id="form_offset" placeholder="" type="text">
+                        <p><input type="submit" value="Submit"></p>
+                    </form>
+                    <li><a href="https://github.com/ClericPy/newspaper" target="_blank" class="github">Github</a></li>
+                    <li><a href="./articles.query.rss" target="_blank" class="rss">RSS</a></li>
+                    <li><a href="https://github.com/ClericPy/newspaper#%E5%86%85%E5%AE%B9%E6%BA%90%E5%88%97%E8%A1%A8"
+                            target="_blank" class="sources">Sources</a></li>
+                </ul>
+            </div>
+            <div class="container">
+                <div class="articles" id="articles">
+                </div>
+                <div style="text-align: center;">
+                    <button id="nextpage" style="margin: 0 auto; width: 95%; color: #2c3e50;border: 0;"
+                        onclick="load_next_page()">
+                        <h3>Next Page</h3>
+                    </button></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var next_url = window.location.href.replace('articles.query.html', 'articles.query.json')
+
+        function fill_form_params(data) {
+            var keys = ['query', 'start_time', 'end_time', 'source', 'order_by', 'sorting', 'limit', 'offset']
+            for (let index = 0; index < keys.length; index++) {
+                const key = keys[index];
+                var element = document.getElementById('form_' + key)
+                element.value = data[key] || ''
+            }
+        }
+
+        function fill_data(data) {
+            var articles = data.articles
+            fill_form_params(data)
+            next_url = data['next_url'] || ''
+            const level_colors = ['#2ecc71', '#27ae60', '#f1c40f', '#e67e22', '#d35400']
+            const level_stars = ['★', '★★', '★★★', '★★★★', '★★★★★']
+            var node = document.getElementById('articles')
+            for (let index = 0; index < articles.length; index++) {
+                const item = articles[index];
+                var child = document.createElement('div')
+                child.setAttribute('class', 'article')
+                child.setAttribute('article_id', item.id)
+                let level_color = level_colors[item.level - 1]
+                let stars = level_stars[item.level - 1]
+                child.innerHTML =
+                    `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
+                    <p class="desc">${item.desc}</p>
+                    <p class="review">${item.review}</p>
+                    <p class="article-source">
+                        <span class="ts_publish">${item.ts_publish}</span>
+                        <span class="stars" style="color: ${level_color}">${stars}</span>
+                        <span class="source">「${item.source}」</span>
+                    </p>
+
+                    `
+                node.appendChild(child)
+            }
+            if (!next_url) {
+                var np = document.getElementById('nextpage')
+                np.disabled = true
+                np.innerHTML = '<h3>No more</h3>'
+            }
+
+
+        }
+
+        function load_next_page() {
+            fetch(next_url)
+                .then(response => response.json())
+                .then(data => fill_data(data))
+                .catch(e => console.log("error catched", e))
+        }
+
+        function start_up() {
+            load_next_page()
+        }
+        window.onload = start_up
+    </script>
 </body>
 
 </html>

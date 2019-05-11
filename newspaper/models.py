@@ -1,11 +1,12 @@
 import abc
 import datetime
+import re
 import typing
 import warnings
 
 import aiomysql
-
 from torequests.utils import ttime
+
 from .config import logger
 
 # 用了 insert ignore 还总是 warning, 又不想 insert try, 只好全禁掉了...
@@ -16,7 +17,7 @@ class Storage(object, metaclass=abc.ABCMeta):
     """存储器抽象. 统一参数对文章数据库进行增删改查."""
     max_limit = 100  # 避免 limit 设置的太大一次提取太多导致拥堵
     articles_table_columns = ('id', 'url_key', 'title', 'url', 'cover', 'desc',
-                              'source', 'level', 'featured', 'ts_publish',
+                              'source', 'level', 'review', 'ts_publish',
                               'ts_create', 'ts_update')
 
     def format_output_articles(self, articles: typing.Sequence[dict]):
@@ -30,7 +31,7 @@ class Storage(object, metaclass=abc.ABCMeta):
     def ensure_articles(self, articles: typing.Sequence[dict]) -> list:
         valid_articles = []
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
-        #                "featured", "ts_publish")
+        #                "review", "ts_publish")
         now = ttime()
         keys_set = None
         for article in articles:
@@ -48,9 +49,12 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('cover', '')
             article.setdefault('desc', '')
             article.setdefault('source', 'unknown')
-            article.setdefault('featured', 0)
+            article.setdefault('review', '')
             article.setdefault('level', 3)
             article.setdefault('ts_publish', now)
+            article['desc'] = re.sub(
+                r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
+                article['desc'])
             valid_articles.append(article)
         return valid_articles
 
@@ -81,7 +85,7 @@ class MySQLStorage(Storage):
         self.password = mysql_config['mysql_password']
         self.db = mysql_config['mysql_db']
         self.autocommit = True
-        self.pool_recycle = 7 * 3600
+        self.pool_recycle = 600
         self.connect_args = dict(host=self.host,
                                  port=self.port,
                                  user=self.user,
@@ -208,7 +212,7 @@ class MySQLStorage(Storage):
   `desc` text COMMENT '文章描述, 如果是周报, 则包含所有文字',
   `source` varchar(32) NOT NULL DEFAULT '未知' COMMENT '文章来源',
   `level` tinyint(4) NOT NULL COMMENT '来源评分',
-  `featured` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否被推荐',
+  `review` varchar(255) NOT NULL DEFAULT '' COMMENT '点评评语',
   `ts_publish` timestamp NOT NULL DEFAULT '2019-04-28 21:30:15' COMMENT '发布时间',
   `ts_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抓取时间',
   `ts_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -254,7 +258,7 @@ class MySQLStorage(Storage):
                              source: str = "",
                              order_by: str = 'ts_publish',
                              sorting: str = 'desc',
-                             limit: int = 10,
+                             limit: int = 30,
                              offset: int = 0) -> dict:
         args = []
         where_list = []
