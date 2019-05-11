@@ -5,10 +5,8 @@ from urllib.parse import urlencode
 from .api import api
 
 
-def handle_pagination_response(url: str, result: dict, host=None) -> dict:
-    base_url = re.sub('\?.*', '', url)
-    if host:
-        base_url = re.sub('(https?://)(?:^/)+/', f'\\1{host}/', base_url)
+def handle_pagination_response(url: str, result: dict) -> dict:
+    base_url = re.sub('^https?://[^/]+|\?.*', '', url)
     params = {
         k: v
         for k, v in sorted(result.items(), key=lambda x: x[0])
@@ -59,8 +57,7 @@ async def articles_query(req, resp, *, output):
         params = dict(req.params.items())
         result = await api.db.query_articles(**params)
         if output == 'json':
-            resp.media = handle_pagination_response(
-                req.full_url, result, host=req.headers.get('host'))
+            resp.media = handle_pagination_response(req.full_url, result)
         elif output == 'html':
             resp.html = api.template('articles.html')
     except Exception as err:
