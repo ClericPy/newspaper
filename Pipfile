@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.douban.com/simple/"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+pytest = "*"
+flake8 = "*"
+yapf = "*"
+
+[packages]
+torequests = ">=4.8.8"
+responder = "*"
+aiomysql = "*"
+lxml = "*"
+cssselect = "*"
+
+[requires]
+python_version = "3.7"
