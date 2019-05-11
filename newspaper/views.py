@@ -5,8 +5,10 @@ from urllib.parse import urlencode
 from .api import api
 
 
-def handle_pagination_response(url: str, result: dict) -> dict:
+def handle_pagination_response(url: str, result: dict, host=None) -> dict:
     base_url = re.sub('\?.*', '', url)
+    if host:
+        base_url = re.sub('(https?://)(?:^/)+/', f'\\1{host}/', base_url)
     params = {
         k: v
         for k, v in sorted(result.items(), key=lambda x: x[0])
@@ -36,6 +38,7 @@ def handle_exception_response(req, resp, err):
 async def index(req, resp):
     resp.text = 'NotImplemented'
 
+
 @api.route("/newspaper/articles.query.{output}")
 async def articles_query(req, resp, *, output):
     """搜索文章
@@ -56,7 +59,8 @@ async def articles_query(req, resp, *, output):
         params = dict(req.params.items())
         result = await api.db.query_articles(**params)
         if output == 'json':
-            resp.media = handle_pagination_response(req.full_url, result)
+            resp.media = handle_pagination_response(
+                req.full_url, result, host=req.headers.get('host'))
         elif output == 'html':
             resp.html = api.template('articles.html')
     except Exception as err:

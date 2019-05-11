@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "eed2f325e20f94e660a2ffea293b070792169137e9ec031e62210e8846d92591"
+            "sha256": "49ec720e135caf73a0fe7910b73411e1dca8e5fa1e362ad168727ad1e4a6642c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -10,8 +10,8 @@
         "sources": [
             {
                 "name": "pypi",
-                "url": "https://pypi.douban.com/simple/",
-                "verify_ssl": true
+                "url": "http://pypi.douban.com/simple/",
+                "verify_ssl": false
             }
         ]
     },
@@ -223,6 +223,12 @@
                 "sha256:f2b1ca39bfed357d1f19ac732913d5f9faa54a5062eca7d2ec3a916cfb7ae4c7"
             ],
             "version": "==0.8.1"
+        },
+        "httptools": {
+            "hashes": [
+                "sha256:e00cbd7ba01ff748e494248183abc6e153f49181169d8a3d41bb49132ca01dfc"
+            ],
+            "version": "==0.0.13"
         },
         "idna": {
             "hashes": [
@@ -556,14 +562,6 @@
                 "sha256:f0b870f674851ecbfbbbd364d6b5cbdff9dcedbc7f3f5e18a6891057f21fe399"
             ],
             "version": "==19.1.0"
-        },
-        "colorama": {
-            "hashes": [
-                "sha256:05eed71e2e327246ad6b38c540c4a3117230b19679b875190486ddd2d721422d",
-                "sha256:f8ac84de7840f5b9c4e3347b3c1eaa50f7e49c2b07596221daec5edaabbd7c48"
-            ],
-            "markers": "sys_platform == 'win32'",
-            "version": "==0.4.1"
         },
         "entrypoints": {
             "hashes": [
