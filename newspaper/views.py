@@ -32,6 +32,13 @@ def handle_exception_response(req, resp, err):
     resp.media = {"ok": False, "error": err_string}
 
 
+@api.route(before_request=True)
+def before_request(req, resp):
+    api.logger.info(
+        f'[access_log] - {req.headers.get("X-Real-IP", "unknown_ip")} - {req.method.upper()} - {req.full_url}'
+    )
+
+
 @api.route('/')
 async def index(req, resp):
     resp.text = 'NotImplemented'

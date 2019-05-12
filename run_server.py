@@ -5,7 +5,7 @@ from newspaper.server import api
 
 
 def main():
-    api.run(address="127.0.0.1", port=9001, access_log=1, logger=api.logger)
+    api.run(address="127.0.0.1", port=9001, access_log=False, logger=api.logger)
 
 
 if __name__ == "__main__":

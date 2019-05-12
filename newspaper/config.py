@@ -29,9 +29,6 @@ def init_logger(logger_name=None):
     return logger
 
 
-logger = init_logger()
-
-
 def init_config():
     global_configs = os.getenv('newspaper_config')
     if global_configs:
@@ -45,13 +42,12 @@ def init_config():
     return global_configs
 
 
-global_configs = init_config()
-
-
 def init_db():
     from .models import MySQLStorage
     db = MySQLStorage(global_configs['mysql_config'])
     return db
 
 
+logger = init_logger()
+global_configs = init_config()
 db = init_db()
