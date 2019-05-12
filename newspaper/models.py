@@ -288,6 +288,7 @@ class MySQLStorage(Storage):
             where_list.append("MATCH(`title`, `desc`, `url`) AGAINST(%s)")
             args.append(query)
         result['order_by'] = order_by
+        result['query'] = query or ''
         result['sorting'] = sorting
         result['limit'] = limit
         result['offset'] = offset

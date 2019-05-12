@@ -23,6 +23,10 @@ global_configs = os.getenv('newspaper_config')
 if global_configs:
     global_configs = json.loads(global_configs)
 else:
+    newspaper_config_template = '{"anti_gfw": {"url": "xxx"}, "mysql_config": {"mysql_host": "xxx", "mysql_port": 0, "mysql_user": "xxx", "mysql_password": "xxx", "mysql_db": "xxx"}}'
+    logger.error(
+        f'environment variable `newspaper_config` not found, it should be set as json like: {newspaper_config_template}'
+    )
     raise RuntimeError('environment variable `newspaper_config` not found')
 
 from .models import MySQLStorage
