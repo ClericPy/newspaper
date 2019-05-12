@@ -4,7 +4,7 @@ import pathlib
 
 import responder
 
-from .config import logger, db, global_configs
+from .config import logger, access_logger, db, global_configs
 
 static_dir = pathlib.Path(__file__).parent / 'static'
 templates_dir = pathlib.Path(__file__).parent / 'templates'
@@ -14,6 +14,7 @@ api = responder.API(static_dir=static_dir,
                     templates_dir=templates_dir)
 api.config = global_configs
 api.logger = logger
+api.access_logger = access_logger
 api.db = db
 
 

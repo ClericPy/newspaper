@@ -5,7 +5,7 @@ import pathlib
 from logging.handlers import RotatingFileHandler
 
 
-def init_logger(logger_name=None):
+def init_logger(logger_name=None, file_name='server.log'):
     log_dir = pathlib.Path(__file__).parent / 'logs'
     if not log_dir.is_dir():
         log_dir.mkdir()
@@ -20,7 +20,7 @@ def init_logger(logger_name=None):
     stream_hl.setLevel(logging.INFO)
     logger.addHandler(stream_hl)
 
-    file_hl = RotatingFileHandler(filename=log_dir / 'server.log',
+    file_hl = RotatingFileHandler(filename=log_dir / file_name,
                                   maxBytes=1024 * 1024 * 100,
                                   encoding='utf-8')
     file_hl.setFormatter(formatter)
@@ -49,5 +49,7 @@ def init_db():
 
 
 logger = init_logger()
+access_logger = init_logger('access_logger', 'access.log')
+spider_logger = init_logger('spider_logger', 'spider.log')
 global_configs = init_config()
 db = init_db()

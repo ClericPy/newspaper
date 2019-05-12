@@ -34,8 +34,8 @@ def handle_exception_response(req, resp, err):
 
 @api.route(before_request=True)
 def before_request(req, resp):
-    api.logger.info(
-        f'[access_log] - {req.headers.get("X-Real-IP", "unknown_ip")} - {req.method.upper()} - {req.full_url}'
+    api.access_logger.info(
+        f'[access_log] - {req.headers.get("X-Real-IP", "UNKNOWN")} - {req.method.upper()} - {req.full_url}'
     )
 
 
