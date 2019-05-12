@@ -10,7 +10,8 @@ def init_logger(logger_name=None, file_name='server.log'):
     if not log_dir.is_dir():
         log_dir.mkdir()
     formatter_str = (
-        "%(asctime)s %(levelname)-5s %(filename)s(%(lineno)s): %(message)s")
+        "%(asctime)s %(levelname)-5s [%(name)s] %(filename)s(%(lineno)s): %(message)s"
+    )
     datefmt = "%Y-%m-%d %H:%M:%S"
     formatter = logging.Formatter(formatter_str, datefmt=datefmt)
     logger = logging.getLogger(logger_name)
@@ -48,7 +49,7 @@ def init_db():
     return db
 
 
-logger = init_logger()
+logger = init_logger('server', 'server.log')
 access_logger = init_logger('access_logger', 'access.log')
 spider_logger = init_logger('spider_logger', 'spider.log')
 global_configs = init_config()

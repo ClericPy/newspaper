@@ -9,12 +9,11 @@ from lxml.html import fromstring
 from torequests.dummy import Requests
 from torequests.utils import ptime, ttime, md5, time
 
-from ..config import spider_logger, global_configs
+from ..config import spider_logger as logger, global_configs
 from .sources import content_sources_dict
 
 online_spiders = []
 history_spiders = []
-logger = spider_logger
 req = Requests()
 
 
