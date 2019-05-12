@@ -63,3 +63,8 @@ async def articles_query(req, resp, *, output):
     except Exception as err:
         err.format_exc = traceback.format_exc()
         handle_exception_response(req, resp, err)
+
+
+@api.route('/favicon.ico')
+async def redirect_ico(req, resp):
+    api.redirect(resp, '/static/favicon.ico')
