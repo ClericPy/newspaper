@@ -50,7 +50,6 @@ def init_db():
 
 
 logger = init_logger('server', 'server.log')
-access_logger = init_logger('access_logger', 'access.log')
 spider_logger = init_logger('spider_logger', 'spider.log')
 global_configs = init_config()
 db = init_db()
