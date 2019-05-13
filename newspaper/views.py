@@ -32,13 +32,6 @@ def handle_pagination_response(url: str, result: dict) -> dict:
     return result
 
 
-# @app.route(before_request=True)
-# def before_request(req):
-#     app.access_logger.info(
-#         f'[access_log] - {req.headers.get("X-Real-IP", "UNKNOWN")} - {req.method.upper()} - {req.full_url}'
-#     )
-
-
 @app.exception_handler(Exception)
 def handle_default_exception(req, error):
     """非 API 错误的捕获, 会被下面的 API 错误覆盖"""
