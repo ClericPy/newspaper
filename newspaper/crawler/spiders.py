@@ -7,9 +7,11 @@ from functools import wraps
 
 from lxml.html import fromstring
 from torequests.dummy import Requests
-from torequests.utils import ptime, ttime, md5, time
+from torequests.utils import (md5, parse_qsl, ptime, time, ttime, unparse_qsl,
+                              urlparse, urlunparse)
 
-from ..config import spider_logger as logger, global_configs
+from ..config import global_configs
+from ..config import spider_logger as logger
 from .sources import content_sources_dict
 
 online_spiders = []
@@ -25,6 +27,19 @@ class null_tree:
         return ''
 
 
+def sort_url_query(url, reverse=False, _replace_kwargs=None):
+    """sort url query args.
+    _replace_kwargs is a dict to update attributes before sorting  (such as scheme / netloc...).
+    http://www.google.com?b=2&z=26&a=1 => http://www.google.com?a=1&b=2&z=26
+    """
+    parsed = urlparse(url)
+    if _replace_kwargs:
+        parsed = parsed._replace(**_replace_kwargs)
+    sorted_parsed = parsed._replace(
+        query=unparse_qsl(parse_qsl(parsed.query), sort=True, reverse=reverse))
+    return urlunparse(sorted_parsed)
+
+
 def get_url_key(url: str) -> str:
     """通过 url 来计算 key, 一方面计算 md5, 另一方面净化无用参数.
     以后再考虑要不要纯数字...
@@ -35,7 +50,9 @@ def get_url_key(url: str) -> str:
     url_key = str(as_int)[5:][:20]
     print(url_key)
 """
-    return md5(url)
+    if url:
+        key = md5(sort_url_query(url, _replace_kwargs={'scheme': 'https'}))
+        return key
 
 
 async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
