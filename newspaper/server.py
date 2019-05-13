@@ -1,1 +1,1 @@
-from .views import api
+from .views import app

@@ -2,22 +2,22 @@
 
 import pathlib
 
-import responder
+from starlette.applications import Starlette
+from starlette.staticfiles import StaticFiles
 
 from .config import logger, access_logger, db, global_configs
 
 static_dir = pathlib.Path(__file__).parent / 'static'
 templates_dir = pathlib.Path(__file__).parent / 'templates'
 
-api = responder.API(static_dir=static_dir,
-                    static_route='/static',
-                    templates_dir=templates_dir)
-api.config = global_configs
-api.logger = logger
-api.access_logger = access_logger
-api.db = db
+app = Starlette(template_directory=str(templates_dir))
+app.mount('/static', StaticFiles(directory=str(static_dir)), name='static')
+app.config = global_configs
+app.logger = logger
+app.access_logger = access_logger
+app.db = db
 
 
-@api.on_event('startup')
+@app.on_event('startup')
 async def _ensure_article_table_exists():
-    await api.db._ensure_article_table_exists()
+    await app.db._ensure_article_table_exists()

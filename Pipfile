@@ -11,7 +11,8 @@ yapf = "*"
 [packages]
 uvloop = {version = "*", sys_platform = "!= 'win32'"}
 torequests = ">=4.8.8"
-responder = "*"
+starlette = "*"
+uvicorn = "*"
 aiomysql = "*"
 lxml = "*"
 cssselect = "*"

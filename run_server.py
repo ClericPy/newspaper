@@ -1,11 +1,13 @@
 """
 启动后端 API 服务
 """
-from newspaper.server import api
+import uvicorn
+
+from newspaper.server import app
 
 
 def main():
-    api.run(address="127.0.0.1", port=9001, access_log=False, logger=api.logger)
+    uvicorn.run(app, host='127.0.0.1', port=9001)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,14 @@ import re
 import traceback
 from urllib.parse import urlencode
 
-from .api import api
+from starlette.responses import (HTMLResponse, JSONResponse, PlainTextResponse,
+                                 RedirectResponse, TemplateResponse)
+
+from .api import app
+
+
+class APIError(Exception):
+    pass
 
 
 def handle_pagination_response(url: str, result: dict) -> dict:
@@ -25,27 +32,39 @@ def handle_pagination_response(url: str, result: dict) -> dict:
     return result
 
 
-def handle_exception_response(req, resp, err):
-    err_string = f'{err.__class__.__name__}: {str(err)}'
-    api.logger.error(
-        f"bad response: {req.url}, {err_string}.\n{err.format_exc}")
-    resp.media = {"ok": False, "error": err_string}
+# @app.route(before_request=True)
+# def before_request(req):
+#     app.access_logger.info(
+#         f'[access_log] - {req.headers.get("X-Real-IP", "UNKNOWN")} - {req.method.upper()} - {req.full_url}'
+#     )
 
 
-@api.route(before_request=True)
-def before_request(req, resp):
-    api.access_logger.info(
-        f'[access_log] - {req.headers.get("X-Real-IP", "UNKNOWN")} - {req.method.upper()} - {req.full_url}'
-    )
+@app.exception_handler(Exception)
+def handle_default_exception(req, error):
+    """非 API 错误的捕获, 会被下面的 API 错误覆盖"""
+    err_string = f'{error.__class__.__name__}: {str(error)}'
+    app.logger.error(f"{str(req.url)}, {err_string}.\n{traceback.format_exc()}")
+    # 避免泄漏信息, 只输出错误类型
+    return JSONResponse({"ok": False, "error": error.__class__.__name__})
 
 
-@api.route('/')
-async def index(req, resp):
-    resp.text = 'NotImplemented'
+@app.exception_handler(APIError)
+def handle_api_error(req, error):
+    """只捕获主动 raise 出来的 API error"""
+    err_string = str(error)
+    app.logger.error(
+        f"{str(req.url)}, APIError: {err_string}.\n{traceback.format_exc()}")
+    # APIError 一般不会带上敏感信息
+    return JSONResponse({"ok": False, "error": err_string})
 
 
-@api.route("/newspaper/articles.query.{output}")
-async def articles_query(req, resp, *, output):
+@app.route('/')
+async def index(req):
+    return PlainTextResponse('NotImplemented')
+
+
+@app.route("/newspaper/articles.query.{output}")
+async def articles_query(req):
     """搜索文章
     output 支持: html(默认), json, rss
 
@@ -59,19 +78,19 @@ async def articles_query(req, resp, *, output):
     limit: int = 10,
     offset: int = 0
     """
-    # TODO 因为 responder 坑爹的没继承 add_exception_handler, 只能自己拼 json 了...
-    try:
-        params = dict(req.params.items())
-        result = await api.db.query_articles(**params)
-        if output == 'json':
-            resp.media = handle_pagination_response(req.full_url, result)
-        elif output == 'html':
-            resp.html = api.template('articles.html')
-    except Exception as err:
-        err.format_exc = traceback.format_exc()
-        handle_exception_response(req, resp, err)
+    output = req.path_params['output']
+    params = dict(req.query_params)
+    result = await app.db.query_articles(**params)
+    if output == 'json':
+        return JSONResponse(handle_pagination_response(req.url._url, result))
+    elif output == 'html':
+        return app.templates.TemplateResponse('articles.html', {"request": req})
+    elif output == 'rss':
+        return PlainTextResponse('未实现')
+    else:
+        return PlainTextResponse('未实现')
 
 
-@api.route('/favicon.ico')
-async def redirect_ico(req, resp):
-    api.redirect(resp, '/static/favicon.ico')
+@app.route('/favicon.ico')
+async def redirect_ico(req):
+    return RedirectResponse('/static/favicon.ico', 301)
