@@ -87,8 +87,11 @@ async def articles_query(req):
 
 @app.route("/newspaper/articles.cache.clear")
 async def articles_query_cache_clear(req):
-    app.db.query_articles.cache_clear()
-    return PlainTextResponse('ok')
+    if req.client.host == '127.0.0.1':
+        app.db.query_articles.cache_clear()
+        return PlainTextResponse('ok')
+    else:
+        return PlainTextResponse('fail')
 
 
 @app.route('/favicon.ico')
