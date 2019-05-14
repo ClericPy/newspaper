@@ -2,8 +2,8 @@ import re
 import traceback
 from urllib.parse import urlencode
 
-from starlette.responses import (HTMLResponse, JSONResponse, PlainTextResponse,
-                                 RedirectResponse, TemplateResponse)
+from starlette.responses import (JSONResponse, PlainTextResponse,
+                                 RedirectResponse)
 
 from .api import app
 
