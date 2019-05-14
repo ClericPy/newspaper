@@ -1,3 +1,4 @@
+#! pipenv run python
 """
 启动后端 API 服务
 """

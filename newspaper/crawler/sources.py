@@ -10,7 +10,7 @@ content_sources = [{
     "url": "https://www.pythonweekly.com/",
     "level": 4,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "必备周报"
 }, {
     "title": "PyCoder's Weekly",
