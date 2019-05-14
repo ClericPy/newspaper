@@ -18,7 +18,7 @@ def handle_pagination_response(url: str, result: dict) -> dict:
     params = {
         k: v
         for k, v in sorted(result.items(), key=lambda x: x[0])
-        if k not in {'articles', 'has_more', 'next_url', 'prev_url'}
+        if k not in {'articles', 'has_more', 'next_url', 'prev_url', 'ok'}
     }
     prev_offset = max((result['offset'] - result['limit'], 0))
     next_offset = result['offset'] + result['limit']
