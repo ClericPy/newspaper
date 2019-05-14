@@ -244,6 +244,18 @@
             }
         }
 
+        function enable_nextpage() {
+            var np = document.getElementById('nextpage')
+            np.style.cursor = 'pointer'
+            return true
+        }
+
+        function disable_nextpage() {
+            var np = document.getElementById('nextpage')
+            np.style.cursor = 'not-allowed'
+            return true
+        }
+
         function fill_data(data) {
             var articles = data.articles
             fill_form_params(data)
@@ -277,10 +289,11 @@
         }
 
         function load_next_page() {
+            disable_nextpage()
             fetch(next_url)
                 .then(response => response.json())
-                .then(data => fill_data(data))
-                .catch(e => console.log("error catched", e))
+                .then(data => enable_nextpage() && fill_data(data))
+                .catch(e => enable_nextpage() && console.log("error catched", e) )
         }
 
         function show_all_desc(desc_id) {

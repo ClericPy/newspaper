@@ -17,7 +17,7 @@ def handle_pagination_response(url: str, result: dict) -> dict:
     params = {
         k: v
         for k, v in sorted(result.items(), key=lambda x: x[0])
-        if k not in {'articles', 'has_more'}
+        if k not in {'articles', 'has_more', 'next_url', 'prev_url'}
     }
     prev_offset = max((result['offset'] - result['limit'], 0))
     next_offset = result['offset'] + result['limit']
@@ -72,9 +72,9 @@ async def articles_query(req):
     offset: int = 0
     """
     output = req.path_params['output']
-    params = dict(req.query_params)
-    result = await app.db.query_articles(**params)
     if output == 'json':
+        params = dict(req.query_params)
+        result = await app.db.query_articles(**params)
         return JSONResponse(handle_pagination_response(req.url._url, result))
     elif output == 'html':
         return app.templates.TemplateResponse('articles.html', {"request": req})
