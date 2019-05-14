@@ -17,6 +17,7 @@ aiomysql = "*"
 lxml = "*"
 cssselect = "*"
 async-lru = "*"
+aiofiles = "*"
 
 [requires]
 python_version = "3.7"
