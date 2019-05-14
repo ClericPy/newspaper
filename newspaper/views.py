@@ -14,6 +14,7 @@ class APIError(Exception):
 
 def handle_pagination_response(url: str, result: dict) -> dict:
     base_url = re.sub('^https?://[^/]+|\?.*', '', url)
+    result['ok'] = True
     params = {
         k: v
         for k, v in sorted(result.items(), key=lambda x: x[0])
