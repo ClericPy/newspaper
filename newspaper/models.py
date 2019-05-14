@@ -252,15 +252,18 @@ class MySQLStorage(Storage):
         raise NotImplementedError
 
     @alru_cache(maxsize=10)
-    async def query_articles(self,
-                             query: str = None,
-                             start_time: str = "",
-                             end_time: str = "",
-                             source: str = "",
-                             order_by: str = 'ts_publish',
-                             sorting: str = 'desc',
-                             limit: int = 30,
-                             offset: int = 0) -> dict:
+    async def query_articles(
+            self,
+            query: str = None,
+            start_time: str = "",
+            end_time: str = "",
+            source: str = "",
+            order_by: str = 'ts_publish',
+            sorting: str = 'desc',
+            limit: int = 30,
+            offset: int = 0,
+            date: str = '',
+    ) -> dict:
         args = []
         where_list = []
         result = {}
@@ -268,6 +271,15 @@ class MySQLStorage(Storage):
         order_by = order_by.strip(' `')
         limit = min((self.max_limit, int(limit)))
         offset = int(offset)
+
+        if date:
+            # 将 date 换算成起止时间并覆盖
+            date = str(date)
+            if not re.match('\d\d\d\d-\d\d-\d\d', date):
+                raise ValueError(f'日期参数的格式不对 {date}, 例: 2019-05-14')
+            start_time = f'{date} 00:00:00'
+            end_time = f'{date} 23:59:59'
+
         if order_by not in self.articles_table_columns:
             order_by = 'ts_publish'
         if sorting.lower() not in ('desc', 'asc'):
@@ -293,6 +305,7 @@ class MySQLStorage(Storage):
         result['sorting'] = sorting
         result['limit'] = limit
         result['offset'] = offset
+        result['date'] = date
         args.extend([limit + 1, offset])
         if where_list:
             where_string = 'where ' + ' and '.join(where_list)
