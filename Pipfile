@@ -1,5 +1,5 @@
 [[source]]
-url = "http://pypi.douban.com/simple/"
+url = "https://pypi.douban.com/simple/"
 verify_ssl = false
 name = "pypi"
 
@@ -9,13 +9,14 @@ flake8 = "*"
 yapf = "*"
 
 [packages]
-uvloop = {version = "*", sys_platform = "!= 'win32'"}
+uvloop = {version = "*",sys_platform = "!= 'win32'"}
 torequests = ">=4.8.8"
 starlette = "*"
 uvicorn = "*"
 aiomysql = "*"
 lxml = "*"
 cssselect = "*"
+async-lru = "*"
 
 [requires]
 python_version = "3.7"

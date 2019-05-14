@@ -5,10 +5,10 @@ import typing
 import zlib
 from functools import wraps
 
-from lxml.html import fromstring
+from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
-from torequests.utils import (md5, parse_qsl, ptime, time, ttime, unparse_qsl,
-                              urlparse, urlunparse)
+from torequests.utils import (find_one, md5, parse_qsl, ptime, re, time, ttime,
+                              unparse_qsl, urlparse, urlunparse)
 
 from ..config import global_configs
 from ..config import spider_logger as logger
@@ -67,6 +67,10 @@ async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
             print(text)
             return text
     """
+    if not request_dict.get('headers', {}).get('User-Agent'):
+        request_dict.setdefault('headers', {})
+        request_dict['headers'][
+            'User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
     data = json.dumps(request_dict)
     data = zlib.compress(data.encode('u8'))
     url = global_configs['anti_gfw']['url']
@@ -119,8 +123,7 @@ async def python_news() -> list:
             try:
                 article = {
                     'source': source,
-                    'level': content_sources_dict[
-                        'Python Software Foundation News']['level']
+                    'level': content_sources_dict[source]['level']
                 }
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
@@ -138,8 +141,7 @@ async def python_news() -> list:
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
             except Exception:
-                logger.error('python_news_history crawl failed: %s' %
-                             traceback.format_exc())
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
     logger.info(f'[{source}]: crawled {len(articles)} articles')
     return articles
 
@@ -164,8 +166,7 @@ async def python_news_history() -> list:
             try:
                 article = {
                     'source': source,
-                    'level': content_sources_dict[
-                        'Python Software Foundation News']['level']
+                    'level': content_sources_dict[source]['level']
                 }
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
@@ -183,7 +184,134 @@ async def python_news_history() -> list:
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
             except Exception:
-                logger.error('python_news_history crawl failed: %s' %
-                             traceback.format_exc())
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles
+
+
+def _python_weekly_calculate_date(issue_id):
+    diff = 396 - int(issue_id)
+    return ttime(1557331200 - diff * 86400 * 7)
+
+
+@register_online
+async def python_weekly() -> list:
+    """Python Weekly"""
+    source = 'Python Weekly'
+    articles = []
+    # 一周一更, 所以只取第一个就可以了
+    limit = 1
+    seed = 'https://us2.campaign-archive.com/home/?u=e2e180baf855ac797ef407fc7&id=9e26887fc5'
+    scode = await outlands_request({
+        'method': 'get',
+        'url': seed,
+    }, 'u8')
+    box = find_one(
+        '(?:<div class="display_archive">)(<li [\s\S]*?</li>)(?:</div>)',
+        scode)[1]
+    items = re.findall('(<li [\s\S]*?</li>)', box)
+    for item in items[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            # 从列表页取 ts_publish 和 issue_id, 其他的去详情页里采集
+            # <li class="campaign">05/09/2019 - <a href="http://eepurl.com/gqB4vv" title="Python Weekly - Issue 396" target="_blank">Python Weekly - Issue 396</a></li>
+            title = find_one('title="(.*?)"', item)[1]
+            issue_id = find_one(' - Issue (\d+)', title)[1]
+            pub_dates = find_one('class="campaign">(\d\d)/(\d\d)/(\d\d\d\d)',
+                                 item)[1]
+            if not issue_id:
+                continue
+            if len(pub_dates) == 3:
+                ts_publish = f'{pub_dates[2]}-{pub_dates[0]}-{pub_dates[1]} 00:00:00'
+            else:
+                ts_publish = _python_weekly_calculate_date(issue_id)
+            article['ts_publish'] = ts_publish
+            detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
+            r = await req.get(
+                detail_url,
+                verify=0,
+                headers={
+                    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                })
+            if not r:
+                logger.error(f'fetch {detail_url} failed: {r}')
+                continue
+            scode = r.text
+            title = find_one('<title>(.*?)</title>', r.text)[1]
+            title = title.strip('Â ')
+            translate_url = find_one(
+                '(://translate\.google\.com/translate\?[^"]+)', scode)[1]
+            backup_url = dict(
+                parse_qsl(translate_url))['u'] if translate_url else ''
+            backup_url_desc = f'<a href="{backup_url}" target="_blank" rel="noopener noreferrer"><b>View this email in your browser</b></a><br>' if backup_url else ''
+            nodes = fromstring(scode).cssselect('[style="font-size:14px"]>a')
+            all_links = [
+                f"「{tostring(i, method='html', with_tail=0, encoding='unicode')} 」"
+                for i in nodes
+            ]
+            all_links_desc = '<br>'.join(all_links)
+            article['title'] = title
+            article['desc'] = f'{backup_url_desc}{all_links_desc}'
+            article['url'] = detail_url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles
+
+
+# @register_history
+async def python_weekly_history() -> list:
+    """Python Weekly"""
+    source = 'Python Weekly'
+    articles = []
+    # 一周一更, 所以只取第一个就可以了
+    for issue_id in range(324, 1000):
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            article['ts_publish'] = _python_weekly_calculate_date(issue_id)
+            detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
+            r = await req.get(
+                detail_url,
+                verify=0,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                })
+            if '<title>404: Page Not Found' in r.text:
+                logger.warn('python_weekly_history break for 404 page')
+                break
+            if not r:
+                logger.error(f'python_weekly_history break for {r}')
+                break
+            scode = r.text
+            title = find_one('<title>(.*?)</title>', r.text)[1]
+            title = title.strip('Â ')
+            translate_url = find_one(
+                '(://translate\.google\.com/translate\?[^"]+)', scode)[1]
+            backup_url = dict(
+                parse_qsl(translate_url))['u'] if translate_url else ''
+            backup_url_desc = f'<a href="{backup_url}" target="_blank" rel="noopener noreferrer"><b>View this email in your browser</b></a><br>' if backup_url else ''
+            nodes = fromstring(scode).cssselect('[style="font-size:14px"]>a')
+            all_links = [
+                f"「{tostring(i, method='html', with_tail=0, encoding='unicode')} 」"
+                for i in nodes
+            ]
+            all_links_desc = '<br>'.join(all_links)
+            article['title'] = title
+            article['desc'] = f'{backup_url_desc}{all_links_desc}'
+            article['url'] = detail_url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
     logger.info(f'[{source}]: crawled {len(articles)} articles')
     return articles

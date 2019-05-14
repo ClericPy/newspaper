@@ -158,8 +158,9 @@
             }
         }
 
-        button[disabled] {
-            cursor: not-allowed;
+        #nextpage {
+            cursor: pointer;
+            text-align: center;
         }
 
         .star_level_1,
@@ -221,12 +222,9 @@
             <div class="container">
                 <div class="articles" id="articles">
                 </div>
-                <div style="text-align: center;">
-                    <button id="nextpage"
-                        style="margin: 0 auto; width: 95%; color: #2c3e50;background-color: #fff;border: 0;"
-                        onclick="load_next_page()">
-                        <h3>Next Page</h3>
-                    </button></div>
+                <h3 id="nextpage" onclick="load_next_page()">
+                    Next Page
+                </h3>
             </div>
         </div>
         <br><br><br><br>
@@ -271,11 +269,9 @@
             }
             if (!next_url) {
                 var np = document.getElementById('nextpage')
-                np.disabled = true
-                np.innerHTML = '<h3>No more</h3>'
+                np.style.cursor = 'not-allowed'
+                np.innerText = 'No more'
             }
-
-
         }
 
         function load_next_page() {

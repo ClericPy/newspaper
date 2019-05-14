@@ -1,10 +1,11 @@
 import abc
-import datetime
 import re
 import typing
 import warnings
+from datetime import datetime
 
 import aiomysql
+from async_lru import alru_cache
 from torequests.utils import ttime
 
 from .config import logger
@@ -21,10 +22,9 @@ class Storage(object, metaclass=abc.ABCMeta):
                               'ts_create', 'ts_update')
 
     def format_output_articles(self, articles: typing.Sequence[dict]):
-        dt_type = datetime.datetime
         for article in articles:
             for key, value in article.items():
-                if isinstance(value, dt_type):
+                if isinstance(value, datetime):
                     article[key] = str(value)
         return articles
 
@@ -251,6 +251,7 @@ class MySQLStorage(Storage):
     async def update_articles(self, *args, **kwargs):
         raise NotImplementedError
 
+    @alru_cache(maxsize=10)
     async def query_articles(self,
                              query: str = None,
                              start_time: str = "",

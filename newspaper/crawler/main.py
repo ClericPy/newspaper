@@ -1,9 +1,24 @@
 import asyncio
 
 import aiomysql
+from torequests.dummy import Requests
 
-from ..config import global_configs, spider_logger, db
-from .spiders import online_spiders, history_spiders
+from ..config import db, global_configs, spider_logger
+from .spiders import history_spiders, online_spiders
+
+
+async def test_spider_workflow():
+    from .spiders import python_weekly
+
+    result = await python_weekly()
+    print(result)
+
+
+async def clear_cache():
+    url = 'http://127.0.0.1:9001/newspaper/articles.cache.clear'
+    req = Requests()
+    r = await req.get(url, timeout=2)
+    spider_logger.info(f'clear_cache {r.text}')
 
 
 async def online_workflow():
@@ -27,8 +42,9 @@ async def online_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles.'
+                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10)}'
                     )
+    await clear_cache()
 
 
 async def history_workflow():
@@ -52,5 +68,6 @@ async def history_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles.'
+                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10)}'
                     )
+    await clear_cache()

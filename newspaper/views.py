@@ -84,6 +84,12 @@ async def articles_query(req):
         return PlainTextResponse('未实现')
 
 
+@app.route("/newspaper/articles.cache.clear")
+async def articles_query_cache_clear(req):
+    app.db.query_articles.cache_clear()
+    return PlainTextResponse('ok')
+
+
 @app.route('/favicon.ico')
 async def redirect_ico(req):
     return RedirectResponse('/static/favicon.ico', 301)
