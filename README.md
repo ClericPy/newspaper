@@ -14,7 +14,7 @@
 
 ### 内容源列表
 
-**打分标准**: 更新频率较低, 文章质量好, 原创, 会分数较高
+**打分标准**: 更新频率较低, 文章质量好, 原创, 信息量大(周报), 会分数较高
 
 > =: 待收录, √: 已收录, X: 不收录, -: 入库不追更
 
@@ -23,10 +23,10 @@
 | 序号 | 名称 | 评分 | 语言 | 收录 | 描述 |
 | ---- | ---- | ---- | ---- | ---- | ---- |
 | 1 | [Python Software Foundation News](https://pyfound.blogspot.com/) | 4 | 英文 | √ | [墙] 来自 Python 软件基金会的消息 |
-| 2 | [Python Weekly](https://www.pythonweekly.com/) | 4 | 英文 | = | 必备周报 |
-| 3 | [PyCoder's Weekly](https://pycoders.com/issues) | 4 | 英文 | = | 必备周报 |
-| 4 | [Import Python](https://importpython.com/newsletter/archive/) | 4 | 英文 | = | 必备周报 |
-| 5 | [Awesome Python Newsletter](https://python.libhunt.com/newsletter/archive) | 4 | 英文 | = | 必备周报 |
+| 2 | [Python Weekly](https://www.pythonweekly.com/) | 5 | 英文 | √ | 必备周报 |
+| 3 | [PyCoder's Weekly](https://pycoders.com/issues) | 5 | 英文 | √ | 必备周报 |
+| 4 | [Import Python](https://importpython.com/newsletter/archive/) | 5 | 英文 | = | 必备周报 |
+| 5 | [Awesome Python Newsletter](https://python.libhunt.com/newsletter/archive) | 5 | 英文 | = | 必备周报 |
 | 6 | [Real Python](https://realpython.com/) | 4 | 英文 | = | 文章质量高, 更新较少 |
 | 7 | [Planet Python](https://planetpython.org) | 4 | 英文 | = | 官方推荐的博客, 虽然排版很另类 |
 | 8 | [Julien Danjou](https://julien.danjou.info) | 4 | 英文 | = | 文章质量不错, 保持更新 |

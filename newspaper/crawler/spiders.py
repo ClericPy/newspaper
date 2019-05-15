@@ -17,6 +17,7 @@ from .sources import content_sources_dict
 online_spiders = []
 history_spiders = []
 req = Requests()
+UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
 
 
 class null_tree:
@@ -308,6 +309,46 @@ async def python_weekly_history() -> list:
             article['title'] = title
             article['desc'] = f'{backup_url_desc}{all_links_desc}'
             article['url'] = detail_url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles
+
+
+@register_online
+async def pycoder_weekly() -> list:
+    """PyCoder's Weekly. 把 limit 改 999 就可以抓历史了"""
+    source = "PyCoder's Weekly"
+    articles = []
+    # 一周一更, 所以只取第一个就可以了
+    limit = 1
+    seed = 'https://pycoders.com/issues'
+    base_url = find_one('^https?://[^/]+', seed)[0]
+    r = await req.get(seed, headers={'User-Agent': UA})
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    items = re.findall('<a href="/issues/\d+">Issue #\d+ .*?</a>', r.text)
+    for item in items[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            # <a href="/issues/368">Issue #368 (May 14, 2019)</a>
+            article['title'] = find_one('>(Issue.*?)<', item)[1]
+            month, day, year = re.findall('\((.*?) (\d+), (\d+)\)',
+                                          article['title'])[0]
+            month = month[:3]
+            raw_time = f'{year}-{month}-{day}'
+            ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
+            article['ts_publish'] = ts_publish
+            article['desc'] = ''
+            url = find_one('href="(/issues/\d+)"', item)[1]
+            article['url'] = base_url + url
             article['url_key'] = get_url_key(article['url'])
             articles.append(article)
         except Exception:

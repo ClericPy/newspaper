@@ -8,28 +8,28 @@ content_sources = [{
 }, {
     "title": "Python Weekly",
     "url": "https://www.pythonweekly.com/",
-    "level": 4,
+    "level": 5,
     "lang": "英文",
     "status": "√",
     "desc": "必备周报"
 }, {
     "title": "PyCoder's Weekly",
     "url": "https://pycoders.com/issues",
-    "level": 4,
+    "level": 5,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "必备周报"
 }, {
     "title": "Import Python",
     "url": "https://importpython.com/newsletter/archive/",
-    "level": 4,
+    "level": 5,
     "lang": "英文",
     "status": "=",
     "desc": "必备周报"
 }, {
     "title": "Awesome Python Newsletter",
     "url": "https://python.libhunt.com/newsletter/archive",
-    "level": 4,
+    "level": 5,
     "lang": "英文",
     "status": "=",
     "desc": "必备周报"

@@ -8,9 +8,9 @@ from .spiders import history_spiders, online_spiders
 
 
 async def test_spider_workflow():
-    from .spiders import python_weekly
+    from .spiders import pycoder_weekly
 
-    result = await python_weekly()
+    result = await pycoder_weekly()
     print(result)
 
 
