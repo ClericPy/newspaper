@@ -393,7 +393,8 @@ async def importpython() -> list:
             ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
             article['ts_publish'] = ts_publish
             article['url'] = url
-            title = f"{source} - {re.sub(' | .*', '', title)}"
+            clean_title = re.sub(' - .*', '', title)
+            title = f"{source} - {clean_title}"
             article['title'] = title
             article['desc'] = desc.replace('\n                    ', ' ')
             article['url'] = url
