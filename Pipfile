@@ -10,7 +10,7 @@ yapf = "*"
 
 [packages]
 uvloop = {version = "*",sys_platform = "!= 'win32'"}
-torequests = ">=4.8.8"
+torequests = ">=4.8.10"
 starlette = "*"
 uvicorn = "*"
 aiomysql = "*"
