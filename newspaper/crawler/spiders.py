@@ -271,7 +271,6 @@ async def python_weekly_history() -> list:
     """Python Weekly"""
     source = 'Python Weekly'
     articles = []
-    # 一周一更, 所以只取第一个就可以了
     for issue_id in range(324, 1000):
         try:
             article = {
@@ -339,7 +338,8 @@ async def pycoder_weekly() -> list:
                 'level': content_sources_dict[source]['level']
             }
             # <a href="/issues/368">Issue #368 (May 14, 2019)</a>
-            article['title'] = find_one('>(Issue.*?)<', item)[1]
+            title = find_one('>(Issue.*?)<', item)[1]
+            article['title'] = f"PyCoder's Weekly | {title}"
             month, day, year = re.findall('\((.*?) (\d+), (\d+)\)',
                                           article['title'])[0]
             month = month[:3]
@@ -349,6 +349,54 @@ async def pycoder_weekly() -> list:
             article['desc'] = ''
             url = find_one('href="(/issues/\d+)"', item)[1]
             article['url'] = base_url + url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    return articles
+
+
+@register_online
+async def importpython() -> list:
+    """Import Python"""
+    source = 'Import Python'
+    articles = []
+    # 一周一更, 所以只取第一个就可以了
+    limit = 1
+    seed = 'https://importpython.com/newsletter/archive/'
+    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    items = fromstring(r.text).cssselect('#tourpackages-carousel>.row>div')
+    for item in items[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            href = item.cssselect('div.caption>a')[0].get('href', '')
+            if not href:
+                continue
+            url = re.sub('^/', 'https://importpython.com/', href)
+            title = item.cssselect('div.caption>.well-add-card>h4')[0].text
+            desc_node = item.cssselect('div.caption>div[class="col-lg-12"]')[0]
+            desc = tostring(desc_node,
+                            method='html',
+                            with_tail=0,
+                            encoding='unicode')
+            day, month, year = re.findall('- (\d+) (\S+) (\d+)', title)[0]
+            month = month[:3]
+            raw_time = f'{year}-{month}-{day}'
+            ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
+            article['ts_publish'] = ts_publish
+            article['url'] = url
+            title = f"{source} - {re.sub(' | .*', '', title)}"
+            article['title'] = title
+            article['desc'] = desc.replace('\n                    ', ' ')
+            article['url'] = url
             article['url_key'] = get_url_key(article['url'])
             articles.append(article)
         except Exception:

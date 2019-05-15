@@ -24,8 +24,8 @@ content_sources = [{
     "url": "https://importpython.com/newsletter/archive/",
     "level": 5,
     "lang": "英文",
-    "status": "=",
-    "desc": "必备周报"
+    "status": "√",
+    "desc": "必备周报, 2019.1.11 停更了, 希望早日康复~"
 }, {
     "title": "Awesome Python Newsletter",
     "url": "https://python.libhunt.com/newsletter/archive",

@@ -9,7 +9,7 @@
 - [x] 开发
 - [x] 测试
 - [x] 上线
-- [ ] 补充内容源 (2 / 39)
+- [ ] 补充内容源 (4 / 39)
 - [ ] Python 日报 github pages
 
 ### 内容源列表
@@ -25,7 +25,7 @@
 | 1 | [Python Software Foundation News](https://pyfound.blogspot.com/) | 4 | 英文 | √ | [墙] 来自 Python 软件基金会的消息 |
 | 2 | [Python Weekly](https://www.pythonweekly.com/) | 5 | 英文 | √ | 必备周报 |
 | 3 | [PyCoder's Weekly](https://pycoders.com/issues) | 5 | 英文 | √ | 必备周报 |
-| 4 | [Import Python](https://importpython.com/newsletter/archive/) | 5 | 英文 | = | 必备周报 |
+| 4 | [Import Python](https://importpython.com/newsletter/archive/) | 5 | 英文 | √ | 必备周报, 2019.1.11 停更了, 希望早日康复~ |
 | 5 | [Awesome Python Newsletter](https://python.libhunt.com/newsletter/archive) | 5 | 英文 | = | 必备周报 |
 | 6 | [Real Python](https://realpython.com/) | 4 | 英文 | = | 文章质量高, 更新较少 |
 | 7 | [Planet Python](https://planetpython.org) | 4 | 英文 | = | 官方推荐的博客, 虽然排版很另类 |
