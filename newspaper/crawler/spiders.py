@@ -14,6 +14,7 @@ from ..config import global_configs
 from ..config import spider_logger as logger
 from .sources import content_sources_dict
 
+test_spiders = []
 online_spiders = []
 history_spiders = []
 req = Requests()
@@ -80,6 +81,19 @@ async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
         return zlib.decompress(r.content).decode(encoding)
     else:
         return r.text
+
+
+def register_test(function: typing.Callable) -> typing.Callable:
+    """把爬虫注册到测试列表
+
+    :param function: 爬虫函数, 一般没有参数.
+    :type function: typing.Callable
+    :return: 爬虫函数, 一般没有参数.
+    :rtype: typing.Callable
+    """
+
+    test_spiders.append(function)
+    return function
 
 
 def register_online(function: typing.Callable) -> typing.Callable:

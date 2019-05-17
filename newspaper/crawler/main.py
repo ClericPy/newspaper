@@ -8,10 +8,11 @@ from .spiders import history_spiders, online_spiders
 
 
 async def test_spider_workflow():
-    from .spiders import importpython
-
-    result = await importpython()
-    print(result)
+    from .spiders import test_spiders
+    for func in test_spiders:
+        print(func.__doc__)
+        result = await func()
+        print(result)
 
 
 async def clear_cache():
@@ -42,7 +43,7 @@ async def online_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10)}'
+                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10 + 1)}'
                     )
     await clear_cache()
 
@@ -68,6 +69,6 @@ async def history_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10)}'
+                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10 + 1)}'
                     )
     await clear_cache()
