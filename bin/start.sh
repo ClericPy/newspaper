@@ -6,6 +6,6 @@ echo
 
 DIR=$(cd `dirname $0`/..; pwd)
 cd $DIR
-nohup pipenv run python run_server.py &
+nohup pipenv run python run_server.py >/dev/null
 echo "server started"
 echo
