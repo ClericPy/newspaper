@@ -1,9 +1,8 @@
 import asyncio
 
-import aiomysql
 from torequests.dummy import Requests
 
-from ..config import db, global_configs, spider_logger
+from ..config import db, spider_logger
 from .spiders import history_spiders, online_spiders
 
 
@@ -30,6 +29,7 @@ async def online_workflow():
     await db._ensure_article_table_exists()
     coros = [func() for func in online_spiders]
     done, fail = await asyncio.wait(coros, timeout=120)
+    spider_logger.info(f'{"=" * 30}')
     if fail:
         spider_logger.warn(f'failing spiders: {len(fail)}')
     # print(done)
@@ -43,7 +43,7 @@ async def online_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10 + 1)}'
+                        f'+ {insert_result} articles. [{articles[0].get("source")}]'
                     )
     await clear_cache()
 
@@ -56,6 +56,7 @@ async def history_workflow():
     await db._ensure_article_table_exists()
     coros = [func() for func in history_spiders]
     done, fail = await asyncio.wait(coros, timeout=120)
+    spider_logger.info(f'{"=" * 30}')
     if fail:
         spider_logger.warn(f'failing spiders: {len(fail)}')
     # print(done)
@@ -69,6 +70,6 @@ async def history_workflow():
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
                     spider_logger.info(
-                        f'[{articles[0].get("source")}]: inserted {insert_result} of {len(articles)} articles. {"+" * (len(articles)//10 + 1)}'
+                        f'+ {insert_result} articles. [{articles[0].get("source")}]'
                     )
     await clear_cache()

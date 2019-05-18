@@ -43,9 +43,10 @@ class Storage(object, metaclass=abc.ABCMeta):
                 # 如果 keys 和第一个不一样, 就没法使用 executemany, 所以跳过
                 if set(article.keys()) != keys_set:
                     continue
-            if not (article.get('url_key') and article.get('title') and
-                    article.get('url')):
-                continue
+            # 这些 key 必须都存在才能入库
+            for ensure_key in ('url_key', 'title'):
+                if not article.get(ensure_key):
+                    continue
             article.setdefault('cover', '')
             article.setdefault('desc', '')
             article.setdefault('source', 'unknown')
@@ -166,7 +167,7 @@ class MySQLStorage(Storage):
                           cursor_class: aiomysql.Cursor = aiomysql.DictCursor,
                           cursor: aiomysql.Cursor = None) -> typing.Any:
         """简单的通过 sql 获取数据.
-        
+
         :param sql: query 的 sql 语句
         :type sql: str
         :param args: query 语句的参数, 只能为 list, defaults to None
@@ -225,8 +226,8 @@ class MySQLStorage(Storage):
         await self.execute(sql, fetchall=None)
         logger.info('`articles` table created.')
 
-    async def add_articles(self, articles: list, cursor=None):
-        """事先要注意保证 articles 的 keys 是一样的"""
+    async def add_articles(self, articles, cursor=None):
+        """事先要注意保证 articles list 的每个 dict keys 是一样的"""
         old_articles_length = len(articles)
         articles = self.ensure_articles(articles)
         if not articles:
@@ -240,9 +241,10 @@ class MySQLStorage(Storage):
                                         fetchall=None,
                                         cursor=cursor)
         source = articles[0]['source']
-        logger.info(
-            f'[{source}]: crawled {old_articles_length} articles, inserted {result}.'
-        )
+        if result:
+            logger.info(
+                f'[{source}]: crawled {old_articles_length} articles, inserted {result}.'
+            )
         return result
 
     async def del_articles(self, *args, **kwargs):
@@ -264,9 +266,9 @@ class MySQLStorage(Storage):
             offset: int = 0,
             date: str = '',
     ) -> dict:
-        args = []
-        where_list = []
-        result = {}
+        args: list = []
+        where_list: list = []
+        result: dict = {}
         source = str(source)
         order_by = order_by.strip(' `')
         limit = min((self.max_limit, int(limit)))
@@ -275,7 +277,7 @@ class MySQLStorage(Storage):
         if date:
             # 将 date 换算成起止时间并覆盖
             date = str(date)
-            if not re.match('\d\d\d\d-\d\d-\d\d', date):
+            if not re.match('\\d\\d\\d\\d-\\d\\d-\\d\\d', date):
                 raise ValueError(f'日期参数的格式不对 {date}, 例: 2019-05-14')
             start_time = f'{date} 00:00:00'
             end_time = f'{date} 23:59:59'

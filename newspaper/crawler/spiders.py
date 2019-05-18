@@ -3,7 +3,6 @@ import json
 import traceback
 import typing
 import zlib
-from functools import wraps
 
 from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
@@ -42,7 +41,7 @@ def sort_url_query(url, reverse=False, _replace_kwargs=None):
     return urlunparse(sorted_parsed)
 
 
-def get_url_key(url: str) -> str:
+def get_url_key(url) -> str:
     """通过 url 来计算 key, 一方面计算 md5, 另一方面净化无用参数.
     以后再考虑要不要纯数字...
     import hashlib
@@ -55,6 +54,7 @@ def get_url_key(url: str) -> str:
     if url:
         key = md5(sort_url_query(url, _replace_kwargs={'scheme': 'https'}))
         return key
+    return ""
 
 
 async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
@@ -73,8 +73,8 @@ async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
         request_dict.setdefault('headers', {})
         request_dict['headers'][
             'User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
-    data = json.dumps(request_dict)
-    data = zlib.compress(data.encode('u8'))
+    json_data = json.dumps(request_dict)
+    data = zlib.compress(json_data.encode('u8'))
     url = global_configs['anti_gfw']['url']
     r = await req.post(url, timeout=60, data=data)
     if r:
@@ -126,7 +126,7 @@ def register_history(function: typing.Callable) -> typing.Callable:
 async def python_news() -> list:
     """Python Software Foundation News"""
     source = 'Python Software Foundation News'
-    articles = []
+    articles: list = []
     seed = 'https://pyfound.blogspot.com/search?max-results=10'
     scode = await outlands_request({
         'method': 'get',
@@ -147,8 +147,8 @@ async def python_news() -> list:
                 article['title'] = item.cssselect(
                     '.post-title.entry-title>a')[0].text
                 # 兼容下没有 desc 的情况
-                desc = (item.cssselect('.post-body.entry-content') or
-                        [null_tree])[0].text_content()
+                node = item.cssselect('.post-body.entry-content') or [null_tree]
+                desc = node[0].text_content()
                 article['desc'] = desc.split('\n\n\n',
                                              1)[0].strip().replace('\n', ' ')
                 article['url'] = item.cssselect(
@@ -157,7 +157,7 @@ async def python_news() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles
 
 
@@ -165,7 +165,7 @@ async def python_news() -> list:
 async def python_news_history() -> list:
     """Python Software Foundation News"""
     source = 'Python Software Foundation News'
-    articles = []
+    articles: list = []
     current_year = int(time.strftime('%Y'))
     for year in range(2006, current_year + 1):
         seed = f'https://pyfound.blogspot.com/{year}/'
@@ -190,8 +190,8 @@ async def python_news_history() -> list:
                 article['title'] = item.cssselect(
                     '.post-title.entry-title>a')[0].text
                 # 兼容下没有 desc 的情况
-                desc = (item.cssselect('.post-body.entry-content') or
-                        [null_tree])[0].text_content()
+                node = item.cssselect('.post-body.entry-content') or [null_tree]
+                desc = node[0].text_content()
                 article['desc'] = desc.split('\n\n\n',
                                              1)[0].strip().replace('\n', ' ')
                 article['url'] = item.cssselect(
@@ -200,7 +200,7 @@ async def python_news_history() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles
 
 
@@ -213,7 +213,7 @@ def _python_weekly_calculate_date(issue_id):
 async def python_weekly() -> list:
     """Python Weekly"""
     source = 'Python Weekly'
-    articles = []
+    articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://us2.campaign-archive.com/home/?u=e2e180baf855ac797ef407fc7&id=9e26887fc5'
@@ -222,9 +222,9 @@ async def python_weekly() -> list:
         'url': seed,
     }, 'u8')
     box = find_one(
-        '(?:<div class="display_archive">)(<li [\s\S]*?</li>)(?:</div>)',
+        r'(?:<div class="display_archive">)(<li [\s\S]*?</li>)(?:</div>)',
         scode)[1]
-    items = re.findall('(<li [\s\S]*?</li>)', box)
+    items = re.findall(r'(<li [\s\S]*?</li>)', box)
     for item in items[:limit]:
         try:
             article = {
@@ -234,8 +234,8 @@ async def python_weekly() -> list:
             # 从列表页取 ts_publish 和 issue_id, 其他的去详情页里采集
             # <li class="campaign">05/09/2019 - <a href="http://eepurl.com/gqB4vv" title="Python Weekly - Issue 396" target="_blank">Python Weekly - Issue 396</a></li>
             title = find_one('title="(.*?)"', item)[1]
-            issue_id = find_one(' - Issue (\d+)', title)[1]
-            pub_dates = find_one('class="campaign">(\d\d)/(\d\d)/(\d\d\d\d)',
+            issue_id = find_one(r' - Issue (\d+)', title)[1]
+            pub_dates = find_one(r'class="campaign">(\d\d)/(\d\d)/(\d\d\d\d)',
                                  item)[1]
             if not issue_id:
                 continue
@@ -258,7 +258,7 @@ async def python_weekly() -> list:
             title = find_one('<title>(.*?)</title>', r.text)[1]
             title = title.strip('Â ')
             translate_url = find_one(
-                '(://translate\.google\.com/translate\?[^"]+)', scode)[1]
+                r'(://translate\.google\.com/translate\?[^"]+)', scode)[1]
             backup_url = dict(
                 parse_qsl(translate_url))['u'] if translate_url else ''
             backup_url_desc = f'<a href="{backup_url}" target="_blank" rel="noopener noreferrer"><b>View this email in your browser</b></a><br>' if backup_url else ''
@@ -276,7 +276,7 @@ async def python_weekly() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles
 
 
@@ -284,7 +284,7 @@ async def python_weekly() -> list:
 async def python_weekly_history() -> list:
     """Python Weekly"""
     source = 'Python Weekly'
-    articles = []
+    articles: list = []
     for issue_id in range(324, 1000):
         try:
             article = {
@@ -309,7 +309,7 @@ async def python_weekly_history() -> list:
             title = find_one('<title>(.*?)</title>', r.text)[1]
             title = title.strip('Â ')
             translate_url = find_one(
-                '(://translate\.google\.com/translate\?[^"]+)', scode)[1]
+                r'(://translate\.google\.com/translate\?[^"]+)', scode)[1]
             backup_url = dict(
                 parse_qsl(translate_url))['u'] if translate_url else ''
             backup_url_desc = f'<a href="{backup_url}" target="_blank" rel="noopener noreferrer"><b>View this email in your browser</b></a><br>' if backup_url else ''
@@ -327,7 +327,7 @@ async def python_weekly_history() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles
 
 
@@ -335,7 +335,7 @@ async def python_weekly_history() -> list:
 async def pycoder_weekly() -> list:
     """PyCoder's Weekly. 把 limit 改 999 就可以抓历史了"""
     source = "PyCoder's Weekly"
-    articles = []
+    articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://pycoders.com/issues'
@@ -344,7 +344,7 @@ async def pycoder_weekly() -> list:
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
-    items = re.findall('<a href="/issues/\d+">Issue #\d+ .*?</a>', r.text)
+    items = re.findall(r'<a href="/issues/\d+">Issue #\d+ .*?</a>', r.text)
     for item in items[:limit]:
         try:
             article = {
@@ -354,21 +354,21 @@ async def pycoder_weekly() -> list:
             # <a href="/issues/368">Issue #368 (May 14, 2019)</a>
             title = find_one('>(Issue.*?)<', item)[1]
             article['title'] = f"PyCoder's Weekly | {title}"
-            month, day, year = re.findall('\((.*?) (\d+), (\d+)\)',
+            month, day, year = re.findall(r'\((.*?) (\d+), (\d+)\)',
                                           article['title'])[0]
             month = month[:3]
             raw_time = f'{year}-{month}-{day}'
             ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
             article['ts_publish'] = ts_publish
             article['desc'] = ''
-            url = find_one('href="(/issues/\d+)"', item)[1]
+            url = find_one(r'href="(/issues/\d+)"', item)[1]
             article['url'] = base_url + url
             article['url_key'] = get_url_key(article['url'])
             articles.append(article)
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles
 
 
@@ -376,7 +376,7 @@ async def pycoder_weekly() -> list:
 async def importpython() -> list:
     """Import Python"""
     source = 'Import Python'
-    articles = []
+    articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://importpython.com/newsletter/archive/'
@@ -401,7 +401,7 @@ async def importpython() -> list:
                             method='html',
                             with_tail=0,
                             encoding='unicode')
-            day, month, year = re.findall('- (\d+) (\S+) (\d+)', title)[0]
+            day, month, year = re.findall(r'- (\d+) (\S+) (\d+)', title)[0]
             month = month[:3]
             raw_time = f'{year}-{month}-{day}'
             ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
@@ -417,5 +417,5 @@ async def importpython() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'[{source}]: crawled {len(articles)} articles')
+    logger.info(f'+{len(articles)} articles [{source}]')
     return articles

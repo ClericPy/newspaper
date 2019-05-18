@@ -36,7 +36,7 @@ content_sources = [{
 }, {
     "title": "Real Python",
     "url": "https://realpython.com/",
-    "level": 4,
+    "level": 5,
     "lang": "英文",
     "status": "=",
     "desc": "文章质量高, 更新较少"
