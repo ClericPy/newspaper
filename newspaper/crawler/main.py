@@ -8,10 +8,11 @@ from .spiders import history_spiders, online_spiders
 
 async def test_spider_workflow():
     from .spiders import test_spiders
+    from pprint import pprint
     for func in test_spiders:
-        print(func.__doc__)
+        print('test start:', func.__doc__)
         result = await func()
-        print(result)
+        pprint(result)
 
 
 async def clear_cache():
@@ -32,7 +33,6 @@ async def online_workflow():
     spider_logger.info(f'{"=" * 30}')
     if fail:
         spider_logger.warn(f'failing spiders: {len(fail)}')
-    # print(done)
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:
@@ -59,7 +59,6 @@ async def history_workflow():
     spider_logger.info(f'{"=" * 30}')
     if fail:
         spider_logger.warn(f'failing spiders: {len(fail)}')
-    # print(done)
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:

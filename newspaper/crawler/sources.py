@@ -31,7 +31,7 @@ content_sources = [{
     "url": "https://python.libhunt.com/newsletter/archive",
     "level": 5,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "必备周报"
 }, {
     "title": "Real Python",

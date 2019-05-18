@@ -157,7 +157,7 @@ async def python_news() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
 
 
@@ -200,7 +200,7 @@ async def python_news_history() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
 
 
@@ -276,7 +276,7 @@ async def python_weekly() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
 
 
@@ -327,7 +327,7 @@ async def python_weekly_history() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
 
 
@@ -368,7 +368,7 @@ async def pycoder_weekly() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
 
 
@@ -417,5 +417,57 @@ async def importpython() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'+{len(articles)} articles [{source}]')
+    logger.info(f'crawled {len(articles)} articles [{source}]')
+    return articles
+
+
+@register_online
+async def awesome_python() -> list:
+    """Awesome Python Newsletter"""
+    source = 'Awesome Python Newsletter'
+    articles: list = []
+    # 一周一更, 所以只取第一个就可以了
+    limit = 1
+    seed = 'https://python.libhunt.com/newsletter/archive'
+    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    hrefs = re.findall(
+        r'<td class="text-right">\s*<a href=\'(/newsletter/\d+)\'>', r.text)
+    for href in hrefs[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            url = re.sub('^/', 'https://python.libhunt.com/', href)
+            r = await req.get(url,
+                              retry=2,
+                              timeout=15,
+                              headers={"User-Agent": UA})
+            if not r:
+                logger.error(f'fetch {url} failed: {r}')
+                break
+            tree = fromstring(r.text)
+            raw_title = tree.cssselect('title')[0].text
+            title = re.sub(', .*', '', raw_title)
+            raw_pub_date = find_one(r', (.*?) \|', raw_title)[1]
+            # May 17, 2019
+            ts_publish = ttime(ptime(raw_pub_date, fmt='%b %d, %Y'))
+            nodes = tree.cssselect(
+                'li[class="story row"]>div[class="column"]>a')
+            descs = [tostring(i, method='html', with_tail=0, encoding='unicode') for i in nodes]
+            desc = '<br>'.join(descs)
+            article['ts_publish'] = ts_publish
+            article['url'] = url
+            article['title'] = title
+            article['desc'] = desc
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'crawled {len(articles)} articles [{source}]')
     return articles
