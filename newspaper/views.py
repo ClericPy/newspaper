@@ -13,7 +13,7 @@ class APIError(Exception):
 
 
 def handle_pagination_response(url: str, result: dict) -> dict:
-    base_url = re.sub('^https?://[^/]+|\?.*', '', url)
+    base_url = re.sub(r'^https?://[^/]+|\?.*', '', url)
     result['ok'] = True
     params = {
         k: v
