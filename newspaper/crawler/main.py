@@ -9,10 +9,22 @@ from .spiders import history_spiders, online_spiders
 async def test_spider_workflow():
     from .spiders import test_spiders
     from pprint import pprint
+
     for func in test_spiders:
         print('test start:', func.__doc__)
-        result = await func()
-        pprint(result)
+        articles = await func()
+        # check schema
+        if articles:
+            item = articles[0]
+            assert (not item.get('desc')) or isinstance(item['desc'], str)
+            assert (not item.get('ts_publish')) or isinstance(item['ts_publish'], str)
+            assert (not item.get('cover')) or isinstance(item['cover'], str)
+            assert isinstance(item.get('level'), int)
+            assert isinstance(item.get('source'), str)
+            assert isinstance(item.get('title'), str)
+            assert isinstance(item.get('url'), str)
+        pprint(articles)
+
 
 
 async def clear_cache():

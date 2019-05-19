@@ -457,12 +457,59 @@ async def awesome_python() -> list:
             ts_publish = ttime(ptime(raw_pub_date, fmt='%b %d, %Y'))
             nodes = tree.cssselect(
                 'li[class="story row"]>div[class="column"]>a')
-            descs = [tostring(i, method='html', with_tail=0, encoding='unicode') for i in nodes]
+            descs = [
+                tostring(i, method='html', with_tail=0, encoding='unicode')
+                for i in nodes
+            ]
             desc = '<br>'.join(descs)
             article['ts_publish'] = ts_publish
             article['url'] = url
             article['title'] = title
             article['desc'] = desc
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'crawled {len(articles)} articles [{source}]')
+    return articles
+
+
+@register_online
+async def real_python() -> list:
+    """Real Python"""
+    source = 'Real Python'
+    articles: list = []
+    limit = 1111
+    seed = 'https://realpython.com/'
+    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    items = fromstring(r.text).cssselect('div[class="card border-0"]')
+    for item in items[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            href = item.cssselect('a')[0].get('href', '')
+            url = re.sub('^/', 'https://realpython.com/', href)
+            title = item.cssselect('h2.card-title')[0].text
+            pub_date_node = item.cssselect('.mr-2') or [null_tree]
+            raw_pub_date = pub_date_node[0].text
+            # May 16, 2019
+            ts_publish = ttime(ptime(raw_pub_date, fmt='%b %d, %Y'))
+            cover_item = item.cssselect('img.card-img-top')
+            if cover_item:
+                cover = cover_item[0].get('src', '')
+                if cover:
+                    article['cover'] = cover
+            article['ts_publish'] = ts_publish
+            article['url'] = url
+            article['title'] = title
+            article['desc'] = ''
             article['url'] = url
             article['url_key'] = get_url_key(article['url'])
             articles.append(article)
