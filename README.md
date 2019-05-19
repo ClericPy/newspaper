@@ -26,8 +26,8 @@
 | 2 | [Python Weekly](https://www.pythonweekly.com/) | 5 | 英文 | √ | 必备周报 |
 | 3 | [PyCoder's Weekly](https://pycoders.com/issues) | 5 | 英文 | √ | 必备周报 |
 | 4 | [Import Python](https://importpython.com/newsletter/archive/) | 5 | 英文 | √ | 必备周报, 2019.1.11 停更了, 希望早日康复~ |
-| 5 | [Awesome Python Newsletter](https://python.libhunt.com/newsletter/archive) | 5 | 英文 | = | 必备周报 |
-| 6 | [Real Python](https://realpython.com/) | 4 | 英文 | = | 文章质量高, 更新较少 |
+| 5 | [Awesome Python Newsletter](https://python.libhunt.com/newsletter/archive) | 5 | 英文 | √ | 必备周报 |
+| 6 | [Real Python](https://realpython.com/) | 4 | 英文 | √ | 文章质量高, 更新较少 |
 | 7 | [Planet Python](https://planetpython.org) | 4 | 英文 | = | 官方推荐的博客, 虽然排版很另类 |
 | 8 | [Julien Danjou](https://julien.danjou.info) | 4 | 英文 | = | 文章质量不错, 保持更新 |
 | 9 | [Doug Hellmann](https://doughellmann.com/blog/) | 4 | 英文 | = | 大名鼎鼎, 文章质量很高 |
