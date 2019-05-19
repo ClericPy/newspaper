@@ -481,7 +481,7 @@ async def real_python() -> list:
     """Real Python"""
     source = 'Real Python'
     articles: list = []
-    limit = 1111
+    limit = 20
     seed = 'https://realpython.com/'
     r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
     if not r:
