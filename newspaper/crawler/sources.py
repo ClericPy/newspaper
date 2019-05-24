@@ -45,7 +45,7 @@ content_sources = [{
     "url": "https://planetpython.org",
     "level": 4,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "官方推荐的博客, 虽然排版很另类"
 }, {
     "title": "Julien Danjou",
