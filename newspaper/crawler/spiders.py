@@ -380,7 +380,7 @@ async def importpython() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://importpython.com/newsletter/archive/'
-    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -429,7 +429,7 @@ async def awesome_python() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://python.libhunt.com/newsletter/archive'
-    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -483,7 +483,7 @@ async def real_python() -> list:
     articles: list = []
     limit = 20
     seed = 'https://realpython.com/'
-    r = await req.get(seed, retry=1, timeout=10, headers={"User-Agent": UA})
+    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -510,6 +510,64 @@ async def real_python() -> list:
             article['url'] = url
             article['title'] = title
             article['desc'] = ''
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(f'crawled {len(articles)} articles [{source}]')
+    return articles
+
+
+@register_online
+async def planet_python() -> list:
+    """Planet Python"""
+    source = 'Planet Python'
+    articles: list = []
+    limit = 100
+    seed = 'https://planetpython.org/rss20.xml'
+    # 避免超时, 用外部访问
+    scode = await outlands_request({
+        'method': 'get',
+        'url': seed,
+    }, 'u8')
+    items = fromstring(scode).xpath('//channel/item')
+    now = ttime()
+    for item in items[:limit]:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            guid = item.xpath('./guid/text()')
+            title = item.xpath('./title/text()')
+            description = item.xpath('./description/text()')
+            pubDate = item.xpath('./pubdate/text()')
+            if not (guid and title):
+                continue
+            url = guid[0]
+            title = title[0]
+            if description:
+                desc = fromstring(description[0]).text_content()
+                # 去掉 <>
+                desc = re.sub('<[^>]*>', ' ', desc)
+                # 只保留第一个换行前面的
+                desc = desc.split('\n', 1)[0]
+            else:
+                desc = ''
+            if pubDate:
+                raw_pub_date = pubDate[0]
+                # Wed, 22 May 2019 01:47:44 +0000
+                raw_pub_date = re.sub('^.*?, ', '', raw_pub_date).strip()
+                ts_publish = ttime(
+                    ptime(raw_pub_date, fmt='%d %b %Y %H:%M:%S %z'))
+            else:
+                ts_publish = now
+            article['ts_publish'] = ts_publish
+            article['url'] = url
+            article['title'] = title
+            article['desc'] = desc
             article['url'] = url
             article['url_key'] = get_url_key(article['url'])
             articles.append(article)
