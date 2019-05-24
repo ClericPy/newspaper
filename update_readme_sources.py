@@ -38,7 +38,7 @@ def main():
         data.append(item['desc'])
         string = ' | '.join(data)
         providers += '| ' + string + ' |\n'
-    proc = f'* 收录进度: {finish_counts} / {finish_counts + todo_counts}\n\n* =: 待收录, √: 已收录, X: 不收录, -: 入库不追更\n\n'
+    proc = f'* 收录进度: {finish_counts} / {finish_counts + todo_counts}\n\n\t> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更\n\n'
     with open('README.md', 'r', encoding='u8') as f:
         old = f.read()
         new = re.sub(
