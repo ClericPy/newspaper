@@ -16,6 +16,7 @@ from .sources import content_sources_dict
 test_spiders = []
 online_spiders = []
 history_spiders = []
+friendly_crawling_interval = 1
 req = Requests()
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
 
@@ -26,6 +27,9 @@ class null_tree:
     @classmethod
     def text_content(cls):
         return ''
+
+    def get(self, key, default=''):
+        return default
 
 
 def sort_url_query(url, reverse=False, _replace_kwargs=None):
@@ -55,6 +59,17 @@ def get_url_key(url) -> str:
         key = md5(sort_url_query(url, _replace_kwargs={'scheme': 'https'}))
         return key
     return ""
+
+
+def add_host(url, host):
+    if not host.endswith('/'):
+        host = f'{host}/'
+    return re.sub('^/', host, url)
+
+
+def shorten_desc(desc: str) -> str:
+    desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc)
+    return desc
 
 
 async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
@@ -157,7 +172,9 @@ async def python_news() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -200,7 +217,9 @@ async def python_news_history() -> list:
                 articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -276,7 +295,9 @@ async def python_weekly() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -327,7 +348,9 @@ async def python_weekly_history() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -368,7 +391,9 @@ async def pycoder_weekly() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -394,7 +419,7 @@ async def importpython() -> list:
             href = item.cssselect('div.caption>a')[0].get('href', '')
             if not href:
                 continue
-            url = re.sub('^/', 'https://importpython.com/', href)
+            url = add_host(href, 'https://importpython.com/')
             title = item.cssselect('div.caption>.well-add-card>h4')[0].text
             desc_node = item.cssselect('div.caption>div[class="col-lg-12"]')[0]
             desc = tostring(desc_node,
@@ -417,7 +442,9 @@ async def importpython() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -441,7 +468,7 @@ async def awesome_python() -> list:
                 'source': source,
                 'level': content_sources_dict[source]['level']
             }
-            url = re.sub('^/', 'https://python.libhunt.com/', href)
+            url = add_host(href, 'https://python.libhunt.com/')
             r = await req.get(url,
                               retry=2,
                               timeout=15,
@@ -472,7 +499,9 @@ async def awesome_python() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -495,7 +524,7 @@ async def real_python() -> list:
                 'level': content_sources_dict[source]['level']
             }
             href = item.cssselect('a')[0].get('href', '')
-            url = re.sub('^/', 'https://realpython.com/', href)
+            url = add_host(href, 'https://realpython.com/')
             title = item.cssselect('h2.card-title')[0].text
             pub_date_node = item.cssselect('.mr-2') or [null_tree]
             raw_pub_date = pub_date_node[0].text
@@ -516,7 +545,9 @@ async def real_python() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
 
 
@@ -553,7 +584,7 @@ async def planet_python() -> list:
                 # 去掉 <>
                 desc = re.sub('<[^>]*>', ' ', desc)
                 # 只保留第一个换行前面的
-                desc = desc.split('\n', 1)[0]
+                desc = shorten_desc(desc)
             else:
                 desc = ''
             if pubDate:
@@ -574,5 +605,80 @@ async def planet_python() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
-    logger.info(f'crawled {len(articles)} articles [{source}]')
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+async def julien_danjou() -> list:
+    """Julien Danjou"""
+    # 历史文章只要不断改页码迭代就好了
+    source = 'Julien Danjou'
+    articles: list = []
+    seed = 'https://julien.danjou.info/page/1/'
+    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    scode = r.text
+    items = fromstring(scode).cssselect('.post-feed>article.post-card')
+    # 判断发布时间如果是 1 小时前就 break
+    break_time = ttime(time.time() - 60 * 60)
+    host = 'https://julien.danjou.info/'
+    for item in items:
+        try:
+            article = {
+                'source': source,
+                'level': content_sources_dict[source]['level']
+            }
+            href = item.cssselect('a.post-card-content-link')[0].get('href', '')
+            if not href:
+                raise ValueError(f'{source} not found href from {seed}')
+            url = add_host(href, host)
+            title = (item.cssselect('h2.post-card-title') or
+                     [null_tree])[0].text
+            desc = (item.cssselect('.post-card-excerpt>p') or
+                    [null_tree])[0].text
+            if not (title and url):
+                raise ValueError(f'{source} no title {url}')
+            detail_resp = await req.get(
+                url,
+                verify=0,
+                headers={
+                    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                })
+            if not detail_resp:
+                raise ValueError(f'{source} request href failed {detail_resp}')
+            detail_scode = detail_resp.text
+            raw_pub_time = find_one(
+                'property="article:published_time" content="(.+?)"',
+                detail_scode)[1]
+            # 2019-05-06T08:58:00.000Z
+            ts_publish = ttime(ptime(raw_pub_time,
+                                     fmt='%Y-%m-%dT%H:%M:%S.000Z'))
+            cover_item = item.cssselect('img.post-card-image')
+            if cover_item:
+                cover = cover_item[0].get('src', '')
+                if cover:
+                    article['cover'] = add_host(cover, host)
+            article['ts_publish'] = ts_publish
+            article['url'] = url
+            article['title'] = title
+            article['desc'] = desc
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+            if ts_publish < break_time:
+                # 文章的发布时间超过抓取间隔, 则 break
+                break
+            # 避免给服务器造成压力
+            await asyncio.sleep(friendly_crawling_interval)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
     return articles
