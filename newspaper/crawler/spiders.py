@@ -68,7 +68,7 @@ def add_host(url, host):
 
 
 def shorten_desc(desc: str) -> str:
-    desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc)
+    desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc.strip())
     return desc
 
 
@@ -431,7 +431,6 @@ async def importpython() -> list:
             raw_time = f'{year}-{month}-{day}'
             ts_publish = ttime(ptime(raw_time, fmt='%Y-%b-%d'))
             article['ts_publish'] = ts_publish
-            article['url'] = url
             clean_title = re.sub(' - .*', '', title)
             title = f"{source} - {clean_title}"
             article['title'] = title
@@ -490,7 +489,6 @@ async def awesome_python() -> list:
             ]
             desc = '<br>'.join(descs)
             article['ts_publish'] = ts_publish
-            article['url'] = url
             article['title'] = title
             article['desc'] = desc
             article['url'] = url
@@ -536,7 +534,6 @@ async def real_python() -> list:
                 if cover:
                     article['cover'] = cover
             article['ts_publish'] = ts_publish
-            article['url'] = url
             article['title'] = title
             article['desc'] = ''
             article['url'] = url
@@ -596,7 +593,6 @@ async def planet_python() -> list:
             else:
                 ts_publish = now
             article['ts_publish'] = ts_publish
-            article['url'] = url
             article['title'] = title
             article['desc'] = desc
             article['url'] = url
@@ -664,7 +660,6 @@ async def julien_danjou() -> list:
                 if cover:
                     article['cover'] = add_host(cover, host)
             article['ts_publish'] = ts_publish
-            article['url'] = url
             article['title'] = title
             article['desc'] = desc
             article['url'] = url
@@ -678,6 +673,56 @@ async def julien_danjou() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+async def doughellmann() -> list:
+    """Doug Hellmann"""
+    source = 'Doug Hellmann'
+    articles: list = []
+    max_page = 1
+    seed = 'https://doughellmann.com/blog/page/{page}/'
+    for page in range(1, max_page + 1):
+        r = await req.get(seed.format(page=page),
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": UA})
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode = r.text
+        items = fromstring(scode).cssselect('#main>article')
+        if max_page > 1:
+            logger.info(f'{source} crawling page {page} + {len(items)}')
+        if items:
+            await asyncio.sleep(friendly_crawling_interval)
+        elif page > 1:
+            logger.info(f'{source} break for page {page}')
+            break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item.cssselect('.entry-title>a')[0].text
+                url = item.cssselect('.entry-title>a')[0].get('href')
+                desc = item.cssselect('.entry-content')[0].text_content()
+                pub_time = item.cssselect('time.entry-date')[0].get('datetime')
+                ts_publish = ttime(ptime(pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
