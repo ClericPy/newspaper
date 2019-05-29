@@ -59,15 +59,15 @@ content_sources = [{
     "url": "https://doughellmann.com/blog/",
     "level": 4,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "大名鼎鼎, 文章质量很高"
 }, {
     "title": "The Mouse Vs. The Python",
     "url": "https://www.blog.pythonlibrary.org",
     "level": 4,
     "lang": "英文",
-    "status": "=",
-    "desc": "文章质量高"
+    "status": "√",
+    "desc": "文章质量不错"
 }, {
     "title": "InfoQ",
     "url": "https://www.infoq.cn/topic/python",
