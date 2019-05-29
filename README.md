@@ -24,7 +24,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 8 / 39
+* 收录进度: 10 / 39
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -38,8 +38,8 @@
 | 6 | [Real Python](https://realpython.com/) | 4 | 英文 | <span style="color: green">√</span> | 文章质量高, 更新较少 |
 | 7 | [Planet Python](https://planetpython.org) | 4 | 英文 | <span style="color: green">√</span> | 官方推荐的博客, 虽然排版很另类 |
 | 8 | [Julien Danjou](https://julien.danjou.info) | 4 | 英文 | <span style="color: green">√</span> | 文章质量不错, 保持更新 |
-| 9 | [Doug Hellmann](https://doughellmann.com/blog/) | 4 | 英文 | <span style="color: orange">=</span> | 大名鼎鼎, 文章质量很高 |
-| 10 | [The Mouse Vs. The Python](https://www.blog.pythonlibrary.org) | 4 | 英文 | <span style="color: orange">=</span> | 文章质量高 |
+| 9 | [Doug Hellmann](https://doughellmann.com/blog/) | 4 | 英文 | <span style="color: green">√</span> | 大名鼎鼎, 文章质量很高 |
+| 10 | [The Mouse Vs. The Python](https://www.blog.pythonlibrary.org) | 4 | 英文 | <span style="color: green">√</span> | 文章质量不错 |
 | 11 | [InfoQ](https://www.infoq.cn/topic/python) | 4 | 中文 | <span style="color: orange">=</span> | 原创/译文质量 |
 | 12 | [Jeff Knupp](https://jeffknupp.com/) | 4 | 英文 | <span style="color: orange">=</span> | [墙] 热门博客 |
 | 13 | [Hacker News](https://hn.algolia.com/?query=python&sort=byPopularity&prefix&page=0&dateRange=last24h&type=story) | 4 | 英文 | <span style="color: orange">=</span> | 大名鼎鼎的 HN |

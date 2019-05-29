@@ -698,11 +698,64 @@ async def doughellmann() -> list:
         items = fromstring(scode).cssselect('#main>article')
         if max_page > 1:
             logger.info(f'{source} crawling page {page} + {len(items)}')
-        if items:
-            await asyncio.sleep(friendly_crawling_interval)
-        elif page > 1:
-            logger.info(f'{source} break for page {page}')
-            break
+            if items:
+                await asyncio.sleep(friendly_crawling_interval)
+            elif page > 1:
+                logger.info(f'{source} break for page {page}')
+                break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item.cssselect('.entry-title>a')[0].text
+                url = item.cssselect('.entry-title>a')[0].get('href')
+                desc = item.cssselect('.entry-content')[0].text_content()
+                pub_time = item.cssselect('time.entry-date')[0].get('datetime')
+                ts_publish = ttime(ptime(pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def mouse_vs_python() -> list:
+    """The Mouse Vs. The Python"""
+    source = 'The Mouse Vs. The Python'
+    articles: list = []
+    max_page = 1
+    # max_page = 101
+    seed = 'https://www.blog.pythonlibrary.org/page/{page}/'
+    for page in range(1, max_page + 1):
+        r = await req.get(seed.format(page=page),
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": UA})
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode = r.text
+        items = fromstring(scode).cssselect('#content>article')
+        if max_page > 1:
+            logger.info(f'{source} crawling page {page} + {len(items)}')
+            if items:
+                await asyncio.sleep(friendly_crawling_interval)
+            elif page > 1:
+                logger.info(f'{source} break for page {page}')
+                break
         for item in items:
             try:
                 article = {

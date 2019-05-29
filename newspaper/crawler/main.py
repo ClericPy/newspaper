@@ -68,7 +68,7 @@ async def history_workflow():
     # 确认 articles 表存在, 否则建表
     await db._ensure_article_table_exists()
     coros = [func() for func in history_spiders]
-    done, fail = await asyncio.wait(coros, timeout=120)
+    done, fail = await asyncio.wait(coros, timeout=9999)
     spider_logger.info(f'{"=" * 30}')
     if fail:
         spider_logger.warn(f'failing spiders: {len(fail)}')
