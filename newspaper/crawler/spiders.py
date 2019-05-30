@@ -6,8 +6,8 @@ import zlib
 
 from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
-from torequests.utils import (find_one, md5, parse_qsl, ptime, re, time, ttime,
-                              unparse_qsl, urlparse, urlunparse)
+from torequests.utils import (curlparse, find_one, md5, parse_qsl, ptime, re,
+                              time, ttime, unparse_qsl, urlparse, urlunparse)
 
 from ..config import global_configs
 from ..config import spider_logger as logger
@@ -576,6 +576,9 @@ async def planet_python() -> list:
                 continue
             url = guid[0]
             title = title[0]
+            if 'Python Software Foundation: ' in title:
+                # 已经单独收录过, 不需要再收录一次
+                continue
             if description:
                 desc = fromstring(description[0]).text_content()
                 # 去掉 <>
@@ -767,6 +770,59 @@ async def mouse_vs_python() -> list:
                 desc = item.cssselect('.entry-content')[0].text_content()
                 pub_time = item.cssselect('time.entry-date')[0].get('datetime')
                 ts_publish = ttime(ptime(pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def infoq_python() -> list:
+    """InfoQ"""
+    source = 'InfoQ'
+    articles: list = []
+    max_page = 1
+    # max_page = 101
+    curl_string = r'''curl 'https://www.infoq.cn/public/v1/article/getList' -H 'Origin: https://www.infoq.cn' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://www.infoq.cn/topic/python' -H 'Cookie: SERVERID=0|0|0' -H 'Connection: keep-alive' -H 'DNT: 1' --data-binary '{"type":1,"size":12,"id":50,"score":0}' --compressed'''
+    request_args = curlparse(curl_string)
+    for page in range(1, max_page + 1):
+        r = await req.request(retry=1, timeout=20, **request_args)
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        items = r.json().get('data') or []
+        if max_page > 1:
+            logger.info(f'{source} crawling page {page} + {len(items)}')
+            if items:
+                await asyncio.sleep(friendly_crawling_interval)
+                # 调整上一页最后一个 score 实现翻页
+                data = json.loads(request_args['data'])
+                data['score'] = items[-1]['score']
+                request_args['data'] = json.dumps(data).encode('u8')
+            elif page > 1:
+                logger.info(f'{source} break for page {page}')
+                break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item['article_title']
+                url = f"https://www.infoq.cn/article/{item['uuid']}"
+                desc = item['article_summary']
+                ts_publish = ttime(item['publish_time'])
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = shorten_desc(desc)

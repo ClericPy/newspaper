@@ -47,6 +47,7 @@ class Storage(object, metaclass=abc.ABCMeta):
             for ensure_key in ('url_key', 'title'):
                 if not article.get(ensure_key):
                     continue
+            article['desc'] = article['desc'].strip()
             article.setdefault('cover', '')
             article.setdefault('desc', '')
             article.setdefault('source', 'unknown')
@@ -56,6 +57,8 @@ class Storage(object, metaclass=abc.ABCMeta):
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
                 article['desc'])
+            article['title'] = article['title'].strip()
+            article['desc'] = article['desc'].strip()
             valid_articles.append(article)
         return valid_articles
 
