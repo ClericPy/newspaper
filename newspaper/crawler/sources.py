@@ -73,8 +73,8 @@ content_sources = [{
     "url": "https://www.infoq.cn/topic/python",
     "level": 4,
     "lang": "中文",
-    "status": "=",
-    "desc": "原创/译文质量"
+    "status": "√",
+    "desc": "原创/译文的质量不错"
 }, {
     "title": "Jeff Knupp",
     "url": "https://jeffknupp.com/",
