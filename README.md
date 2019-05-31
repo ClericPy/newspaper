@@ -24,7 +24,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 11 / 39
+* 收录进度: 12 / 38
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -41,8 +41,8 @@
 | 9 | [Doug Hellmann](https://doughellmann.com/blog/) | 4 | 英文 | <span style="color: green">√</span> | 大名鼎鼎, 文章质量很高 |
 | 10 | [The Mouse Vs. The Python](https://www.blog.pythonlibrary.org) | 4 | 英文 | <span style="color: green">√</span> | 文章质量不错 |
 | 11 | [InfoQ](https://www.infoq.cn/topic/python) | 4 | 中文 | <span style="color: green">√</span> | 原创/译文的质量不错 |
-| 12 | [Jeff Knupp](https://jeffknupp.com/) | 4 | 英文 | <span style="color: orange">=</span> | [墙] 热门博客 |
-| 13 | [Hacker News](https://hn.algolia.com/?query=python&sort=byPopularity&prefix&page=0&dateRange=last24h&type=story) | 4 | 英文 | <span style="color: orange">=</span> | 大名鼎鼎的 HN |
+| 12 | [Jeff Knupp](https://jeffknupp.com/) | 4 | 英文 | <span style="color: red">X</span> | [墙] 热门博客, 2018以后不更新了, 并且 planetpython 有, 暂不收录 |
+| 13 | [Hacker News](https://hn.algolia.com/?query=python&sort=byPopularity&prefix&page=0&dateRange=last24h&type=story) | 4 | 英文 | <span style="color: green">√</span> | 大名鼎鼎的 HN |
 | 14 | [Python Insider](https://blog.python.org/) | 3 | 英文 | <span style="color: orange">=</span> | 官方开发进度, 被官博包含, 所以不收. |
 | 15 | [Brett Cannon](https://snarky.ca/) | 3 | 英文 | <span style="color: orange">=</span> | 核心开发者, 头像一看就眼熟啊 |
 | 16 | [Encode](https://www.encode.io/) | 3 | 英文 | <span style="color: orange">=</span> | 知名 Python 开源组织 |

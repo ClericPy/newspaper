@@ -68,6 +68,8 @@ def add_host(url, host):
 
 
 def shorten_desc(desc: str) -> str:
+    if not desc:
+        return ''
     desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc.strip())
     return desc
 
@@ -700,11 +702,11 @@ async def doughellmann() -> list:
         scode = r.text
         items = fromstring(scode).cssselect('#main>article')
         if max_page > 1:
-            logger.info(f'{source} crawling page {page} + {len(items)}')
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
             if items:
                 await asyncio.sleep(friendly_crawling_interval)
             elif page > 1:
-                logger.info(f'{source} break for page {page}')
+                logger.info(f'{source} break for page {page} has no items')
                 break
         for item in items:
             try:
@@ -753,11 +755,11 @@ async def mouse_vs_python() -> list:
         scode = r.text
         items = fromstring(scode).cssselect('#content>article')
         if max_page > 1:
-            logger.info(f'{source} crawling page {page} + {len(items)}')
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
             if items:
                 await asyncio.sleep(friendly_crawling_interval)
             elif page > 1:
-                logger.info(f'{source} break for page {page}')
+                logger.info(f'{source} break for page {page} has no items')
                 break
         for item in items:
             try:
@@ -803,7 +805,7 @@ async def infoq_python() -> list:
             return articles
         items = r.json().get('data') or []
         if max_page > 1:
-            logger.info(f'{source} crawling page {page} + {len(items)}')
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
             if items:
                 await asyncio.sleep(friendly_crawling_interval)
                 # 调整上一页最后一个 score 实现翻页
@@ -811,7 +813,7 @@ async def infoq_python() -> list:
                 data['score'] = items[-1]['score']
                 request_args['data'] = json.dumps(data).encode('u8')
             elif page > 1:
-                logger.info(f'{source} break for page {page}')
+                logger.info(f'{source} break for page {page} has no items')
                 break
         for item in items:
             try:
@@ -823,6 +825,80 @@ async def infoq_python() -> list:
                 url = f"https://www.infoq.cn/article/{item['uuid']}"
                 desc = item['article_summary']
                 ts_publish = ttime(item['publish_time'])
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def hn_python() -> list:
+    """Hacker News"""
+    source = 'Hacker News'
+    articles: list = []
+    max_page = 999
+    # 默认收录 24 小时内的 2 points 以上
+    min_points = 2
+    now_ts = int(time.time())
+    ts_start = now_ts - 86400
+    ts_end = now_ts
+    # 历史文章收录 90 天内的历史文章, 对方有个每次 query 1000 的上限配置 paginationLimitedTo
+    # 如果需要更久的, 不断修改起止时间就可以了
+    # ts_start = now_ts - 86400 * 90
+    # ts_end = now_ts
+    per_page = 100
+    api = 'https://hn.algolia.com/api/v1/search_by_date'
+    # tags=story&query=python&numericFilters=created_at_i%3E1553174400,points%3E1&page=2&hitsPerPage=10
+    params = {
+        'tags': 'story',
+        'query': 'python',
+        'numericFilters': f'created_at_i>={ts_start},created_at_i<={ts_end},points>={min_points}',
+        'page': 0,
+        'hitsPerPage': per_page,
+    }
+    for page in range(max_page):
+        params['page'] = page
+        r = await req.get(api,
+                          params=params,
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": UA})
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        items = r.json().get('hits') or []
+        if not items:
+            break
+        if page > 0:
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            if items:
+                await asyncio.sleep(friendly_crawling_interval)
+            elif page > 0:
+                logger.info(f'{source} break for page {page} has no items')
+                break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item['title']
+                url = item['url'] or ''
+                if not url:
+                    url = f'https://news.ycombinator.com/item?id={item["objectID"]}'
+                desc = item['story_text'] or ''
+                ts_publish = ttime(item['created_at_i'])
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = shorten_desc(desc)
