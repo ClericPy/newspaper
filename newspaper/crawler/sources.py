@@ -80,14 +80,14 @@ content_sources = [{
     "url": "https://jeffknupp.com/",
     "level": 4,
     "lang": "英文",
-    "status": "=",
-    "desc": "[墙] 热门博客"
+    "status": "X",
+    "desc": "[墙] 热门博客, 2018以后不更新了, 并且 planetpython 有, 暂不收录"
 }, {
     "title": "Hacker News",
     "url": "https://hn.algolia.com/?query=python&sort=byPopularity&prefix&page=0&dateRange=last24h&type=story",
     "level": 4,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "大名鼎鼎的 HN"
 }, {
     "title": "Python Insider",
