@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<!-- 省流量的极简乞丐版前端, 以后再考虑优化成使用 vue 框架的版本 -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Python Daily: {{title|safe}}</title>
+    <style>
+        a[href^="http"]:empty::before {
+            content: attr(href);
+        }
+
+        html,
+        body {
+            margin: 0 0 0 0;
+        }
+
+        form>p {
+            margin: 5px 0 5px 0;
+        }
+
+        input {
+            border-color: #ecf0f1;
+        }
+
+        a {
+            color: #2e3135;
+            text-decoration: none;
+        }
+
+        #params,
+        #params-toggle {
+            display: none;
+        }
+
+        div.main-body {
+            width: 55%;
+            margin: 0 auto;
+        }
+
+        #params-toggle:checked+#params {
+            display: block;
+        }
+
+        div.articles-main {
+            display: flex;
+            flex-direction: row-reverse;
+            flex-wrap: nowrap;
+            width: 100%;
+
+        }
+
+        div.container {
+            width: 100%;
+        }
+
+        div.articles {
+            width: 100%;
+            /* margin: 0 auto; */
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: stretch;
+            align-content: stretch;
+            /* padding: 10px 10px 0 10px; */
+
+            /* background-color: var(--box-background-color); */
+            /* border-radius: var(--box-border-radius); */
+            /* box-shadow: 0 2px 3px rgba(0, 0, 0, .1); */
+            /* border-bottom: 1px solid #e2e2e2; */
+        }
+
+        div.head {
+            background-color: #34495e;
+            margin: auto;
+            padding: 2px;
+            text-align: center;
+        }
+
+        div.head a {
+            color: #ecf0f1;
+            text-decoration: none;
+            text-shadow: black 8px 8px 8px;
+        }
+
+        div.article {
+            margin: 5px 0 5px 0;
+            padding: 0 1.5em 0px 1.5em;
+
+            border-radius: 2px;
+            box-shadow: 1px 5px 15px rgba(0, 0, 0, .1);
+        }
+
+        div.article .title {
+            margin-bottom: 0;
+        }
+
+        div.article .desc {
+            color: #999;
+            padding-left: 0.2em;
+            font-size: 0.9em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        div.article .article-source {
+            color: #999;
+            font-size: 0.9em;
+            padding: 8px 0 0 0;
+            border-top: 1px dotted rgba(0, 0, 0, .1);
+        }
+
+        @media (max-width: 900px) {
+            div.articles-main {
+                flex-direction: column;
+            }
+
+            div.main-body {
+                width: 88%;
+                margin: 0 auto;
+            }
+
+            div.container {
+                width: 100%;
+            }
+
+            div.side {
+                width: 100%;
+                margin: 0 auto;
+            }
+        }
+
+        #nextpage {
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .star_level_1,
+        .star_level_2,
+        .star_level_3 {
+            color: #f1c40f;
+        }
+
+        .star_level_4 {
+            color: #f39c12;
+        }
+
+        .star_level_5 {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-body">
+        <div class="head">
+            <h1><a href="/newspaper/daily.python/today">Python Daily: {{title|safe}}</a></h1>
+        </div>
+        <div class="articles-main">
+
+            <div class="side">
+            </div>
+            <div class="container">
+                <div class="articles" id="articles">
+                </div>
+            </div>
+        </div>
+        <br><br><br><br>
+        <hr>
+    </div>
+    <script>
+        function fill_data(data) {
+            var articles = data.articles
+            next_url = data['next_url'] || ''
+            const level_stars = ['★', '★★', '★★★', '★★★★', '★★★★★']
+            var node = document.getElementById('articles')
+            for (let index = 0; index < articles.length; index++) {
+                const item = articles[index];
+                var child = document.createElement('div')
+                child.setAttribute('class', 'article')
+                child.setAttribute('article_id', item.id)
+                let stars = level_stars[item.level - 1]
+                child.innerHTML =
+                    `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
+                    <p class="desc" id="desc_${item.id}" onclick="show_all_desc('desc_${item.id}')">${item.desc}</p>
+                    <p class="review">${item.review}</p>
+                    <p class="article-source">
+                        <span class="ts_publish">${item.ts_publish}</span> - 
+                        <span class="stars star_level_${item.level}">${stars}</span> - 
+                        <span class="source">「${item.source}」</span>
+                    </p>
+
+                    `
+                node.appendChild(child)
+            }
+            if (!next_url) {
+                var np = document.getElementById('nextpage')
+                np.style.cursor = 'not-allowed'
+                np.innerText = 'No more'
+                np.onclick = null
+            }
+        }
+
+        function show_all_desc(desc_id) {
+            var desc_element = document.getElementById(desc_id)
+            desc_element.style['-webkit-line-clamp'] = 999;
+        }
+
+        function start_up() {
+            var daily_python_data = `{{articles|safe}}`
+            daily_python_data = JSON.parse(daily_python_data)
+            fill_data(daily_python_data)
+        }
+        window.onload = start_up
+    </script>
+</body>
+
+</html>
