@@ -94,15 +94,15 @@ content_sources = [{
     "url": "https://blog.python.org/",
     "level": 3,
     "lang": "英文",
-    "status": "=",
-    "desc": "官方开发进度, 被官博包含, 所以不收."
+    "status": "X",
+    "desc": "官方开发进度, 被官博和 planetPython 包含, 所以不需要收录."
 }, {
     "title": "Brett Cannon",
     "url": "https://snarky.ca/",
     "level": 3,
     "lang": "英文",
     "status": "=",
-    "desc": "核心开发者, 头像一看就眼熟啊"
+    "desc": "核心开发者"
 }, {
     "title": "Encode",
     "url": "https://www.encode.io/",

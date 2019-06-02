@@ -284,6 +284,7 @@ class MySQLStorage(Storage):
                 raise ValueError(f'日期参数的格式不对 {date}, 例: 2019-05-14')
             start_time = f'{date} 00:00:00'
             end_time = f'{date} 23:59:59'
+            limit = 9999
 
         if order_by not in self.articles_table_columns:
             order_by = 'ts_publish'

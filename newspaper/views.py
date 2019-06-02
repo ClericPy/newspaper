@@ -1,9 +1,11 @@
+import json
 import re
 import traceback
 from urllib.parse import urlencode
 
 from starlette.responses import (JSONResponse, PlainTextResponse,
                                  RedirectResponse)
+from torequests.utils import ttime
 
 from .api import app
 
@@ -83,6 +85,21 @@ async def articles_query(req):
         return PlainTextResponse('未实现')
     else:
         return PlainTextResponse('未实现')
+
+
+@app.route("/newspaper/daily.python/{date}")
+async def daily_python(req):
+    """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
+    date = req.path_params['date']
+    if date == 'today':
+        date = ttime()[:10]
+    params = dict(req.query_params)
+    result = await app.db.query_articles(date=date, **params)
+    return app.templates.TemplateResponse('daily_python.html', {
+        "request": req,
+        "articles": json.dumps(result),
+        "title": date
+    })
 
 
 @app.route("/newspaper/articles.cache.clear")
