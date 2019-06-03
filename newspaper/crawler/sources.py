@@ -43,10 +43,10 @@ content_sources = [{
 }, {
     "title": "Planet Python",
     "url": "https://planetpython.org",
-    "level": 4,
+    "level": 3,
     "lang": "英文",
     "status": "√",
-    "desc": "官方推荐的博客, 虽然排版很另类"
+    "desc": "官方推荐的博客, 收录了很多博主"
 }, {
     "title": "Julien Danjou",
     "url": "https://julien.danjou.info",
@@ -101,7 +101,7 @@ content_sources = [{
     "url": "https://snarky.ca/",
     "level": 3,
     "lang": "英文",
-    "status": "=",
+    "status": "√",
     "desc": "核心开发者"
 }, {
     "title": "Encode",

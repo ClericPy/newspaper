@@ -912,3 +912,83 @@ async def hn_python() -> list:
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
     return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def snarky() -> list:
+    """Brett Cannon"""
+    source = 'Brett Cannon'
+    articles: list = []
+    max_page = 1
+    api = 'https://snarky.ca/page/{page}/'
+    # 判断发布时间如果是 1 小时前就 break
+    break_time = ttime(time.time() - 60 * 60)
+    host = 'https://snarky.ca/'
+    for page in range(1, max_page + 1):
+        seed = api.format(page=page)
+        r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode = r.text
+        items = fromstring(scode).cssselect('.post-feed>article.post-card')
+        if not items:
+            break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                href = item.cssselect('a.post-card-content-link')[0].get(
+                    'href', '')
+                if not href:
+                    raise ValueError(f'{source} not found href from {seed}')
+                url = add_host(href, host)
+                title = (item.cssselect('h2.post-card-title') or
+                         [null_tree])[0].text
+                desc = (item.cssselect('.post-card-excerpt>p') or
+                        [null_tree])[0].text
+                if not (title and url):
+                    raise ValueError(f'{source} no title {url}')
+                detail_resp = await req.get(
+                    url,
+                    verify=0,
+                    headers={
+                        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                    })
+                if not detail_resp:
+                    raise ValueError(
+                        f'{source} request href failed {detail_resp}')
+                detail_scode = detail_resp.text
+                raw_pub_time = find_one(
+                    'property="article:published_time" content="(.+?)"',
+                    detail_scode)[1]
+                # 2019-05-06T08:58:00.000Z
+                ts_publish = ttime(
+                    ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S.000Z'))
+                cover_item = item.cssselect('img.post-card-image')
+                if cover_item:
+                    cover = cover_item[0].get('src', '')
+                    if cover:
+                        article['cover'] = add_host(cover, host)
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+                if ts_publish < break_time:
+                    # 文章的发布时间超过抓取间隔, 则 break
+                    break
+                # 避免给服务器造成压力
+                await asyncio.sleep(friendly_crawling_interval)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
