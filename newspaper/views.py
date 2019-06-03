@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 from starlette.responses import (JSONResponse, PlainTextResponse,
                                  RedirectResponse)
-from torequests.utils import ttime
+from torequests.utils import time, ttime
 
 from .api import app
 
@@ -93,6 +93,8 @@ async def daily_python(req):
     date = req.path_params['date']
     if date == 'today':
         date = ttime()[:10]
+    elif date == 'yesterday':
+        date = ttime(time.time() - 86400)[:10]
     params = dict(req.query_params)
     result = await app.db.query_articles(date=date, **params)
     return app.templates.TemplateResponse('daily_python.html', {
