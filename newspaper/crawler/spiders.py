@@ -17,7 +17,8 @@ test_spiders = []
 online_spiders = []
 history_spiders = []
 friendly_crawling_interval = 1
-req = Requests()
+# default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
+req = Requests(default_host_frequency=(1, 3))
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
 
 
@@ -71,6 +72,7 @@ def shorten_desc(desc: str) -> str:
     if not desc:
         return ''
     desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc.strip())
+    desc = re.sub('<[^>]+>', '', desc)
     return desc
 
 
@@ -673,8 +675,6 @@ async def julien_danjou() -> list:
             if ts_publish < break_time:
                 # 文章的发布时间超过抓取间隔, 则 break
                 break
-            # 避免给服务器造成压力
-            await asyncio.sleep(friendly_crawling_interval)
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
@@ -703,9 +703,7 @@ async def doughellmann() -> list:
         items = fromstring(scode).cssselect('#main>article')
         if max_page > 1:
             logger.info(f'{source} crawling page {page}, + {len(items)} items')
-            if items:
-                await asyncio.sleep(friendly_crawling_interval)
-            elif page > 1:
+            if not items and page > 1:
                 logger.info(f'{source} break for page {page} has no items')
                 break
         for item in items:
@@ -756,11 +754,10 @@ async def mouse_vs_python() -> list:
         items = fromstring(scode).cssselect('#content>article')
         if max_page > 1:
             logger.info(f'{source} crawling page {page}, + {len(items)} items')
-            if items:
-                await asyncio.sleep(friendly_crawling_interval)
-            elif page > 1:
+        if not items:
+            if page > 1:
                 logger.info(f'{source} break for page {page} has no items')
-                break
+            break
         for item in items:
             try:
                 article = {
@@ -807,7 +804,6 @@ async def infoq_python() -> list:
         if max_page > 1:
             logger.info(f'{source} crawling page {page}, + {len(items)} items')
             if items:
-                await asyncio.sleep(friendly_crawling_interval)
                 # 调整上一页最后一个 score 实现翻页
                 data = json.loads(request_args['data'])
                 data['score'] = items[-1]['score']
@@ -882,9 +878,7 @@ async def hn_python() -> list:
             break
         if page > 0:
             logger.info(f'{source} crawling page {page}, + {len(items)} items')
-            if items:
-                await asyncio.sleep(friendly_crawling_interval)
-            elif page > 0:
+            if not items and page > 0:
                 logger.info(f'{source} break for page {page} has no items')
                 break
         for item in items:
@@ -983,8 +977,67 @@ async def snarky() -> list:
                 if ts_publish < break_time:
                     # 文章的发布时间超过抓取间隔, 则 break
                     break
-                # 避免给服务器造成压力
-                await asyncio.sleep(friendly_crawling_interval)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def jiqizhixin() -> list:
+    """机器之心"""
+    source = '机器之心'
+    articles: list = []
+    max_page = 1
+    # 有 cookie 和 防跨域验证
+    curl_string = r'''curl 'https://www.jiqizhixin.com/api/v1/search?type=articles&page=1&keywords=python&published=0&is_exact_match=false&search_internet=true&sort=time' -H 'Cookie: ahoy_visitor=1; _Synced_session=2' -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Accept: */*' -H 'Referer: https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time' -H 'X-Requested-With: XMLHttpRequest' -H 'If-None-Match: W/"3e034aa5e8cb79dd92652f5ba70a65a5"' -H 'Connection: keep-alive' --compressed'''
+    request_args = curlparse(curl_string)
+    for page in range(1, max_page + 1):
+        # 部分时候请求返回结果为空, 需要重试
+        for _ in range(3):
+            r = await req.request(retry=1, timeout=20, **request_args)
+            if not r:
+                logger.error(f'{source} crawl failed: {r}, {r.text}')
+                return articles
+            try:
+                items = r.json().get('articles', {}).get('nodes', [])
+                break
+            except json.decoder.JSONDecodeError:
+                await asyncio.sleep(2)
+                continue
+        else:
+            # 试了 3 次都没 break, 放弃
+            return articles
+        if max_page > 1:
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            # 翻页, 修改 page
+            curl_string = re.sub(r'&page=\d+', f'&page={page + 1}', curl_string)
+            request_args = curlparse(curl_string)
+        if not r.json().get('articles', {}).get('hasNextPage'):
+            break
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                desc = item['content']
+                # 2019/05/27 00:09
+                article['ts_publish'] = ttime(
+                    ptime(item['published_at'], fmt='%Y/%m/%d %H:%M'))
+                title = item.get('title') or ''
+                article['title'] = title.replace('<em>Python</em>', '').replace(
+                    '<em>python</em>', '')
+                article['cover'] = item.get('cover_image_url') or ''
+                article['desc'] = shorten_desc(desc)
+                article['url'] = item['path']
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break

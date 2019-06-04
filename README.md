@@ -24,7 +24,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 12 / 37
+* 收录进度: 14 / 36
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -44,9 +44,9 @@
 | 12 | [Jeff Knupp](https://jeffknupp.com/) | 4 | 英文 | <span style="color: red">X</span> | [墙] 热门博客, 2018以后不更新了, 并且 planetpython 有, 暂不收录 |
 | 13 | [Hacker News](https://hn.algolia.com/?query=python&sort=byPopularity&prefix&page=0&dateRange=last24h&type=story) | 4 | 英文 | <span style="color: green">√</span> | 大名鼎鼎的 HN |
 | 14 | [Python Insider](https://blog.python.org/) | 3 | 英文 | <span style="color: red">X</span> | 官方开发进度, 被官博和 planetPython 包含, 所以不需要收录. |
-| 15 | [Brett Cannon](https://snarky.ca/) | 3 | 英文 | <span style="color: orange">=</span> | 核心开发者 |
-| 16 | [Encode](https://www.encode.io/) | 3 | 英文 | <span style="color: orange">=</span> | 知名 Python 开源组织 |
-| 17 | [机器之心](https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time) | 3 | 中文 | <span style="color: orange">=</span> | 知名公众号 |
+| 15 | [Brett Cannon](https://snarky.ca/) | 3 | 英文 | <span style="color: green">√</span> | 核心开发者 |
+| 16 | [Encode](https://www.encode.io/) | 3 | 英文 | <span style="color: red">X</span> | 知名 Python 开源组织, 文章太少, 暂不收录 |
+| 17 | [机器之心](https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time) | 3 | 中文 | <span style="color: green">√</span> | 知名公众号 |
 | 18 | [Python猫](https://zhuanlan.zhihu.com/pythonCat) | 3 | 中文 | <span style="color: orange">=</span> | 2018 年末比较热情的博主, 原创 |
 | 19 | [Python之美](https://zhuanlan.zhihu.com/python-cn) | 3 | 中文 | <span style="color: orange">=</span> | 早期文章较多, 创业以后更新不太多了 |
 | 20 | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3 | 中文 | <span style="color: orange">=</span> | 推文类站点. 虽然原创不多, 但是质量还算可以 |
