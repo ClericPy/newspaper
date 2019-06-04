@@ -987,13 +987,13 @@ async def snarky() -> list:
 
 
 @register_online
-@register_history
+# @register_history
 # @register_test
 async def jiqizhixin() -> list:
     """机器之心"""
     source = '机器之心'
     articles: list = []
-    max_page = 1111
+    max_page = 1
     # 有 cookie 和 防跨域验证
     curl_string = r'''curl 'https://www.jiqizhixin.com/api/v1/search?type=articles&page=1&keywords=python&published=0&is_exact_match=false&search_internet=true&sort=time' -H 'Cookie: ahoy_visitor=1; _Synced_session=2' -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Accept: */*' -H 'Referer: https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time' -H 'X-Requested-With: XMLHttpRequest' -H 'If-None-Match: W/"3e034aa5e8cb79dd92652f5ba70a65a5"' -H 'Connection: keep-alive' --compressed'''
     request_args = curlparse(curl_string)
