@@ -108,14 +108,14 @@ content_sources = [{
     "url": "https://www.encode.io/",
     "level": 3,
     "lang": "英文",
-    "status": "=",
-    "desc": "知名 Python 开源组织"
+    "status": "X",
+    "desc": "知名 Python 开源组织, 文章太少, 暂不收录"
 }, {
     "title": "机器之心",
     "url": "https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time",
     "level": 3,
     "lang": "中文",
-    "status": "=",
+    "status": "√",
     "desc": "知名公众号"
 }, {
     "title": "Python猫",
