@@ -1031,10 +1031,12 @@ async def jiqizhixin() -> list:
                 article['ts_publish'] = ttime(
                     ptime(item['published_at'], fmt='%Y/%m/%d %H:%M'))
                 title = item.get('title') or ''
-                article['title'] = title.replace('<em>Python</em>', '').replace(
-                    '<em>python</em>', '')
+                title = title.replace('<em>Python</em>',
+                                      'Python').replace('<em>python</em>', 'Python')
+                print(article['ts_publish'], title)
+                article['title'] = title
                 article['cover'] = item.get('cover_image_url') or ''
-                article['desc'] = shorten_desc(desc)
+                article['desc'] = f'作者: {item["author"]}. {shorten_desc(desc)}'
                 article['url'] = item['path']
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
