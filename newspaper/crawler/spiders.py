@@ -844,8 +844,8 @@ async def hn_python() -> list:
     source = 'Hacker News'
     articles: list = []
     max_page = 999
-    # 默认收录 24 小时内的 2 points 以上
-    min_points = 2
+    # 默认收录 24 小时内的 5 points 以上
+    min_points = 5
     now_ts = int(time.time())
     ts_start = now_ts - 86400
     ts_end = now_ts
