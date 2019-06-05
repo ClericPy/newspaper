@@ -132,6 +132,15 @@
             border-top: 1px dotted rgba(0, 0, 0, .1);
         }
 
+        .is_new_article {
+            color: white;
+            background-color: #5dade2;
+            font-weight: bold;
+            /* border: 2px solid #e0e0e0; */
+            padding: 2px 4px 2px 4px;
+            font-size: 0.8em;
+        }
+
         @media (max-width: 900px) {
             div.articles-main {
                 flex-direction: column;
@@ -250,7 +259,28 @@
             return true
         }
 
+        function get_time(offset) {
+            var d = new Date(new Date().getTime() + offset);
+            var year = d.getFullYear();
+            var month = change(d.getMonth() + 1);
+            var day = change(d.getDate());
+            var hour = change(d.getHours());
+            var minute = change(d.getMinutes());
+            var second = change(d.getSeconds());
+
+            function change(t) {
+                if (t < 10) {
+                    return "0" + t;
+                } else {
+                    return t;
+                }
+            }
+            return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+        }
+
         function fill_data(data) {
+            // 一小时内算新的
+            var ts_before_1_hour = get_time(-3600000 * 1)
             var articles = data.articles
             fill_form_params(data)
             next_url = data['next_url'] || ''
@@ -263,12 +293,14 @@
                 child.setAttribute('article_id', item.id)
                 let stars = level_stars[item.level - 1]
                 let host = item.url.split('/')[2] || ''
+                let is_new = item.ts_create > ts_before_1_hour ? '<span class="is_new_article">New</span>' : ''
                 child.innerHTML =
                     `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
                     <p class="desc" id="desc_${item.id}" onclick="show_all_desc('desc_${item.id}')">${item.desc}</p>
                     <p class="review">${item.review}</p>
                     <p class="article-source">
-                        <span class="ts_publish">${item.ts_publish}</span> - 
+                        ${is_new} <span class="ts_publish">${item.ts_publish}</span> - 
+
                         <span class="stars star_level_${item.level}">${stars}</span> - 
                         <span class="source"><a href="?source=${item.source}">🔍</a> <a href="/newspaper/source.redirect?name=${item.source}" target="_blank">${item.source}</a></span> - 
                         <span class="host">${host}</span>
