@@ -8,6 +8,7 @@ from starlette.responses import (JSONResponse, PlainTextResponse,
 from torequests.utils import time, ttime
 
 from .api import app
+from .crawler.sources import content_sources_dict
 
 
 class APIError(Exception):
@@ -59,6 +60,20 @@ async def index(req):
     return PlainTextResponse('NotImplemented')
 
 
+@app.route("/newspaper/articles.cache.clear")
+async def articles_query_cache_clear(req):
+    if req.client.host == '127.0.0.1':
+        app.db.query_articles.cache_clear()
+        return PlainTextResponse('ok')
+    else:
+        return PlainTextResponse('fail')
+
+
+@app.route('/favicon.ico')
+async def redirect_ico(req):
+    return RedirectResponse('/static/favicon.ico', 301)
+
+
 @app.route("/newspaper/articles.query.{output}")
 async def articles_query(req):
     """搜索文章
@@ -104,15 +119,8 @@ async def daily_python(req):
     })
 
 
-@app.route("/newspaper/articles.cache.clear")
-async def articles_query_cache_clear(req):
-    if req.client.host == '127.0.0.1':
-        app.db.query_articles.cache_clear()
-        return PlainTextResponse('ok')
-    else:
-        return PlainTextResponse('fail')
-
-
-@app.route('/favicon.ico')
-async def redirect_ico(req):
-    return RedirectResponse('/static/favicon.ico', 301)
+@app.route("/newspaper/source.redirect")
+async def source_redirect(req):
+    """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
+    name = req.query_params['name']
+    return RedirectResponse(content_sources_dict.get(name, {}).get('url', '/newspaper/articles.query.html'), 302)
