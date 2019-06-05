@@ -123,4 +123,7 @@ async def daily_python(req):
 async def source_redirect(req):
     """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
     name = req.query_params['name']
-    return RedirectResponse(content_sources_dict.get(name, {}).get('url', '/newspaper/articles.query.html'), 302)
+    return RedirectResponse(
+        content_sources_dict.get(name,
+                                 {}).get('url',
+                                         '/newspaper/articles.query.html'), 302)
