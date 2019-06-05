@@ -262,6 +262,7 @@
                 child.setAttribute('class', 'article')
                 child.setAttribute('article_id', item.id)
                 let stars = level_stars[item.level - 1]
+                let host = item.url.split('/')[2] || ''
                 child.innerHTML =
                     `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
                     <p class="desc" id="desc_${item.id}" onclick="show_all_desc('desc_${item.id}')">${item.desc}</p>
@@ -269,7 +270,8 @@
                     <p class="article-source">
                         <span class="ts_publish">${item.ts_publish}</span> - 
                         <span class="stars star_level_${item.level}">${stars}</span> - 
-                        <span class="source">「${item.source}」</span>
+                        <span class="source">「${item.source}」</span> - 
+                        <span class="host">${host}</span>
                     </p>
 
                     `

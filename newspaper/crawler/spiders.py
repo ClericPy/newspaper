@@ -1032,7 +1032,8 @@ async def jiqizhixin() -> list:
                     ptime(item['published_at'], fmt='%Y/%m/%d %H:%M'))
                 title = item.get('title') or ''
                 title = title.replace('<em>Python</em>',
-                                      'Python').replace('<em>python</em>', 'Python')
+                                      'Python').replace('<em>python</em>',
+                                                        'Python')
                 article['title'] = title
                 article['cover'] = item.get('cover_image_url') or ''
                 article['desc'] = f'「{item["author"]}」 {shorten_desc(desc)}'
