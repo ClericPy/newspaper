@@ -178,45 +178,64 @@
         <hr>
     </div>
     <script>
+        function get_time(offset) {
+            var d = new Date(new Date().getTime() + offset);
+            var year = d.getFullYear();
+            var month = change(d.getMonth() + 1);
+            var day = change(d.getDate());
+            var hour = change(d.getHours());
+            var minute = change(d.getMinutes());
+            var second = change(d.getSeconds());
+
+            function change(t) {
+                if (t < 10) {
+                    return "0" + t;
+                } else {
+                    return t;
+                }
+            }
+            return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+        }
+
         function fill_data(data) {
+            // 一小时内算新的
+            var ts_before_1_hour = get_time(-3600000 * 1)
             var articles = data.articles
-            next_url = data['next_url'] || ''
+            // fill_form_params(data)
             const level_stars = ['★', '★★', '★★★', '★★★★', '★★★★★']
             var node = document.getElementById('articles')
             for (let index = 0; index < articles.length; index++) {
                 const item = articles[index];
                 var child = document.createElement('div')
+                child.setAttribute('id', '_' + item.id)
                 child.setAttribute('class', 'article')
-                child.setAttribute('article_id', item.id)
                 let stars = level_stars[item.level - 1]
+                let host = item.url.split('/')[2] || ''
+                let is_new = item.ts_create > ts_before_1_hour ? '<span class="is_new_article">New</span>' : ''
                 child.innerHTML =
-                    `<h3 class="title"><a href="${item.url}" id="${item.id}" target="_blank">${item.title}</a></h3>
-                    <p class="desc" id="desc_${item.id}" onclick="show_all_desc('desc_${item.id}')">${item.desc}</p>
+                    `<h3 class="title"><a href="${item.url}" target="_blank">${item.title}</a></h3>
+                    <p class="desc" onclick="show_all_desc('_${item.id}')">${item.desc}</p>
                     <p class="review">${item.review}</p>
                     <p class="article-source">
-                        <span class="ts_publish">${item.ts_publish}</span> - 
+                        ${is_new} <span class="ts_publish">${item.ts_publish}</span> - 
+
                         <span class="stars star_level_${item.level}">${stars}</span> - 
-                        <span class="source">「${item.source}」</span>
+                        <span class="source"><a href="?source=${item.source}">🔍</a> <a href="/newspaper/source.redirect?name=${item.source}" target="_blank">${item.source}</a></span> - 
+                        <span class="host">${host}</span>
                     </p>
 
                     `
                 node.appendChild(child)
             }
-            if (!next_url) {
-                var np = document.getElementById('nextpage')
-                np.style.cursor = 'not-allowed'
-                np.innerText = 'No more'
-                np.onclick = null
-            }
         }
 
-        function show_all_desc(desc_id) {
-            var desc_element = document.getElementById(desc_id)
+        function show_all_desc(article_id) {
+            var desc_element = document.querySelector('#' + article_id + '>p.desc')
             desc_element.style['-webkit-line-clamp'] = 999;
         }
 
         function start_up() {
-            var daily_python_data = `{{articles|safe}}`
+            var daily_python_data = String.raw`{{articles|safe}}`
             daily_python_data = JSON.parse(daily_python_data)
             fill_data(daily_python_data)
         }
