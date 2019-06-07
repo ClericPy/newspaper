@@ -51,13 +51,14 @@ async def online_workflow():
         async with conn.cursor() as cursor:
             for task in done:
                 articles = task.result()
-                # print(result)
                 if articles:
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
-                    spider_logger.info(
-                        f'+ {insert_result} articles. [{articles[0].get("source")}]'
-                    )
+                else:
+                    insert_result = 0
+                spider_logger.info(
+                    f'+ {insert_result} / {len(articles)} articles.\t[{task._coro.__name__}]{"" if articles else " ?????????"}'
+                )
     await clear_cache()
 
 
@@ -77,11 +78,12 @@ async def history_workflow():
         async with conn.cursor() as cursor:
             for task in done:
                 articles = task.result()
-                # print(result)
                 if articles:
                     insert_result = await db.add_articles(articles,
                                                           cursor=cursor)
-                    spider_logger.info(
-                        f'+ {insert_result} articles. [{articles[0].get("source")}]'
-                    )
+                else:
+                    insert_result = 0
+                spider_logger.info(
+                    f'+ {insert_result} / {len(articles)} articles.\t[{task._coro.__name__}]{"" if articles else " ?????????"}'
+                )
     await clear_cache()

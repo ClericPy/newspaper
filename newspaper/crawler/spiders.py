@@ -63,6 +63,8 @@ def get_url_key(url) -> str:
 
 
 def add_host(url, host):
+    if url.startswith('//'):
+        return f'https:{url}'
     if not host.endswith('/'):
         host = f'{host}/'
     return re.sub('^/', host, url)
@@ -1008,7 +1010,7 @@ async def jiqizhixin() -> list:
                 items = r.json().get('articles', {}).get('nodes', [])
                 break
             except json.decoder.JSONDecodeError:
-                await asyncio.sleep(2)
+                await asyncio.sleep(5)
                 continue
         else:
             # 试了 3 次都没 break, 放弃
@@ -1038,6 +1040,65 @@ async def jiqizhixin() -> list:
                 article['cover'] = item.get('cover_image_url') or ''
                 article['desc'] = f'「{item["author"]}」 {shorten_desc(desc)}'
                 article['url'] = item['path']
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def lilydjwg() -> list:
+    """依云's Blog"""
+    source = "依云's Blog"
+    articles: list = []
+    max_page = 1
+    # 有 cookie 和 防跨域验证
+    seed = 'https://blog.lilydjwg.me/tag/python?page={page}'
+    for page in range(1, max_page + 1):
+        r = await req.get(seed.format(page=page),
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": UA})
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode = r.content.decode('u8')
+        items = fromstring(scode).cssselect('#content>.posttotal')
+        if not items:
+            break
+        host = 'https://blog.lilydjwg.me/'
+        if max_page > 1:
+            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item.cssselect('.storytitle>a')[0].text
+                href = item.cssselect('.storytitle>a')[0].get('href', '')
+                url = add_host(href, host).replace(
+                    'https://lilydjwg.is-programmer.com/', host)
+                desc = shorten_desc((item.cssselect('.post_brief>p') or
+                                     [null_tree])[0].text_content())
+                cover = (item.cssselect('img') or [null_tree])[0].get('src', '')
+                month, day, year = item.cssselect(
+                    '.date')[0].text_content().strip().split()
+                month = f'0{month}' [-2:]
+                day = f'0{day}' [-2:]
+                article['ts_publish'] = ttime(
+                    ptime(f'{year}/{month}/{day}', fmt='%Y/%m/%d'))
+                article['title'] = title
+                article['cover'] = cover
+                article['desc'] = desc
+                article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
             except Exception:
