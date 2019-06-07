@@ -4,9 +4,10 @@ import os
 import pathlib
 from logging.handlers import RotatingFileHandler
 
+log_dir = pathlib.Path(__file__).parent.parent / 'logs'
+
 
 def init_logger(logger_name=None, file_name='server.log'):
-    log_dir = pathlib.Path(__file__).parent.parent / 'logs'
     if not log_dir.is_dir():
         log_dir.mkdir()
     formatter_str = (
