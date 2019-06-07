@@ -118,6 +118,13 @@ content_sources = [{
     "status": "√",
     "desc": "知名公众号"
 }, {
+    "title": "依云's Blog",
+    "url": "https://blog.lilydjwg.me/tag/python?page=1",
+    "level": 3,
+    "lang": "cn",
+    "status": "√",
+    "desc": "文章质量很高"
+}, {
     "title": "Python猫",
     "url": "https://zhuanlan.zhihu.com/pythonCat",
     "level": 3,

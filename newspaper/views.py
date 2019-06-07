@@ -8,7 +8,9 @@ from starlette.responses import (JSONResponse, PlainTextResponse,
 from torequests.utils import time, ttime
 
 from .api import app
+from .config import log_dir
 from .crawler.sources import content_sources_dict
+from .utils import tail_file
 
 
 class APIError(Exception):
@@ -67,6 +69,21 @@ async def articles_query_cache_clear(req):
         return PlainTextResponse('ok')
     else:
         return PlainTextResponse('fail')
+
+
+@app.route("/newspaper/logs/spider")
+async def spider_log(req):
+    """只允许查看 spider log, 其他的信息不对外开放"""
+    fp = log_dir / 'spider.log'
+    size = req.query_params.get('size') or req.query_params.get('s')
+    if size:
+        size = int(size)
+    else:
+        size = len([
+            i for i in content_sources_dict.values() if i['status'] == '√'
+        ]) * 120
+    text = await tail_file(fp, size)
+    return PlainTextResponse(text)
 
 
 @app.route('/favicon.ico')
