@@ -6,7 +6,7 @@ from datetime import datetime
 
 import aiomysql
 from async_lru import alru_cache
-from torequests.utils import ttime
+from torequests.utils import time, ttime
 
 from .config import logger
 
@@ -278,6 +278,10 @@ class MySQLStorage(Storage):
         offset = int(offset)
 
         if date:
+            if date == 'today':
+                date = ttime()[:10]
+            elif date == 'yesterday':
+                date = ttime(time.time() - 86400)[:10]
             # 将 date 换算成起止时间并覆盖
             date = str(date)
             if not re.match('\\d\\d\\d\\d-\\d\\d-\\d\\d', date):
