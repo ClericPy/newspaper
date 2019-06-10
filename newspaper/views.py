@@ -5,7 +5,6 @@ from urllib.parse import urlencode
 
 from starlette.responses import (JSONResponse, PlainTextResponse,
                                  RedirectResponse)
-from torequests.utils import time, ttime
 
 from .api import app
 from .config import log_dir
@@ -101,7 +100,7 @@ async def articles_query(req):
     start_time: str = "",
     end_time: str = "",
     source: str = "",
-    order_by: str = 'ts_publish',
+    order_by: str = 'ts_create',
     sorting: str = 'desc',
     limit: int = 10,
     offset: int = 0
@@ -123,11 +122,9 @@ async def articles_query(req):
 async def daily_python(req):
     """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
     date = req.path_params['date']
-    if date == 'today':
-        date = ttime()[:10]
-    elif date == 'yesterday':
-        date = ttime(time.time() - 86400)[:10]
     params = dict(req.query_params)
+    # 默认按发布时间
+    params.setdefault('order_by', 'ts_publish')
     result = await app.db.query_articles(date=date, **params)
     return app.templates.TemplateResponse('daily_python.html', {
         "request": req,

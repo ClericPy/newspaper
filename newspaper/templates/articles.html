@@ -201,7 +201,7 @@
                         <p>query:</p>
                         <input name="query" id="form_query" placeholder="" type="text">
                         <p>date:</p>
-                        <input name="date" id="form_date" placeholder="1970-01-01" type="text">
+                        <input name="date" id="form_date" placeholder="1970-01-01, today, yesterday" type="text">
                         <p>start_time:</p>
                         <input name="start_time" id="form_start_time" placeholder="1970-01-01 08:00:00" type="text">
                         <p>end_time:</p>
@@ -289,14 +289,14 @@
             for (let index = 0; index < articles.length; index++) {
                 const item = articles[index];
                 var child = document.createElement('div')
-                child.setAttribute('id', '_' + item.id)
+                child.setAttribute('id', '_' + item.url_key)
                 child.setAttribute('class', 'article')
                 let stars = level_stars[item.level - 1]
                 let host = item.url.split('/')[2] || ''
                 let is_new = item.ts_create > ts_before_1_hour ? '<span class="is_new_article">New</span>' : ''
                 child.innerHTML =
                     `<h3 class="title"><a href="${item.url}" target="_blank">${item.title}</a></h3>
-                    <p class="desc" onclick="show_all_desc('_${item.id}')">${item.desc}</p>
+                    <p class="desc" onclick="show_all_desc('_${item.url_key}')">${item.desc}</p>
                     <p class="review">${item.review}</p>
                     <p class="article-source">
                         ${is_new} <span class="ts_publish">${item.ts_publish}</span> - 

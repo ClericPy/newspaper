@@ -6,7 +6,7 @@ from datetime import datetime
 
 import aiomysql
 from async_lru import alru_cache
-from torequests.utils import ttime
+from torequests.utils import time, ttime
 
 from .config import logger
 
@@ -17,7 +17,7 @@ warnings.filterwarnings('ignore', category=aiomysql.Warning)
 class Storage(object, metaclass=abc.ABCMeta):
     """存储器抽象. 统一参数对文章数据库进行增删改查."""
     max_limit = 100  # 避免 limit 设置的太大一次提取太多导致拥堵
-    articles_table_columns = ('id', 'url_key', 'title', 'url', 'cover', 'desc',
+    articles_table_columns = ('url_key', 'title', 'url', 'cover', 'desc',
                               'source', 'level', 'review', 'ts_publish',
                               'ts_create', 'ts_update')
 
@@ -32,7 +32,6 @@ class Storage(object, metaclass=abc.ABCMeta):
         valid_articles = []
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
         #                "review", "ts_publish")
-        now = ttime()
         keys_set = None
         for article in articles:
             if not isinstance(article, dict):
@@ -53,12 +52,15 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('source', 'unknown')
             article.setdefault('review', '')
             article.setdefault('level', 3)
-            article.setdefault('ts_publish', now)
+            article.setdefault('ts_publish', '1970-01-01 08:00:01')
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
                 article['desc'])
             article['title'] = article['title'].strip()
             article['desc'] = article['desc'].strip()
+            # mysql 会报错 0000-00-00 00:00:00 格式错误
+            if article['ts_publish'] == '1970-01-01 08:00:00':
+                article['ts_publish'] = '1970-01-01 08:00:01'
             valid_articles.append(article)
         return valid_articles
 
@@ -207,8 +209,7 @@ class MySQLStorage(Storage):
             logger.info('`articles` table exists.')
             return
         logger.info('start creating `articles` table.')
-        sql = '''CREATE TABLE if not exists `articles` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+        sql = '''CREATE TABLE `articles` (
   `url_key` char(32) NOT NULL COMMENT '通过 url 计算的 md5',
   `title` varchar(128) NOT NULL DEFAULT '无题' COMMENT '文章标题',
   `url` varchar(255) NOT NULL COMMENT '文章地址',
@@ -217,14 +218,14 @@ class MySQLStorage(Storage):
   `source` varchar(32) NOT NULL DEFAULT '未知' COMMENT '文章来源',
   `level` tinyint(4) NOT NULL COMMENT '来源评分',
   `review` varchar(255) NOT NULL DEFAULT '' COMMENT '点评评语',
-  `ts_publish` timestamp NOT NULL DEFAULT '2019-04-28 21:30:15' COMMENT '发布时间',
+  `ts_publish` timestamp NOT NULL DEFAULT '1970-01-01 08:00:01' COMMENT '发布时间',
   `ts_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抓取时间',
   `ts_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `url_key_index` (`url_key`) USING BTREE,
-  KEY `ts_publish_index` (`ts_publish`) USING BTREE,
+  PRIMARY KEY (`url_key`),
+  KEY `ts_create_index` (`ts_create`) USING BTREE,
+  KEY `ts_publish_index` (`ts_publish`),
   FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据.'
 '''
         await self.execute(sql, fetchall=None)
         logger.info('`articles` table created.')
@@ -263,7 +264,7 @@ class MySQLStorage(Storage):
             start_time: str = "",
             end_time: str = "",
             source: str = "",
-            order_by: str = 'ts_publish',
+            order_by: str = 'ts_create',
             sorting: str = 'desc',
             limit: int = 30,
             offset: int = 0,
@@ -278,6 +279,10 @@ class MySQLStorage(Storage):
         offset = int(offset)
 
         if date:
+            if date == 'today':
+                date = ttime()[:10]
+            elif date == 'yesterday':
+                date = ttime(time.time() - 86400)[:10]
             # 将 date 换算成起止时间并覆盖
             date = str(date)
             if not re.match('\\d\\d\\d\\d-\\d\\d-\\d\\d', date):
@@ -287,7 +292,7 @@ class MySQLStorage(Storage):
             limit = 9999
 
         if order_by not in self.articles_table_columns:
-            order_by = 'ts_publish'
+            order_by = 'ts_create'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
 
