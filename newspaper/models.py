@@ -32,7 +32,6 @@ class Storage(object, metaclass=abc.ABCMeta):
         valid_articles = []
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
         #                "review", "ts_publish")
-        now = ttime()
         keys_set = None
         for article in articles:
             if not isinstance(article, dict):
@@ -224,6 +223,7 @@ class MySQLStorage(Storage):
   `ts_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`url_key`),
   KEY `ts_create_index` (`ts_create`) USING BTREE,
+  KEY `ts_publish_index` (`ts_publish`),
   FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据.'
 '''
@@ -264,7 +264,7 @@ class MySQLStorage(Storage):
             start_time: str = "",
             end_time: str = "",
             source: str = "",
-            order_by: str = 'ts_publish',
+            order_by: str = 'ts_create',
             sorting: str = 'desc',
             limit: int = 30,
             offset: int = 0,
@@ -292,7 +292,7 @@ class MySQLStorage(Storage):
             limit = 9999
 
         if order_by not in self.articles_table_columns:
-            order_by = 'ts_publish'
+            order_by = 'ts_create'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
 

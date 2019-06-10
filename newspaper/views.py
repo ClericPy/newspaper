@@ -100,7 +100,7 @@ async def articles_query(req):
     start_time: str = "",
     end_time: str = "",
     source: str = "",
-    order_by: str = 'ts_publish',
+    order_by: str = 'ts_create',
     sorting: str = 'desc',
     limit: int = 10,
     offset: int = 0
@@ -123,6 +123,8 @@ async def daily_python(req):
     """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
     date = req.path_params['date']
     params = dict(req.query_params)
+    # 默认按发布时间
+    params.setdefault('order_by', 'ts_publish')
     result = await app.db.query_articles(date=date, **params)
     return app.templates.TemplateResponse('daily_python.html', {
         "request": req,
