@@ -17,7 +17,7 @@ warnings.filterwarnings('ignore', category=aiomysql.Warning)
 class Storage(object, metaclass=abc.ABCMeta):
     """存储器抽象. 统一参数对文章数据库进行增删改查."""
     max_limit = 100  # 避免 limit 设置的太大一次提取太多导致拥堵
-    articles_table_columns = ('id', 'url_key', 'title', 'url', 'cover', 'desc',
+    articles_table_columns = ('url_key', 'title', 'url', 'cover', 'desc',
                               'source', 'level', 'review', 'ts_publish',
                               'ts_create', 'ts_update')
 
@@ -53,12 +53,15 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('source', 'unknown')
             article.setdefault('review', '')
             article.setdefault('level', 3)
-            article.setdefault('ts_publish', now)
+            article.setdefault('ts_publish', '1970-01-01 08:00:01')
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
                 article['desc'])
             article['title'] = article['title'].strip()
             article['desc'] = article['desc'].strip()
+            # mysql 会报错 0000-00-00 00:00:00 格式错误
+            if article['ts_publish'] == '1970-01-01 08:00:00':
+                article['ts_publish'] = '1970-01-01 08:00:01'
             valid_articles.append(article)
         return valid_articles
 
@@ -207,8 +210,7 @@ class MySQLStorage(Storage):
             logger.info('`articles` table exists.')
             return
         logger.info('start creating `articles` table.')
-        sql = '''CREATE TABLE if not exists `articles` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+        sql = '''CREATE TABLE `articles` (
   `url_key` char(32) NOT NULL COMMENT '通过 url 计算的 md5',
   `title` varchar(128) NOT NULL DEFAULT '无题' COMMENT '文章标题',
   `url` varchar(255) NOT NULL COMMENT '文章地址',
@@ -217,14 +219,13 @@ class MySQLStorage(Storage):
   `source` varchar(32) NOT NULL DEFAULT '未知' COMMENT '文章来源',
   `level` tinyint(4) NOT NULL COMMENT '来源评分',
   `review` varchar(255) NOT NULL DEFAULT '' COMMENT '点评评语',
-  `ts_publish` timestamp NOT NULL DEFAULT '2019-04-28 21:30:15' COMMENT '发布时间',
+  `ts_publish` timestamp NOT NULL DEFAULT '1970-01-01 08:00:01' COMMENT '发布时间',
   `ts_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抓取时间',
   `ts_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `url_key_index` (`url_key`) USING BTREE,
-  KEY `ts_publish_index` (`ts_publish`) USING BTREE,
+  PRIMARY KEY (`url_key`),
+  KEY `ts_create_index` (`ts_create`) USING BTREE,
   FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据.'
 '''
         await self.execute(sql, fetchall=None)
         logger.info('`articles` table created.')
