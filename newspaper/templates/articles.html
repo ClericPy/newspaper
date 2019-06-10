@@ -179,6 +179,21 @@
         .star_level_5 {
             color: red;
         }
+
+        input,
+        select {
+            outline-style: none;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin: 2px 0 0 0;
+        }
+
+        input:focus {
+            border-color: #03A9F4;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)
+        }
     </style>
 </head>
 
@@ -209,9 +224,15 @@
                         <p>source:</p>
                         <input name="source" id="form_source" placeholder="" type="text">
                         <p>order_by:</p>
-                        <input name="order_by" id="form_order_by" placeholder="" type="text">
+                        <select name="order_by" id="form_order_by">
+                            <option value="ts_create">抓取时间</option>
+                            <option value="ts_publish">发布时间</option>
+                        </select>
                         <p>sorting:</p>
-                        <input name="sorting" id="form_sorting" placeholder="" type="text">
+                        <select name="sorting" id="form_sorting">
+                            <option value="desc">降序</option>
+                            <option value="asc">升序</option>
+                        </select>
                         <p>limit:</p>
                         <input name="limit" id="form_limit" placeholder="" type="text">
                         <p>offset:</p>
