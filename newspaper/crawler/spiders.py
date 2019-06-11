@@ -16,10 +16,12 @@ from .sources import content_sources_dict
 test_spiders = []
 online_spiders = []
 history_spiders = []
+CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
 friendly_crawling_interval = 1
 # default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
 req = Requests(default_host_frequency=(1, 3))
-UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+# 知乎专栏友好抓取频率
+req.set_frequency('zhuanlan.zhihu.com', 1, 5)
 
 
 class null_tree:
@@ -362,14 +364,15 @@ async def python_weekly_history() -> list:
 
 @register_online
 async def pycoder_weekly() -> list:
-    """PyCoder's Weekly. 把 limit 改 999 就可以抓历史了"""
+    """PyCoder's Weekly"""
+    # 把 limit 改 999 就可以抓历史了
     source = "PyCoder's Weekly"
     articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://pycoders.com/issues'
     base_url = find_one('^https?://[^/]+', seed)[0]
-    r = await req.get(seed, headers={'User-Agent': UA})
+    r = await req.get(seed, headers={'User-Agent': CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -411,7 +414,10 @@ async def importpython() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://importpython.com/newsletter/archive/'
-    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+    r = await req.get(seed,
+                      retry=1,
+                      timeout=20,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -461,7 +467,10 @@ async def awesome_python() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://python.libhunt.com/newsletter/archive'
-    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+    r = await req.get(seed,
+                      retry=1,
+                      timeout=20,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -477,7 +486,7 @@ async def awesome_python() -> list:
             r = await req.get(url,
                               retry=2,
                               timeout=15,
-                              headers={"User-Agent": UA})
+                              headers={"User-Agent": CHROME_PC_UA})
             if not r:
                 logger.error(f'fetch {url} failed: {r}')
                 break
@@ -516,7 +525,10 @@ async def real_python() -> list:
     articles: list = []
     limit = 20
     seed = 'https://realpython.com/'
-    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+    r = await req.get(seed,
+                      retry=1,
+                      timeout=20,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -623,7 +635,10 @@ async def julien_danjou() -> list:
     source = 'Julien Danjou'
     articles: list = []
     seed = 'https://julien.danjou.info/page/1/'
-    r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+    r = await req.get(seed,
+                      retry=1,
+                      timeout=20,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -697,14 +712,16 @@ async def doughellmann() -> list:
         r = await req.get(seed.format(page=page),
                           retry=1,
                           timeout=20,
-                          headers={"User-Agent": UA})
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
         scode = r.text
         items = fromstring(scode).cssselect('#main>article')
         if max_page > 1:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
             if not items and page > 1:
                 logger.info(f'{source} break for page {page} has no items')
                 break
@@ -748,14 +765,16 @@ async def mouse_vs_python() -> list:
         r = await req.get(seed.format(page=page),
                           retry=1,
                           timeout=20,
-                          headers={"User-Agent": UA})
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
         scode = r.text
         items = fromstring(scode).cssselect('#content>article')
         if max_page > 1:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
         if not items:
             if page > 1:
                 logger.info(f'{source} break for page {page} has no items')
@@ -804,7 +823,9 @@ async def infoq_python() -> list:
             return articles
         items = r.json().get('data') or []
         if max_page > 1:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
             if items:
                 # 调整上一页最后一个 score 实现翻页
                 data = json.loads(request_args['data'])
@@ -871,7 +892,7 @@ async def hn_python() -> list:
                           params=params,
                           retry=1,
                           timeout=20,
-                          headers={"User-Agent": UA})
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -879,7 +900,9 @@ async def hn_python() -> list:
         if not items:
             break
         if page > 0:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
             if not items and page > 0:
                 logger.info(f'{source} break for page {page} has no items')
                 break
@@ -924,7 +947,10 @@ async def snarky() -> list:
     host = 'https://snarky.ca/'
     for page in range(1, max_page + 1):
         seed = api.format(page=page)
-        r = await req.get(seed, retry=1, timeout=20, headers={"User-Agent": UA})
+        r = await req.get(seed,
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -1016,7 +1042,9 @@ async def jiqizhixin() -> list:
             # 试了 3 次都没 break, 放弃
             return articles
         if max_page > 1:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
             # 翻页, 修改 page
             curl_string = re.sub(r'&page=\d+', f'&page={page + 1}', curl_string)
             request_args = curlparse(curl_string)
@@ -1059,13 +1087,12 @@ async def lilydjwg() -> list:
     source = "依云's Blog"
     articles: list = []
     max_page = 1
-    # 有 cookie 和 防跨域验证
     seed = 'https://blog.lilydjwg.me/tag/python?page={page}'
     for page in range(1, max_page + 1):
         r = await req.get(seed.format(page=page),
                           retry=1,
                           timeout=20,
-                          headers={"User-Agent": UA})
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -1075,7 +1102,9 @@ async def lilydjwg() -> list:
             break
         host = 'https://blog.lilydjwg.me/'
         if max_page > 1:
-            logger.info(f'{source} crawling page {page}, + {len(items)} items')
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
         for item in items:
             try:
                 article = {
@@ -1097,6 +1126,59 @@ async def lilydjwg() -> list:
                     ptime(f'{year}/{month}/{day}', fmt='%Y/%m/%d'))
                 article['title'] = title
                 article['cover'] = cover
+                article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def dev_io() -> list:
+    """DEV Community"""
+    source = "DEV Community"
+    articles: list = []
+    max_page = 1
+    per_page = 15
+    curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_by_published_at_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
+        per_page)
+    curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
+    for page in range(1, max_page + 1):
+        curl_string2 = f'&page={page}'
+        curl_string = f'{curl_string1}{curl_string2}{curl_string3}'
+        request_args = curlparse(curl_string)
+        r = await req.request(retry=1, timeout=20, **request_args)
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        items = r.json().get('hits') or []
+        if not items:
+            break
+        host = 'https://dev.to/'
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article = {
+                    'source': source,
+                    'level': content_sources_dict[source]['level']
+                }
+                title = item['title']
+                path = item['path']
+                url = add_host(path, host)
+                desc = item['user']['name']
+                article['ts_publish'] = ttime(item['published_at_int'])
+                article['title'] = title
                 article['desc'] = desc
                 article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
