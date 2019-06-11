@@ -125,6 +125,13 @@ content_sources = [{
     "status": "√",
     "desc": "文章质量很高"
 }, {
+    "title": "DEV Community",
+    "url": "https://dev.to/t/python/latest",
+    "level": 3,
+    "lang": "EN",
+    "status": "√",
+    "desc": "算是个挺好的社区, post 也都不太水"
+}, {
     "title": "Python猫",
     "url": "https://zhuanlan.zhihu.com/pythonCat",
     "level": 3,
