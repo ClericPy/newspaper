@@ -1,5 +1,11 @@
 # python-newspaper
 
+
+- [For English-only reader](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
+- [中文读者](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
+- [中英文读者](https://www.clericpy.top/newspaper/articles.query.html)
+
+
 ### 当前进度:
 
 - [x] 购买服务器
