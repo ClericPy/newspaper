@@ -19,10 +19,6 @@
             background-color: #f4f8fb;
         }
 
-        form>p {
-            margin: 5px 0 5px 0;
-        }
-
         input {
             border-color: #ecf0f1;
         }
@@ -85,7 +81,13 @@
             font-size: 1em;
             color: #2c3e50;
             border-bottom: 1px solid #e2e2e2;
+            font-weight: bold;
             margin: 0.5em;
+        }
+
+        #params>p.params-title {
+            margin: 5px 0 5px 0;
+            font-size: 0.8em;
         }
 
         div.head {
@@ -209,35 +211,41 @@
                 <ul>
 
                     <label for="params-toggle" type="button">
-                        <li>Settings</li>
+                        <li>Settings ▽</li>
                     </label>
                     <input type="checkbox" id="params-toggle" />
                     <form id="params" action="./articles.query.html" method="get">
-                        <p>query:</p>
+                        <p class="params-title">query:</p>
                         <input name="query" id="form_query" placeholder="" type="text">
-                        <p>date:</p>
+                        <p class="params-title">date:</p>
                         <input name="date" id="form_date" placeholder="1970-01-01, today, yesterday" type="text">
-                        <p>start_time:</p>
+                        <p class="params-title">start_time:</p>
                         <input name="start_time" id="form_start_time" placeholder="1970-01-01 08:00:00" type="text">
-                        <p>end_time:</p>
+                        <p class="params-title">end_time:</p>
                         <input name="end_time" id="form_end_time" placeholder="1970-01-01 08:00:00" type="text">
-                        <p>source:</p>
+                        <p class="params-title">source:</p>
                         <input name="source" id="form_source" placeholder="" type="text">
-                        <p>order_by:</p>
+                        <p class="params-title">lang:</p>
+                        <select name="lang" id="form_lang">
+                            <option value="ANY">ANY</option>
+                            <option value="EN">EN</option>
+                            <option value="CN">CN</option>
+                        </select>
+                        <p class="params-title">order_by:</p>
                         <select name="order_by" id="form_order_by">
                             <option value="ts_create">ts_create</option>
                             <option value="ts_publish">ts_publish</option>
                         </select>
-                        <p>sorting:</p>
+                        <p class="params-title">sorting:</p>
                         <select name="sorting" id="form_sorting">
                             <option value="desc">desc</option>
                             <option value="asc">asc</option>
                         </select>
-                        <p>limit:</p>
+                        <p class="params-title">limit:</p>
                         <input name="limit" id="form_limit" placeholder="" type="text">
-                        <p>offset:</p>
+                        <p class="params-title">offset:</p>
                         <input name="offset" id="form_offset" placeholder="" type="text">
-                        <p><input type="submit" value="Submit"></p>
+                        <p class="params-title"><input type="submit" value="Submit"></p>
                     </form>
                     <li><a href="https://github.com/ClericPy/newspaper" target="_blank" class="github">Github</a></li>
                     <li><a href="./articles.query.rss" target="_blank" class="rss">RSS</a></li>
@@ -260,7 +268,9 @@
         var next_url = window.location.href.replace('articles.query.html', 'articles.query.json')
 
         function fill_form_params(data) {
-            var keys = ['query', 'date', 'start_time', 'end_time', 'source', 'order_by', 'sorting', 'limit', 'offset']
+            var keys = ['query', 'date', 'start_time', 'end_time', 'source', 'lang', 'order_by', 'sorting', 'limit',
+                'offset'
+            ]
             for (let index = 0; index < keys.length; index++) {
                 const key = keys[index];
                 var element = document.getElementById('form_' + key)

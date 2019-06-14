@@ -275,6 +275,7 @@ class MySQLStorage(Storage):
             limit: int = 30,
             offset: int = 0,
             date: str = '',
+            lang: str = 'ANY',
     ) -> dict:
         args: list = []
         where_list: list = []
@@ -283,6 +284,7 @@ class MySQLStorage(Storage):
         order_by = order_by.strip(' `')
         limit = min((self.max_limit, int(limit)))
         offset = int(offset)
+        lang = str(lang).upper()
 
         if date:
             if date == 'today':
@@ -301,7 +303,6 @@ class MySQLStorage(Storage):
             order_by = 'ts_create'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
-
         if start_time:
             where_list.append("`ts_publish` >= %s")
             args.append(start_time)
@@ -317,6 +318,12 @@ class MySQLStorage(Storage):
         if query:
             where_list.append("MATCH(`title`, `desc`, `url`) AGAINST(%s)")
             args.append(query)
+        if lang in {'CN', 'EN'}:
+            where_list.append("`lang` = %s")
+            args.append(lang)
+        else:
+            lang = 'ANY'
+
         result['order_by'] = order_by
         result['query'] = query or ''
         result['sorting'] = sorting
@@ -334,6 +341,7 @@ class MySQLStorage(Storage):
         result['has_more'] = 1 if len(items) > limit else 0
         articles = self.format_output_articles(items[:limit])
         result['articles'] = articles
+        result['lang'] = lang
         return result
 
 
