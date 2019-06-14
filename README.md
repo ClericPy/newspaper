@@ -1,9 +1,9 @@
 # python-newspaper
 
 
-- [For English-only reader](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
-- [中文读者](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
-- [中英文读者](https://www.clericpy.top/newspaper/articles.query.html)
+- <a href="https://www.clericpy.top/newspaper/articles.query.html?lang=EN" target="_blank">For English-only reader</a>
+- <a href="https://www.clericpy.top/newspaper/articles.query.html?lang=CN" target="_blank">中文读者</a>
+- <a href="https://www.clericpy.top/newspaper/articles.query.html" target="_blank">中英文读者</a>
 
 
 ### 当前进度:
