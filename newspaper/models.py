@@ -9,6 +9,7 @@ from async_lru import alru_cache
 from torequests.utils import time, ttime
 
 from .config import logger
+from .crawler.sources import content_sources_dict
 
 # 用了 insert ignore 还总是 warning, 又不想 insert try, 只好全禁掉了...
 warnings.filterwarnings('ignore', category=aiomysql.Warning)
@@ -31,7 +32,7 @@ class Storage(object, metaclass=abc.ABCMeta):
     def ensure_articles(self, articles: typing.Sequence[dict]) -> list:
         valid_articles = []
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
-        #                "review", "ts_publish")
+        #                "review", "ts_publish", "lang")
         keys_set = None
         for article in articles:
             if not isinstance(article, dict):
@@ -43,6 +44,9 @@ class Storage(object, metaclass=abc.ABCMeta):
                 if set(article.keys()) != keys_set:
                     continue
             # 这些 key 必须都存在才能入库
+            source = content_sources_dict.get(article['source'])
+            if not source:
+                continue
             for ensure_key in ('url_key', 'title'):
                 if not article.get(ensure_key):
                     continue
@@ -51,7 +55,8 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('desc', '')
             article.setdefault('source', 'unknown')
             article.setdefault('review', '')
-            article.setdefault('level', 3)
+            article.setdefault('level', source.get('level', 3))
+            article.setdefault('lang', source.get('lang', 'cn'))
             article.setdefault('ts_publish', '1970-01-01 08:00:01')
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
@@ -217,6 +222,7 @@ class MySQLStorage(Storage):
   `desc` text COMMENT '文章描述, 如果是周报, 则包含所有文字',
   `source` varchar(32) NOT NULL DEFAULT '未知' COMMENT '文章来源',
   `level` tinyint(4) NOT NULL COMMENT '来源评分',
+  `lang` char(2) DEFAULT NULL COMMENT '语言类型 cn, en',
   `review` varchar(255) NOT NULL DEFAULT '' COMMENT '点评评语',
   `ts_publish` timestamp NOT NULL DEFAULT '1970-01-01 08:00:01' COMMENT '发布时间',
   `ts_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抓取时间',

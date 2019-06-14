@@ -11,7 +11,6 @@ from torequests.utils import (curlparse, find_one, md5, parse_qsl, ptime, re,
 
 from ..config import global_configs
 from ..config import spider_logger as logger
-from .sources import content_sources_dict
 
 test_spiders = []
 online_spiders = []
@@ -159,10 +158,7 @@ async def python_news() -> list:
         tree = fromstring(scode)
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
                     ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
@@ -204,10 +200,7 @@ async def python_news_history() -> list:
         tree = fromstring(scode)
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
                     ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
@@ -254,10 +247,7 @@ async def python_weekly() -> list:
     items = re.findall(r'(<li [\s\S]*?</li>)', box)
     for item in items[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             # 从列表页取 ts_publish 和 issue_id, 其他的去详情页里采集
             # <li class="campaign">05/09/2019 - <a href="http://eepurl.com/gqB4vv" title="Python Weekly - Issue 396" target="_blank">Python Weekly - Issue 396</a></li>
             title = find_one('title="(.*?)"', item)[1]
@@ -316,10 +306,7 @@ async def python_weekly_history() -> list:
     articles: list = []
     for issue_id in range(324, 1000):
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             article['ts_publish'] = _python_weekly_calculate_date(issue_id)
             detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
             r = await req.get(
@@ -379,10 +366,7 @@ async def pycoder_weekly() -> list:
     items = re.findall(r'<a href="/issues/\d+">Issue #\d+ .*?</a>', r.text)
     for item in items[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             # <a href="/issues/368">Issue #368 (May 14, 2019)</a>
             title = find_one('>(Issue.*?)<', item)[1]
             article['title'] = f"PyCoder's Weekly | {title}"
@@ -424,10 +408,7 @@ async def importpython() -> list:
     items = fromstring(r.text).cssselect('#tourpackages-carousel>.row>div')
     for item in items[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             href = item.cssselect('div.caption>a')[0].get('href', '')
             if not href:
                 continue
@@ -478,10 +459,7 @@ async def awesome_python() -> list:
         r'<td class="text-right">\s*<a href=\'(/newsletter/\d+)\'>', r.text)
     for href in hrefs[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             url = add_host(href, 'https://python.libhunt.com/')
             r = await req.get(url,
                               retry=2,
@@ -535,10 +513,7 @@ async def real_python() -> list:
     items = fromstring(r.text).cssselect('div[class="card border-0"]')
     for item in items[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             href = item.cssselect('a')[0].get('href', '')
             url = add_host(href, 'https://realpython.com/')
             title = item.cssselect('h2.card-title')[0].text
@@ -582,10 +557,7 @@ async def planet_python() -> list:
     now = ttime()
     for item in items[:limit]:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             guid = item.xpath('./guid/text()')
             title = item.xpath('./title/text()')
             description = item.xpath('./description/text()')
@@ -649,10 +621,7 @@ async def julien_danjou() -> list:
     host = 'https://julien.danjou.info/'
     for item in items:
         try:
-            article = {
-                'source': source,
-                'level': content_sources_dict[source]['level']
-            }
+            article = {'source': source}
             href = item.cssselect('a.post-card-content-link')[0].get('href', '')
             if not href:
                 raise ValueError(f'{source} not found href from {seed}')
@@ -727,10 +696,7 @@ async def doughellmann() -> list:
                 break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item.cssselect('.entry-title>a')[0].text
                 url = item.cssselect('.entry-title>a')[0].get('href')
                 desc = item.cssselect('.entry-content')[0].text_content()
@@ -781,10 +747,7 @@ async def mouse_vs_python() -> list:
             break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item.cssselect('.entry-title>a')[0].text
                 url = item.cssselect('.entry-title>a')[0].get('href')
                 desc = item.cssselect('.entry-content')[0].text_content()
@@ -836,10 +799,7 @@ async def infoq_python() -> list:
                 break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item['article_title']
                 url = f"https://www.infoq.cn/article/{item['uuid']}"
                 desc = item['article_summary']
@@ -908,10 +868,7 @@ async def hn_python() -> list:
                 break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item['title']
                 url = item['url'] or ''
                 if not url:
@@ -960,10 +917,7 @@ async def snarky() -> list:
             break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 href = item.cssselect('a.post-card-content-link')[0].get(
                     'href', '')
                 if not href:
@@ -1052,10 +1006,7 @@ async def jiqizhixin() -> list:
             break
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 desc = item['content']
                 # 2019/05/27 00:09
                 article['ts_publish'] = ttime(
@@ -1107,10 +1058,7 @@ async def lilydjwg() -> list:
             )
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item.cssselect('.storytitle>a')[0].text
                 href = item.cssselect('.storytitle>a')[0].get('href', '')
                 url = add_host(href, host).replace(
@@ -1169,10 +1117,7 @@ async def dev_io() -> list:
             )
         for item in items:
             try:
-                article = {
-                    'source': source,
-                    'level': content_sources_dict[source]['level']
-                }
+                article = {'source': source}
                 title = item['title']
                 path = item['path']
                 url = add_host(path, host)
