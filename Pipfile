@@ -1,5 +1,5 @@
 [[source]]
-url = "https://pypi.douban.com/simple/"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 verify_ssl = false
 name = "pypi"
 
@@ -10,7 +10,7 @@ yapf = "*"
 
 [packages]
 uvloop = {version = "*",sys_platform = "!= 'win32'"}
-torequests = ">=4.8.10"
+torequests = ">=4.8.13"
 starlette = "*"
 uvicorn = "*"
 aiomysql = "*"
