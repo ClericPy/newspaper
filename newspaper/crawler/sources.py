@@ -136,14 +136,14 @@ content_sources = [{
     "url": "https://zhuanlan.zhihu.com/pythonCat",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "2018 年末比较热情的博主, 原创"
 }, {
     "title": "Python之美",
     "url": "https://zhuanlan.zhihu.com/python-cn",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "早期文章较多, 创业以后更新不太多了"
 }, {
     "title": "推酷(中文)",

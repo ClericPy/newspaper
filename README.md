@@ -1,9 +1,9 @@
 # python-newspaper
 
 
-- <a href="https://www.clericpy.top/newspaper/articles.query.html?lang=EN" target="_blank">For English-only reader</a>
-- <a href="https://www.clericpy.top/newspaper/articles.query.html?lang=CN" target="_blank">中文读者</a>
-- <a href="https://www.clericpy.top/newspaper/articles.query.html" target="_blank">中英文读者</a>
+- [For English-only reader](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
+- [中文读者](https://www.clericpy.top/newspaper/articles.query.html?lang=CN)
+- [中英文读者](https://www.clericpy.top/newspaper/articles.query.html)
 
 
 ### 当前进度:
@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 16 / 38
+* 收录进度: 18 / 38
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -55,8 +55,8 @@
 | 17 | [机器之心](https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time) | 3 | CN | <span style="color: green">√</span> | 知名公众号 |
 | 18 | [依云's Blog](https://blog.lilydjwg.me/tag/python?page=1) | 3 | CN | <span style="color: green">√</span> | 文章质量很高 |
 | 19 | [DEV Community](https://dev.to/t/python/latest) | 3 | EN | <span style="color: green">√</span> | 算是个挺好的社区, post 也都不太水 |
-| 20 | [Python猫](https://zhuanlan.zhihu.com/pythonCat) | 3 | CN | <span style="color: orange">=</span> | 2018 年末比较热情的博主, 原创 |
-| 21 | [Python之美](https://zhuanlan.zhihu.com/python-cn) | 3 | CN | <span style="color: orange">=</span> | 早期文章较多, 创业以后更新不太多了 |
+| 20 | [Python猫](https://zhuanlan.zhihu.com/pythonCat) | 3 | CN | <span style="color: green">√</span> | 2018 年末比较热情的博主, 原创 |
+| 21 | [Python之美](https://zhuanlan.zhihu.com/python-cn) | 3 | CN | <span style="color: green">√</span> | 早期文章较多, 创业以后更新不太多了 |
 | 22 | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3 | CN | <span style="color: orange">=</span> | 推文类站点. 虽然原创不多, 但是质量还算可以 |
 | 23 | [推酷(英文)](https://www.tuicool.com/topics/11130000?st=0&lang=2) | 3 | EN | <span style="color: orange">=</span> | 推文类站点 |
 | 24 | [开发者头条](https://toutiao.io/tags/python?type=latest) | 3 | CN | <span style="color: orange">=</span> | 推文类站点 |

@@ -20,7 +20,7 @@ friendly_crawling_interval = 1
 # default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
 req = Requests(default_host_frequency=(1, 3))
 # 知乎专栏友好抓取频率
-req.set_frequency('zhuanlan.zhihu.com', 1, 5)
+# req.set_frequency('zhuanlan.zhihu.com', 1, 3)
 
 
 class null_tree:
@@ -142,6 +142,32 @@ def register_history(function: typing.Callable) -> typing.Callable:
 
     history_spiders.append(function)
     return function
+
+
+async def common_spider_zhihu_zhuanlan(name, source, limit=10):
+    articles = []
+    api = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={limit}&offset=0'
+    r = await req.get(
+        api,
+        verify=0,
+        headers={
+            "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+        })
+    if not r:
+        logger.info(f'crawl zhihu_zhuanlan {name} limit={limit} failed: {r}')
+        return articles
+    for item in r.json()['data']:
+        if not (item['type'] == 'article' and item['state'] == 'published'):
+            continue
+        article = {'source': source}
+        article['ts_publish'] = ttime(item['created'])
+        article['cover'] = item['image_url']
+        article['title'] = item['title']
+        article['desc'] = re.sub('<[^>]+>', ' ', item.get('excerpt') or '')
+        article['url'] = item['url']
+        article['url_key'] = get_url_key(article['url'])
+        articles.append(article)
+    return articles
 
 
 @register_online
@@ -981,16 +1007,18 @@ async def jiqizhixin() -> list:
     request_args = curlparse(curl_string)
     for page in range(1, max_page + 1):
         # 部分时候请求返回结果为空, 需要重试
-        for _ in range(3):
+        for _ in range(2, 5):
             r = await req.request(retry=1, timeout=20, **request_args)
             if not r:
                 logger.error(f'{source} crawl failed: {r}, {r.text}')
                 return articles
             try:
                 items = r.json().get('articles', {}).get('nodes', [])
+                if not items:
+                    continue
                 break
             except json.decoder.JSONDecodeError:
-                await asyncio.sleep(5)
+                await asyncio.sleep(_)
                 continue
         else:
             # 试了 3 次都没 break, 放弃
@@ -1131,6 +1159,38 @@ async def dev_io() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def zhihu_zhuanlan_pythoncat() -> list:
+    """Python猫"""
+    source = "Python猫"
+    articles: list = []
+    limit = 10
+    name = 'pythonCat'
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def zhihu_zhuanlan_python_cn() -> list:
+    """Python之美"""
+    source = "Python之美"
+    articles: list = []
+    limit = 10
+    name = 'python-cn'
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )

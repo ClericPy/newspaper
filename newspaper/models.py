@@ -29,7 +29,8 @@ class Storage(object, metaclass=abc.ABCMeta):
                     article[key] = str(value)
         return articles
 
-    def ensure_articles(self, articles: typing.Sequence[dict]) -> list:
+    @staticmethod
+    def ensure_articles(articles: typing.Sequence[dict]) -> list:
         valid_articles = []
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
         #                "review", "ts_publish", "lang")
@@ -66,6 +67,10 @@ class Storage(object, metaclass=abc.ABCMeta):
             # mysql 会报错 0000-00-00 00:00:00 格式错误
             if article['ts_publish'] == '1970-01-01 08:00:00':
                 article['ts_publish'] = '1970-01-01 08:00:01'
+            if not article.get('ts_create'):
+                # 24 小时之前发布的文章, 不使用当前时间做抓取时间
+                if article['ts_publish'] <= ttime(time.time() - 86400):
+                    article['ts_create'] = article['ts_publish']
             valid_articles.append(article)
         return valid_articles
 
