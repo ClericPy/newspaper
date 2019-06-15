@@ -35,6 +35,8 @@ class Storage(object, metaclass=abc.ABCMeta):
         # ensure_keys = ("url_key", "title", "cover", "desc", "source",
         #                "review", "ts_publish", "lang")
         keys_set = None
+        now = ttime()
+        today_0_0 = f'{now[:10]} 00:00:00'
         for article in articles:
             if not isinstance(article, dict):
                 continue
@@ -67,10 +69,11 @@ class Storage(object, metaclass=abc.ABCMeta):
             # mysql 会报错 0000-00-00 00:00:00 格式错误
             if article['ts_publish'] == '1970-01-01 08:00:00':
                 article['ts_publish'] = '1970-01-01 08:00:01'
-            if not article.get('ts_create'):
-                # 24 小时之前发布的文章, 不使用当前时间做抓取时间
-                if article['ts_publish'] <= ttime(time.time() - 86400):
-                    article['ts_create'] = article['ts_publish']
+            if article.get('ts_create') or article['ts_publish'] >= today_0_0:
+                article['ts_create'] = now
+            else:
+                # 不是今天发布的, 使用发布时间做抓取时间
+                article['ts_create'] = article['ts_publish']
             valid_articles.append(article)
         return valid_articles
 
