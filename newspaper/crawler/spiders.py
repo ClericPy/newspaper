@@ -19,8 +19,9 @@ CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KH
 friendly_crawling_interval = 1
 # default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
 req = Requests(default_host_frequency=(1, 3))
-# 知乎专栏友好抓取频率
+# 多次请求时的友好抓取频率
 # req.set_frequency('zhuanlan.zhihu.com', 1, 3)
+# req.set_frequency('www.tuicool.com', 1, 3)
 
 
 class null_tree:
