@@ -62,7 +62,7 @@ async def online_workflow():
                 else:
                     insert_result = 0
                 spider_logger.info(
-                    f'+ {insert_result} / {len(articles)} articles.\t[{source_name}]{"" if articles else " ?????????"}'
+                    f'{"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
                 )
     await clear_cache()
 
@@ -93,6 +93,6 @@ async def history_workflow():
                 else:
                     insert_result = 0
                 spider_logger.info(
-                    f'+ {insert_result} / {len(articles)} articles.\t[{source_name}]{"" if articles else " ?????????"}'
+                    f'{"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
                 )
     await clear_cache()

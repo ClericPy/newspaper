@@ -146,6 +146,13 @@ content_sources = [{
     "status": "√",
     "desc": "早期文章较多, 创业以后更新不太多了"
 }, {
+    "title": "静觅",
+    "url": "https://cuiqingcai.com/category/technique/python",
+    "level": 3,
+    "lang": "CN",
+    "status": "=",
+    "desc": " 崔庆才的个人博客, 保持更新的原创博主"
+}, {
     "title": "推酷(中文)",
     "url": "https://www.tuicool.com/topics/11130000?st=0&lang=1",
     "level": 3,
