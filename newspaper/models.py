@@ -6,7 +6,7 @@ from datetime import datetime
 
 import aiomysql
 from async_lru import alru_cache
-from torequests.utils import time, ttime
+from torequests.utils import time, ttime, ptime
 
 from .config import logger
 from .crawler.sources import content_sources_dict
@@ -66,14 +66,18 @@ class Storage(object, metaclass=abc.ABCMeta):
                 article['desc'])
             article['title'] = article['title'].strip()
             article['desc'] = article['desc'].strip()
-            # mysql 会报错 0000-00-00 00:00:00 格式错误
-            if article['ts_publish'] == '1970-01-01 08:00:00':
+            # mysql 会报错 0000-00-00 00:00:00 格式错误; 顺便尝试转换掉错误的发布时间
+            if ttime(ptime(article['ts_publish'])) == '1970-01-01 08:00:00':
                 article['ts_publish'] = '1970-01-01 08:00:01'
-            if article.get('ts_create') or article['ts_publish'] >= today_0_0:
-                article['ts_create'] = now
-            else:
-                # 不是今天发布的, 使用发布时间做抓取时间
-                article['ts_create'] = article['ts_publish']
+            if not article.get('ts_create'):
+                # 今天发布的, 使用当前时间做抓取时间
+                # 如果发布时间不存在, 也使用当前时间做抓取时间
+                if article['ts_publish'] >= today_0_0 or article[
+                        'ts_publish'] == '1970-01-01 08:00:01':
+                    article['ts_create'] = now
+                else:
+                    # 不是今天发布的, 使用发布时间做抓取时间
+                    article['ts_create'] = article['ts_publish']
             valid_articles.append(article)
         return valid_articles
 

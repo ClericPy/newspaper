@@ -34,6 +34,10 @@ class null_tree:
     def get(self, key, default=''):
         return default
 
+    @classmethod
+    def css(cls, item, csspath):
+        return (item.cssselect(csspath) or [cls])[0]
+
 
 def sort_url_query(url, reverse=False, _replace_kwargs=None):
     """sort url query args.
@@ -1192,6 +1196,89 @@ async def zhihu_zhuanlan_python_cn() -> list:
     limit = 10
     name = 'python-cn'
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def cuiqingcai() -> list:
+    """静觅"""
+    source = "静觅"
+    articles: list = []
+    max_page = 1
+    api = 'https://cuiqingcai.com/category/technique/python/page/'
+    this_year = ttime()[:4]
+    timestamp_today_0 = ptime(ttime()[:10] + ' 00:00:00')
+
+    def translate_time_text(raw_time):
+        if not raw_time:
+            return ''
+        raw_time = raw_time.strip()
+        # 针对每种情况做时间转换
+        # 4个月前 (02-21)
+        # 2天前
+        # 4年前 (2015-02-12)
+        # 先尝试取得横线分割的时间, 取不到的应该是 n 天前的情况
+        time1 = find_one(r'\(([\d-]+)\)', raw_time)[1]
+        if time1:
+            if re.match(r'^\d\d-\d\d$', time1):
+                time1 = f'{this_year}-{time1}'
+            elif re.match(r'^\d\d\d\d-\d\d-\d\d$', time1):
+                pass
+            else:
+                raise ValueError(f'bad time pattern {raw_time}')
+            result = f'{time1} 00:00:00'
+        elif re.match('^\d+天前$', raw_time):
+            n_day = int(find_one(r'\d+', raw_time)[0])
+            result = ttime(timestamp_today_0 - n_day * 86400)
+        else:
+            raise ValueError(f'bad time pattern {raw_time}')
+        return result
+
+    for page in range(1, max_page + 1):
+        seed = f'{api}{page}'
+        r = await req.get(
+            seed,
+            retry=1,
+            timeout=20,
+            verify=0,
+            headers={
+                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+            })
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        items = fromstring(
+            r.content.decode('u8')).cssselect('div.content>article')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article = {'source': source}
+                title = null_tree.css(item, 'header>h2>a').text
+                url = null_tree.css(item, 'header>h2>a').get('href', '')
+                desc = null_tree.css(item, '.note').text_content()
+                cover = null_tree.css(item, 'img.thumb').get('src', '')
+                raw_time_text = null_tree.css(
+                    item, 'p > span:nth-child(2)').text_content()
+                article['ts_publish'] = translate_time_text(raw_time_text)
+                article['title'] = title
+                article['cover'] = cover
+                article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
