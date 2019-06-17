@@ -150,7 +150,7 @@ content_sources = [{
     "url": "https://cuiqingcai.com/category/technique/python",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": " 崔庆才的个人博客, 保持更新的原创博主"
 }, {
     "title": "推酷(中文)",
@@ -248,8 +248,8 @@ content_sources = [{
     "url": "https://pymotw.com/3/",
     "level": 3,
     "lang": "EN",
-    "status": "=",
-    "desc": "文章都好, 入库算老文章吧"
+    "status": "X",
+    "desc": "看起来不怎么更新了, 暂不收录"
 }, {
     "title": "The Invent with Python Blog",
     "url": "https://inventwithpython.com/blog/index.html",
@@ -276,43 +276,43 @@ content_sources = [{
     "url": "https://weekly.manong.io/issues/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "课外读物~"
+    "status": "X",
+    "desc": "课外读物, 非 Python 主题, 暂不收录"
 }, {
     "title": "编程派",
     "url": "http://codingpy.com/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "原创, 入库留个纪念, 停更了"
+    "status": "X",
+    "desc": "原创, 入库留个纪念, 停更了, 暂不收录"
 }, {
     "title": "峰云's blog",
     "url": "http://xiaorui.cc/category/python/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "起码是个原创的, 很久不更了"
+    "status": "X",
+    "desc": "起码是个原创的, 很久不更了, 暂不收录"
 }, {
     "title": "Dan Bader",
     "url": "https://dbader.org/blog/",
     "level": 3,
     "lang": "EN",
-    "status": "-",
-    "desc": "一年不更新了"
+    "status": "X",
+    "desc": "一年不更新了, 先不收录了"
 }, {
     "title": "Pythonic Perambulations",
     "url": "https://jakevdp.github.io/",
     "level": 3,
     "lang": "EN",
-    "status": "-",
-    "desc": "最后更新 Thu 13 September 2018"
+    "status": "X",
+    "desc": "最后更新 Thu 13 September 2018, 暂不收录"
 }, {
     "title": "开源中国翻译",
     "url": "https://www.oschina.net/translate/tag/python",
     "level": 3,
     "lang": "CN",
-    "status": "-",
-    "desc": "入库留着吧, 估计不更了"
+    "status": "X",
+    "desc": "入库留着吧, 估计不更了, 暂不收录"
 }, {
     "title": "Trey Hunner",
     "url": "https://treyhunner.com/blog/archives/",
@@ -326,35 +326,28 @@ content_sources = [{
     "level": 3,
     "lang": "EN",
     "status": "X",
-    "desc": "不更新了"
+    "desc": "不更新了, 暂不收录"
 }, {
     "title": "Inside the Head of PyDanny",
     "url": "https://www.pydanny.com/",
     "level": 3,
     "lang": "EN",
     "status": "X",
-    "desc": "不更新了"
+    "desc": "不更新了, 暂不收录"
 }, {
     "title": "华蟒用户组,CPyUG",
     "url": "https://groups.google.com/forum/#!forum/python-cn",
     "level": 3,
     "lang": "EN",
     "status": "X",
-    "desc": "[墙] 社区类, 自己看看就好"
+    "desc": "[墙] 社区类, 自己看看就好, 暂不收录"
 }, {
     "title": "Treehl",
     "url": "https://family-treesy.github.io/tags/PYTHON/",
     "level": 3,
     "lang": "CN",
     "status": "X",
-    "desc": "文章较基础, 久不更新"
-}, {
-    "title": "pyfound",
-    "url": "https://pyfound.blogspot.com/",
-    "level": 3,
-    "lang": "EN",
-    "status": "X",
-    "desc": "暂时没发现特别好的文章"
+    "desc": "文章较基础, 久不更新, 暂不收录"
 }, {
     "title": "蠎周刊",
     "url": "http://weekly.pychina.org",
