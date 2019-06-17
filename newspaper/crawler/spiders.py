@@ -1204,7 +1204,7 @@ async def zhihu_zhuanlan_python_cn() -> list:
 
 @register_online
 # @register_history
-# @register_test
+@register_test
 async def cuiqingcai() -> list:
     """静觅"""
     source = "静觅"
@@ -1240,7 +1240,10 @@ async def cuiqingcai() -> list:
             else:
                 raise ValueError(f'bad time pattern {raw_time}')
             result = f'{date} 00:00:00'
-        elif re.match('^\d+天前$', raw_time):
+        elif re.match(r'^\d+小时前$', raw_time):
+            n_hour = int(find_one(r'\d+', raw_time)[0])
+            result = ttime(timestamp_today_0 - n_hour * 3600)
+        elif re.match(r'^\d+天前$', raw_time):
             n_day = int(find_one(r'\d+', raw_time)[0])
             result = ttime(timestamp_today_0 - n_day * 86400)
         else:
