@@ -1210,9 +1210,13 @@ async def cuiqingcai() -> list:
     source = "静觅"
     articles: list = []
     max_page = 1
+    # max_page = 20
     api = 'https://cuiqingcai.com/category/technique/python/page/'
-    this_year = ttime()[:4]
-    timestamp_today_0 = ptime(ttime()[:10] + ' 00:00:00')
+    now = ttime()
+    this_date = now[5:10]
+    this_year = now[:4]
+    last_year_int = int(this_year) - 1
+    timestamp_today_0 = ptime(now[:10] + ' 00:00:00')
 
     def translate_time_text(raw_time):
         if not raw_time:
@@ -1223,15 +1227,19 @@ async def cuiqingcai() -> list:
         # 2天前
         # 4年前 (2015-02-12)
         # 先尝试取得横线分割的时间, 取不到的应该是 n 天前的情况
-        time1 = find_one(r'\(([\d-]+)\)', raw_time)[1]
-        if time1:
-            if re.match(r'^\d\d-\d\d$', time1):
-                time1 = f'{this_year}-{time1}'
-            elif re.match(r'^\d\d\d\d-\d\d-\d\d$', time1):
+        date = find_one(r'\(([\d-]+)\)', raw_time)[1]
+        if date:
+            if re.match(r'^\d\d-\d\d$', date):
+                # 这里有可能遇到的是去年的月份, 所以先判断
+                if date >= this_date:
+                    date = f'{last_year_int}-{date}'
+                else:
+                    date = f'{this_year}-{date}'
+            elif re.match(r'^\d\d\d\d-\d\d-\d\d$', date):
                 pass
             else:
                 raise ValueError(f'bad time pattern {raw_time}')
-            result = f'{time1} 00:00:00'
+            result = f'{date} 00:00:00'
         elif re.match('^\d+天前$', raw_time):
             n_day = int(find_one(r'\d+', raw_time)[0])
             result = ttime(timestamp_today_0 - n_day * 86400)
