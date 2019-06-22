@@ -21,7 +21,7 @@ friendly_crawling_interval = 1
 req = Requests(default_host_frequency=(1, 3))
 # 多次请求时的友好抓取频率
 # req.set_frequency('zhuanlan.zhihu.com', 1, 3)
-# req.set_frequency('www.tuicool.com', 1, 3)
+req.set_frequency('www.tuicool.com', 1, 3)
 
 
 class null_tree:
@@ -172,6 +172,76 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
         article['url'] = item['url']
         article['url_key'] = get_url_key(article['url'])
         articles.append(article)
+    return articles
+
+
+async def common_spider_tuicool(lang, source, max_page=1):
+    articles = []
+    langs = {'cn': 1, 'en': 2}
+    lang_num = langs[lang]
+    host = 'https://www.tuicool.com/'
+    this_year = ttime()[:4]
+    # 非登录用户只能采集前两页, 想采集更多需要 `_tuicool_session` cookie.
+    headers = {
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'If-None-Match': 'W/"41a6894d66c0f07fcfac6ec1d84446a3"',
+        'Dnt': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'Referer': 'https://www.tuicool.com/',
+        'Host': 'www.tuicool.com',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Cookie': '_tuicool_session=',
+    }
+    # proxy = 'http://218.60.8.99:3129'
+    proxy = None
+    for page in range(0, max_page):
+        api = f'https://www.tuicool.com/topics/11130000?st=0&lang={lang_num}&pn={page}'
+        r = await req.get(api,
+                          verify=0,
+                          proxy=proxy,
+                          retry=1,
+                          timeout=5,
+                          headers=headers)
+        if not r:
+            logger.info(f'crawl tuicool {lang} page={page} failed: {r}')
+            return articles
+        items = fromstring(
+            r.text).cssselect('#list_article>div.list_article_item')
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        if not items:
+            break
+        for item in items:
+            article = {'source': source}
+            url = null_tree.css(item,
+                                '.aricle_item_info>.title>a').get('href', '')
+            url = add_host(url, host)
+            title = null_tree.css(item, '.aricle_item_info>.title>a').text
+            cover = null_tree.css(item,
+                                  '.article_thumb_image>img').get('src', '')
+            cover = cover.replace(
+                'https://static0.tuicool.com/images/abs_img_no_small.jpg', '')
+            time_span = null_tree.css(item,
+                                      '.aricle_item_info>.tip').text_content()
+            raw_time = find_one(r'\d\d-\d\d \d\d:\d\d', time_span)[0]
+            if raw_time:
+                # 避免是个怪异的时间, ensure 一下
+                article['ts_publish'] = ttime(
+                    ptime(f'{this_year}-{raw_time}:00'))
+            desc = null_tree.css(
+                item,
+                '.aricle_item_info>div.tip>span:nth-of-type(1)').text.strip()
+            article['cover'] = cover
+            article['title'] = title
+            article['desc'] = desc
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
     return articles
 
 
@@ -1204,7 +1274,7 @@ async def zhihu_zhuanlan_python_cn() -> list:
 
 @register_online
 # @register_history
-@register_test
+# @register_test
 async def cuiqingcai() -> list:
     """静觅"""
     source = "静觅"
@@ -1290,6 +1360,36 @@ async def cuiqingcai() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def tuicool_cn() -> list:
+    """推酷(中文)"""
+    source = "推酷(中文)"
+    articles: list = []
+    max_page = 1
+    articles = await common_spider_tuicool('cn', source, max_page=max_page)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def tuicool_en() -> list:
+    """推酷(英文)"""
+    source = "推酷(英文)"
+    articles: list = []
+    max_page = 1
+    articles = await common_spider_tuicool('en', source, max_page=max_page)
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
