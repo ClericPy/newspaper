@@ -157,14 +157,14 @@ content_sources = [{
     "url": "https://www.tuicool.com/topics/11130000?st=0&lang=1",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "推文类站点. 虽然原创不多, 但是质量还算可以"
 }, {
     "title": "推酷(英文)",
     "url": "https://www.tuicool.com/topics/11130000?st=0&lang=2",
     "level": 3,
     "lang": "EN",
-    "status": "=",
+    "status": "√",
     "desc": "推文类站点"
 }, {
     "title": "开发者头条",

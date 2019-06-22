@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 19 / 35
+* 收录进度: 21 / 35
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -58,8 +58,8 @@
 | 20 | [Python猫](https://zhuanlan.zhihu.com/pythonCat) | 3 | CN | <span style="color: green">√</span> | 2018 年末比较热情的博主, 原创 |
 | 21 | [Python之美](https://zhuanlan.zhihu.com/python-cn) | 3 | CN | <span style="color: green">√</span> | 早期文章较多, 创业以后更新不太多了 |
 | 22 | [静觅](https://cuiqingcai.com/category/technique/python) | 3 | CN | <span style="color: green">√</span> |  崔庆才的个人博客, 保持更新的原创博主 |
-| 23 | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3 | CN | <span style="color: orange">=</span> | 推文类站点. 虽然原创不多, 但是质量还算可以 |
-| 24 | [推酷(英文)](https://www.tuicool.com/topics/11130000?st=0&lang=2) | 3 | EN | <span style="color: orange">=</span> | 推文类站点 |
+| 23 | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3 | CN | <span style="color: green">√</span> | 推文类站点. 虽然原创不多, 但是质量还算可以 |
+| 24 | [推酷(英文)](https://www.tuicool.com/topics/11130000?st=0&lang=2) | 3 | EN | <span style="color: green">√</span> | 推文类站点 |
 | 25 | [开发者头条](https://toutiao.io/tags/python?type=latest) | 3 | CN | <span style="color: orange">=</span> | 推文类站点 |
 | 26 | [稀土掘金](https://juejin.im/tag/Python) | 3 | CN | <span style="color: orange">=</span> | 推文类站点 |
 | 27 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | <span style="color: orange">=</span> | Web 开发相关的内容挺多, 质量较高 |
