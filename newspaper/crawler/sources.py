@@ -158,28 +158,28 @@ content_sources = [{
     "level": 3,
     "lang": "CN",
     "status": "√",
-    "desc": "推文类站点. 虽然原创不多, 但是质量还算可以"
+    "desc": "推文类站点. 按热门排序"
 }, {
     "title": "推酷(英文)",
     "url": "https://www.tuicool.com/topics/11130000?st=0&lang=2",
     "level": 3,
     "lang": "EN",
     "status": "√",
-    "desc": "推文类站点"
+    "desc": "推文类站点. 按热门排序"
 }, {
     "title": "开发者头条",
     "url": "https://toutiao.io/tags/python?type=latest",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "推文类站点"
+    "status": "X",
+    "desc": "推文类站点, 但是没有发布时间, 暂不收录"
 }, {
     "title": "稀土掘金",
     "url": "https://juejin.im/tag/Python",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "推文类站点"
+    "status": "√",
+    "desc": "推文类站点. 按热门排序"
 }, {
     "title": "miguelgrinberg",
     "url": "https://blog.miguelgrinberg.com/index",
