@@ -22,6 +22,8 @@ req = Requests(default_host_frequency=(1, 3))
 # 多次请求时的友好抓取频率
 # req.set_frequency('zhuanlan.zhihu.com', 1, 3)
 req.set_frequency('www.tuicool.com', 1, 3)
+# 免费代理
+proxy = 'http://218.60.8.99:3129'
 
 
 class null_tree:
@@ -195,10 +197,10 @@ async def common_spider_tuicool(lang, source, max_page=1):
         'Accept-Language': 'zh-CN,zh;q=0.9',
         'Cookie': '_tuicool_session=',
     }
-    # proxy = 'http://218.60.8.99:3129'
     proxy = None
     for page in range(0, max_page):
-        api = f'https://www.tuicool.com/topics/11130000?st=0&lang={lang_num}&pn={page}'
+        # st 参数: 0 是按时间顺序, 1 是热门文章
+        api = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
         r = await req.get(api,
                           verify=0,
                           proxy=proxy,
@@ -1390,6 +1392,73 @@ async def tuicool_en() -> list:
     articles: list = []
     max_page = 1
     articles = await common_spider_tuicool('en', source, max_page=max_page)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def kf_toutiao() -> list:
+    """稀土掘金"""
+    source = "稀土掘金"
+    articles: list = []
+    max_page = 1
+    per_page = 20
+    sort_by = 'rankIndex'  # 'createdAt' 是按时间顺序
+    api = 'https://timeline-merger-ms.juejin.im/v1/get_tag_entry'
+    params = {
+        'src': 'web',
+        'tagId': '559a7227e4b08a686d25744f',
+        'page': 0,
+        'pageSize': per_page,
+        'sort': sort_by
+    }
+    for page in range(0, max_page):
+        params['page'] = page
+        r = await req.get(
+            api,
+            params=params,
+            verify=0,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': 'https://juejin.im/tag/Python?sort=popular',
+                'Origin': 'https://juejin.im',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+                'Dnt': '1'
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        items = r.json().get('d', {}).get('entrylist', [])
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article = {'source': source}
+                # 2019-05-05T03:51:12.886Z
+                gmt_time = re.sub(r'\..*', '',
+                                  item['createdAt']).replace('T', ' ')
+                ts_publish = ttime(ptime(gmt_time, tzone=0))
+                article['ts_publish'] = ts_publish
+                article['lang'] = 'en' if item['english'] else 'cn'
+                article['title'] = item['title']
+                article['cover'] = item['screenshot']
+                article['desc'] = item['summaryInfo']
+                article['url'] = item['originalUrl']
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
