@@ -181,6 +181,13 @@ content_sources = [{
     "status": "√",
     "desc": "推文类站点. 按热门排序"
 }, {
+    "title": "Python部落",
+    "url": "https://python.freelycode.com/contribution/list/0?page_no=1",
+    "level": 3,
+    "lang": "CN",
+    "status": "=",
+    "desc": "推文+译文"
+}, {
     "title": "miguelgrinberg",
     "url": "https://blog.miguelgrinberg.com/index",
     "level": 3,

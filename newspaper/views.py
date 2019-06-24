@@ -58,7 +58,7 @@ def handle_api_error(req, error):
 
 @app.route('/')
 async def index(req):
-    return PlainTextResponse('NotImplemented')
+    return RedirectResponse('/newspaper/articles.query.html', 302)
 
 
 @app.route("/newspaper/articles.cache.clear")
