@@ -177,12 +177,13 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
     return articles
 
 
-async def common_spider_tuicool(lang, source, max_page=1):
+async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     articles = []
     langs = {'cn': 1, 'en': 2}
     lang_num = langs[lang]
     host = 'https://www.tuicool.com/'
     this_year = ttime()[:4]
+    ignore_descs = ignore_descs or set()
     # 非登录用户只能采集前两页, 想采集更多需要 `_tuicool_session` cookie.
     headers = {
         'Connection': 'keep-alive',
@@ -238,6 +239,8 @@ async def common_spider_tuicool(lang, source, max_page=1):
             desc = null_tree.css(
                 item,
                 '.aricle_item_info>div.tip>span:nth-of-type(1)').text.strip()
+            if desc in ignore_descs:
+                continue
             article['cover'] = cover
             article['title'] = title
             article['desc'] = desc
@@ -1298,20 +1301,28 @@ async def cuiqingcai() -> list:
         # 4个月前 (02-21)
         # 2天前
         # 4年前 (2015-02-12)
-        # 先尝试取得横线分割的时间, 取不到的应该是 n 天前的情况
-        date = find_one(r'\(([\d-]+)\)', raw_time)[1]
+        # 先尝试取得横线/:分割的时间, 取不到的应该是 n 天前的情况
+        date = find_one(r'([\d:\- ]+)', raw_time)[1]
         if date:
             if re.match(r'^\d\d-\d\d$', date):
+                # 只有月日
                 # 这里有可能遇到的是去年的月份, 所以先判断
                 if date >= this_date:
                     date = f'{last_year_int}-{date}'
                 else:
                     date = f'{this_year}-{date}'
+                result = f'{date} 00:00:00'
             elif re.match(r'^\d\d\d\d-\d\d-\d\d$', date):
-                pass
+                # 有年月日
+                result = f'{date} 00:00:00'
+            elif re.match(r'^\d\d\d\d-\d\d-\d\d \d\d:\d\d$', date):
+                # 有年月日时分
+                result = f'{date}:00'
+            elif re.match(r'^\d\d\d\d-\d\d-\d\d \d:\d\d$', date):
+                # 有年月日时分
+                result = f'{date[:11]}0{date[11:]}:00'
             else:
                 raise ValueError(f'bad time pattern {raw_time}')
-            result = f'{date} 00:00:00'
         elif re.match(r'^\d+小时前$', raw_time):
             n_hour = int(find_one(r'\d+', raw_time)[0])
             result = ttime(timestamp_today_0 - n_hour * 3600)
@@ -1376,7 +1387,7 @@ async def tuicool_cn() -> list:
     source = "推酷(中文)"
     articles: list = []
     max_page = 1
-    articles = await common_spider_tuicool('cn', source, max_page=max_page)
+    articles = await common_spider_tuicool('cn', source, max_page=max_page, ignore_descs={'稀土掘金'})
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
@@ -1391,7 +1402,7 @@ async def tuicool_en() -> list:
     source = "推酷(英文)"
     articles: list = []
     max_page = 1
-    articles = await common_spider_tuicool('en', source, max_page=max_page)
+    articles = await common_spider_tuicool('en', source, max_page=max_page, ignore_descs={'Real Python'})
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
