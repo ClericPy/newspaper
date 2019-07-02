@@ -242,7 +242,7 @@ class MySQLStorage(Storage):
   PRIMARY KEY (`url_key`),
   KEY `ts_create_index` (`ts_create`) USING BTREE,
   KEY `ts_publish_index` (`ts_publish`),
-  FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`)
+  FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`) /*!50100 WITH PARSER `ngram` */ 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据.'
 '''
         await self.execute(sql, fetchall=None)

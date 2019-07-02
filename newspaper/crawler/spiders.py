@@ -1387,7 +1387,10 @@ async def tuicool_cn() -> list:
     source = "推酷(中文)"
     articles: list = []
     max_page = 1
-    articles = await common_spider_tuicool('cn', source, max_page=max_page, ignore_descs={'稀土掘金'})
+    articles = await common_spider_tuicool('cn',
+                                           source,
+                                           max_page=max_page,
+                                           ignore_descs={'稀土掘金'})
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
@@ -1402,7 +1405,10 @@ async def tuicool_en() -> list:
     source = "推酷(英文)"
     articles: list = []
     max_page = 1
-    articles = await common_spider_tuicool('en', source, max_page=max_page, ignore_descs={'Real Python'})
+    articles = await common_spider_tuicool('en',
+                                           source,
+                                           max_page=max_page,
+                                           ignore_descs={'Real Python'})
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
