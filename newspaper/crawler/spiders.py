@@ -1207,7 +1207,7 @@ async def dev_io() -> list:
     curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_by_published_at_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
         per_page)
     curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
-    for page in range(1, max_page + 1):
+    for page in range(0, max_page):
         curl_string2 = f'&page={page}'
         curl_string = f'{curl_string1}{curl_string2}{curl_string3}'
         request_args = curlparse(curl_string)
