@@ -242,7 +242,7 @@ class MySQLStorage(Storage):
   PRIMARY KEY (`url_key`),
   KEY `ts_create_index` (`ts_create`) USING BTREE,
   KEY `ts_publish_index` (`ts_publish`),
-  FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`)
+  FULLTEXT KEY `full_text_index` (`title`,`desc`,`url`) /*!50100 WITH PARSER `ngram` */ 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存放文章数据.'
 '''
         await self.execute(sql, fetchall=None)
@@ -297,7 +297,18 @@ class MySQLStorage(Storage):
         limit = min((self.max_limit, int(limit)))
         offset = int(offset)
         lang = str(lang).upper()
+        extra_select_words: str = ''
 
+        if query:
+            # 带检索词的，添加上字段方便排序
+            extra_select_words = ', MATCH (`title`, `desc`, `url`) AGAINST (%s IN BOOLEAN MODE)  as relevance'
+            args.append(query)
+            where_list.append(
+                'MATCH (`title`, `desc`, `url`) AGAINST (%s in BOOLEAN MODE)')
+            args.append(query)
+        if order_by not in self.articles_table_columns and order_by != 'relevance':
+            order_by = 'ts_create'
+        order_by_sorting = f'order by {order_by} {sorting}'
         if date:
             if date == 'today':
                 date = ttime()[:10]
@@ -310,9 +321,6 @@ class MySQLStorage(Storage):
             start_time = f'{date} 00:00:00'
             end_time = f'{date} 23:59:59'
             limit = 9999
-
-        if order_by not in self.articles_table_columns:
-            order_by = 'ts_create'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
         if start_time:
@@ -327,9 +335,7 @@ class MySQLStorage(Storage):
             where_list.append("`source` = %s")
             args.append(source)
             result['source'] = source
-        if query:
-            where_list.append("MATCH(`title`, `desc`, `url`) AGAINST(%s)")
-            args.append(query)
+
         if lang in {'CN', 'EN'}:
             where_list.append("`lang` = %s")
             args.append(lang)
@@ -347,7 +353,7 @@ class MySQLStorage(Storage):
             where_string = 'where ' + ' and '.join(where_list)
         else:
             where_string = ''
-        sql = f"SELECT * from articles {where_string} order by {order_by} {sorting} limit %s offset %s"
+        sql = f"SELECT *{extra_select_words} from articles {where_string} {order_by_sorting} limit %s offset %s"
         logger.info(f'fetching articles sql: {sql}, args: {args}')
         items = await self.execute(sql, args)
         result['has_more'] = 1 if len(items) > limit else 0
