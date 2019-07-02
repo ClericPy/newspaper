@@ -310,9 +310,6 @@ class MySQLStorage(Storage):
             start_time = f'{date} 00:00:00'
             end_time = f'{date} 23:59:59'
             limit = 9999
-
-        if order_by not in self.articles_table_columns:
-            order_by = 'ts_create'
         if sorting.lower() not in ('desc', 'asc'):
             sorting = 'desc'
         if start_time:
@@ -328,8 +325,16 @@ class MySQLStorage(Storage):
             args.append(source)
             result['source'] = source
         if query:
-            where_list.append("MATCH(`title`, `desc`, `url`) AGAINST(%s)")
+            where_list.append('MATCH(`title`, `desc`, `url`) AGAINST(%s)')
             args.append(query)
+            if order_by == 'none':
+                # 按索引相关度倒序
+                order_by_sorting = ''
+            else:
+                if order_by not in self.articles_table_columns:
+                    order_by = 'ts_create'
+                order_by_sorting = f'order by {order_by} {sorting}'
+
         if lang in {'CN', 'EN'}:
             where_list.append("`lang` = %s")
             args.append(lang)
@@ -347,7 +352,7 @@ class MySQLStorage(Storage):
             where_string = 'where ' + ' and '.join(where_list)
         else:
             where_string = ''
-        sql = f"SELECT * from articles {where_string} order by {order_by} {sorting} limit %s offset %s"
+        sql = f"SELECT * from articles {where_string} {order_by_sorting} limit %s offset %s"
         logger.info(f'fetching articles sql: {sql}, args: {args}')
         items = await self.execute(sql, args)
         result['has_more'] = 1 if len(items) > limit else 0
