@@ -157,7 +157,7 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
     api = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={limit}&offset=0'
     r = await req.get(
         api,
-        ssl=0,
+        ssl=False,
         headers={
             "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
         })
@@ -204,7 +204,7 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
         # st 参数: 0 是按时间顺序, 1 是热门文章
         api = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
         r = await req.get(api,
-                          ssl=0,
+                          ssl=False,
                           proxy=proxy,
                           retry=1,
                           timeout=5,
@@ -371,7 +371,7 @@ async def python_weekly() -> list:
             detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
             r = await req.get(
                 detail_url,
-                ssl=0,
+                ssl=False,
                 headers={
                     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
                 })
@@ -418,7 +418,7 @@ async def python_weekly_history() -> list:
             detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
             r = await req.get(
                 detail_url,
-                ssl=0,
+                ssl=False,
                 headers={
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
                 })
@@ -743,7 +743,7 @@ async def julien_danjou() -> list:
                 raise ValueError(f'{source} no title {url}')
             detail_resp = await req.get(
                 url,
-                ssl=0,
+                ssl=False,
                 headers={
                     "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
                 })
@@ -1040,7 +1040,7 @@ async def snarky() -> list:
                     raise ValueError(f'{source} no title {url}')
                 detail_resp = await req.get(
                     url,
-                    ssl=0,
+                    ssl=False,
                     headers={
                         "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
                     })
@@ -1342,7 +1342,7 @@ async def cuiqingcai() -> list:
             seed,
             retry=1,
             timeout=20,
-            ssl=0,
+            ssl=False,
             headers={
                 "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
             })
@@ -1441,7 +1441,7 @@ async def kf_toutiao() -> list:
         r = await req.get(
             api,
             params=params,
-            ssl=0,
+            ssl=False,
             # proxy=proxy,
             retry=1,
             headers={
