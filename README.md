@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 22 / 35
+* 收录进度: 23 / 35
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -62,7 +62,7 @@
 | 24 | [推酷(英文)](https://www.tuicool.com/topics/11130000?st=0&lang=2) | 3 | EN | <span style="color: green">√</span> | 推文类站点. 按热门排序 |
 | 25 | [开发者头条](https://toutiao.io/tags/python?type=latest) | 3 | CN | <span style="color: red">X</span> | 推文类站点, 但是没有发布时间, 暂不收录 |
 | 26 | [稀土掘金](https://juejin.im/tag/Python) | 3 | CN | <span style="color: green">√</span> | 推文类站点. 按热门排序 |
-| 27 | [Python部落](https://python.freelycode.com/contribution/list/0?page_no=1) | 3 | CN | <span style="color: orange">=</span> | 推文+译文 |
+| 27 | [Python部落](https://python.freelycode.com/contribution/list/0?page_no=1) | 3 | CN | <span style="color: green">√</span> | 推文+译文 |
 | 28 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | <span style="color: orange">=</span> | Web 开发相关的内容挺多, 质量较高 |
 | 29 | [Ned Batchelder](https://nedbatchelder.com/blog/) | 3 | EN | <span style="color: orange">=</span> | 热门博主 |
 | 30 | [Full Stack Python](https://www.fullstackpython.com/blog.html) | 3 | EN | <span style="color: orange">=</span> | 全栈可以有 |
@@ -77,7 +77,7 @@
 | 39 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | <span style="color: orange">=</span> | Flask 作者 Armin Ronacher |
 | 40 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | <span style="color: red">X</span> | 知名 Python 开源组织, 不过没有文章类的 post |
 | 41 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | <span style="color: red">X</span> | 课外读物, 非 Python 主题, 暂不收录 |
-| 42 | [编程派](http://codingpy.com/) | 3 | CN | <span style="color: red">X</span> | 原创, 入库留个纪念, 停更了, 暂不收录 |
+| 42 | [编程派](http://codingpy.com/) | 3 | CN | <span style="color: red">X</span> | 原创, 停更了, 暂不收录 |
 | 43 | [峰云's blog](http://xiaorui.cc/category/python/) | 3 | CN | <span style="color: red">X</span> | 起码是个原创的, 很久不更了, 暂不收录 |
 | 44 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | <span style="color: red">X</span> | 一年不更新了, 先不收录了 |
 | 45 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | <span style="color: red">X</span> | 最后更新 Thu 13 September 2018, 暂不收录 |
