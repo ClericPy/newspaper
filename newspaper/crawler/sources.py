@@ -185,7 +185,7 @@ content_sources = [{
     "url": "https://python.freelycode.com/contribution/list/0?page_no=1",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "推文+译文"
 }, {
     "title": "miguelgrinberg",
@@ -291,7 +291,7 @@ content_sources = [{
     "level": 3,
     "lang": "CN",
     "status": "X",
-    "desc": "原创, 入库留个纪念, 停更了, 暂不收录"
+    "desc": "原创, 停更了, 暂不收录"
 }, {
     "title": "峰云's blog",
     "url": "http://xiaorui.cc/category/python/",

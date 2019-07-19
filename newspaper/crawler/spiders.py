@@ -4,7 +4,6 @@ import traceback
 import typing
 import zlib
 
-import aiohttp
 from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
 from torequests.utils import (curlparse, find_one, md5, parse_qsl, ptime, re,
@@ -154,7 +153,7 @@ def register_history(function: typing.Callable) -> typing.Callable:
 
 async def common_spider_zhihu_zhuanlan(name, source, limit=10):
     articles = []
-    api = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={limit}&offset=0'
+    api: str = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={limit}&offset=0'
     r = await req.get(
         api,
         ssl=False,
@@ -167,7 +166,7 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
     for item in r.json()['data']:
         if not (item['type'] == 'article' and item['state'] == 'published'):
             continue
-        article = {'source': source}
+        article: dict = {'source': source}
         article['ts_publish'] = ttime(item['created'])
         article['cover'] = item['image_url']
         article['title'] = item['title']
@@ -202,7 +201,7 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     proxy = None
     for page in range(0, max_page):
         # st 参数: 0 是按时间顺序, 1 是热门文章
-        api = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
+        api: str = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
         r = await req.get(api,
                           ssl=False,
                           proxy=proxy,
@@ -221,7 +220,7 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
         if not items:
             break
         for item in items:
-            article = {'source': source}
+            article: dict = {'source': source}
             url = null_tree.css(item,
                                 '.aricle_item_info>.title>a').get('href', '')
             url = add_host(url, host)
@@ -254,7 +253,7 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
 @register_online
 async def python_news() -> list:
     """Python Software Foundation News"""
-    source = 'Python Software Foundation News'
+    source: str = 'Python Software Foundation News'
     articles: list = []
     seed = 'https://pyfound.blogspot.com/search?max-results=10'
     scode = await outlands_request({
@@ -265,7 +264,7 @@ async def python_news() -> list:
         tree = fromstring(scode)
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
                     ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
@@ -292,7 +291,7 @@ async def python_news() -> list:
 # @register_history
 async def python_news_history() -> list:
     """Python Software Foundation News"""
-    source = 'Python Software Foundation News'
+    source: str = 'Python Software Foundation News'
     articles: list = []
     current_year = int(time.strftime('%Y'))
     for year in range(2006, current_year + 1):
@@ -307,7 +306,7 @@ async def python_news_history() -> list:
         tree = fromstring(scode)
         for item in tree.cssselect('.blog-posts>.date-outer'):
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 raw_pub_time = item.cssselect('.published')[0].get('title', '')
                 ts_publish = ttime(
                     ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
@@ -339,7 +338,7 @@ def _python_weekly_calculate_date(issue_id):
 @register_online
 async def python_weekly() -> list:
     """Python Weekly"""
-    source = 'Python Weekly'
+    source: str = 'Python Weekly'
     articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
@@ -354,7 +353,7 @@ async def python_weekly() -> list:
     items = re.findall(r'(<li [\s\S]*?</li>)', box)
     for item in items[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             # 从列表页取 ts_publish 和 issue_id, 其他的去详情页里采集
             # <li class="campaign">05/09/2019 - <a href="http://eepurl.com/gqB4vv" title="Python Weekly - Issue 396" target="_blank">Python Weekly - Issue 396</a></li>
             title = find_one('title="(.*?)"', item)[1]
@@ -409,11 +408,11 @@ async def python_weekly() -> list:
 # @register_history
 async def python_weekly_history() -> list:
     """Python Weekly"""
-    source = 'Python Weekly'
+    source: str = 'Python Weekly'
     articles: list = []
     for issue_id in range(324, 1000):
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             article['ts_publish'] = _python_weekly_calculate_date(issue_id)
             detail_url = f'https://mailchi.mp/pythonweekly/python-weekly-issue-{issue_id}'
             r = await req.get(
@@ -460,7 +459,7 @@ async def python_weekly_history() -> list:
 async def pycoder_weekly() -> list:
     """PyCoder's Weekly"""
     # 把 limit 改 999 就可以抓历史了
-    source = "PyCoder's Weekly"
+    source: str = "PyCoder's Weekly"
     articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
@@ -473,7 +472,7 @@ async def pycoder_weekly() -> list:
     items = re.findall(r'<a href="/issues/\d+">Issue #\d+ .*?</a>', r.text)
     for item in items[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             # <a href="/issues/368">Issue #368 (May 14, 2019)</a>
             title = find_one('>(Issue.*?)<', item)[1]
             article['title'] = f"PyCoder's Weekly | {title}"
@@ -501,7 +500,7 @@ async def pycoder_weekly() -> list:
 # @register_test
 async def importpython() -> list:
     """Import Python"""
-    source = 'Import Python'
+    source: str = 'Import Python'
     articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
@@ -517,7 +516,7 @@ async def importpython() -> list:
     items = fromstring(r.text).cssselect('#tourpackages-carousel>.row>div')
     for item in items[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             href = item.cssselect('div.caption>a')[0].get('href', '')
             if not href:
                 continue
@@ -552,7 +551,7 @@ async def importpython() -> list:
 @register_online
 async def awesome_python() -> list:
     """Awesome Python Newsletter"""
-    source = 'Awesome Python Newsletter'
+    source: str = 'Awesome Python Newsletter'
     articles: list = []
     # 一周一更, 所以只取第一个就可以了
     limit = 1
@@ -568,7 +567,7 @@ async def awesome_python() -> list:
         r'<td class="text-right">\s*<a href=\'(/newsletter/\d+)\'>', r.text)
     for href in hrefs[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             url = add_host(href, 'https://python.libhunt.com/')
             r = await req.get(url,
                               retry=2,
@@ -608,7 +607,7 @@ async def awesome_python() -> list:
 @register_online
 async def real_python() -> list:
     """Real Python"""
-    source = 'Real Python'
+    source: str = 'Real Python'
     articles: list = []
     limit = 20
     seed = 'https://realpython.com/'
@@ -622,7 +621,7 @@ async def real_python() -> list:
     items = fromstring(r.text).cssselect('div[class="card border-0"]')
     for item in items[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             href = item.cssselect('a')[0].get('href', '')
             url = add_host(href, 'https://realpython.com/')
             title = item.cssselect('h2.card-title')[0].text
@@ -653,7 +652,7 @@ async def real_python() -> list:
 @register_online
 async def planet_python() -> list:
     """Planet Python"""
-    source = 'Planet Python'
+    source: str = 'Planet Python'
     articles: list = []
     limit = 100
     seed = 'https://planetpython.org/rss20.xml'
@@ -666,7 +665,7 @@ async def planet_python() -> list:
     now = ttime()
     for item in items[:limit]:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             guid = item.xpath('./guid/text()')
             title = item.xpath('./title/text()')
             description = item.xpath('./description/text()')
@@ -713,7 +712,7 @@ async def planet_python() -> list:
 async def julien_danjou() -> list:
     """Julien Danjou"""
     # 历史文章只要不断改页码迭代就好了
-    source = 'Julien Danjou'
+    source: str = 'Julien Danjou'
     articles: list = []
     seed = 'https://julien.danjou.info/page/1/'
     r = await req.get(seed,
@@ -730,7 +729,7 @@ async def julien_danjou() -> list:
     host = 'https://julien.danjou.info/'
     for item in items:
         try:
-            article = {'source': source}
+            article: dict = {'source': source}
             href = item.cssselect('a.post-card-content-link')[0].get('href', '')
             if not href:
                 raise ValueError(f'{source} not found href from {seed}')
@@ -782,9 +781,9 @@ async def julien_danjou() -> list:
 @register_online
 async def doughellmann() -> list:
     """Doug Hellmann"""
-    source = 'Doug Hellmann'
+    source: str = 'Doug Hellmann'
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     seed = 'https://doughellmann.com/blog/page/{page}/'
     for page in range(1, max_page + 1):
         r = await req.get(seed.format(page=page),
@@ -805,7 +804,7 @@ async def doughellmann() -> list:
                 break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item.cssselect('.entry-title>a')[0].text
                 url = item.cssselect('.entry-title>a')[0].get('href')
                 desc = item.cssselect('.entry-content')[0].text_content()
@@ -831,10 +830,10 @@ async def doughellmann() -> list:
 # @register_test
 async def mouse_vs_python() -> list:
     """The Mouse Vs. The Python"""
-    source = 'The Mouse Vs. The Python'
+    source: str = 'The Mouse Vs. The Python'
     articles: list = []
-    max_page = 1
-    # max_page = 101
+    max_page: int = 1
+    # max_page:int = 101
     seed = 'https://www.blog.pythonlibrary.org/page/{page}/'
     for page in range(1, max_page + 1):
         r = await req.get(seed.format(page=page),
@@ -856,7 +855,7 @@ async def mouse_vs_python() -> list:
             break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item.cssselect('.entry-title>a')[0].text
                 url = item.cssselect('.entry-title>a')[0].get('href')
                 desc = item.cssselect('.entry-content')[0].text_content()
@@ -882,10 +881,10 @@ async def mouse_vs_python() -> list:
 # @register_test
 async def infoq_python() -> list:
     """InfoQ"""
-    source = 'InfoQ'
+    source: str = 'InfoQ'
     articles: list = []
-    max_page = 1
-    # max_page = 101
+    max_page: int = 1
+    # max_page:int = 101
     curl_string = r'''curl 'https://www.infoq.cn/public/v1/article/getList' -H 'Origin: https://www.infoq.cn' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://www.infoq.cn/topic/python' -H 'Cookie: SERVERID=0|0|0' -H 'Connection: keep-alive' -H 'DNT: 1' --data-binary '{"type":1,"size":12,"id":50,"score":0}' --compressed'''
     request_args = curlparse(curl_string)
     for page in range(1, max_page + 1):
@@ -908,7 +907,7 @@ async def infoq_python() -> list:
                 break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item['article_title']
                 url = f"https://www.infoq.cn/article/{item['uuid']}"
                 desc = item['article_summary']
@@ -933,7 +932,7 @@ async def infoq_python() -> list:
 # @register_test
 async def hn_python() -> list:
     """Hacker News"""
-    source = 'Hacker News'
+    source: str = 'Hacker News'
     articles: list = []
     max_page = 999
     # 默认收录 24 小时内的 3 points 以上
@@ -945,10 +944,10 @@ async def hn_python() -> list:
     # 如果需要更久的, 不断修改起止时间就可以了
     # ts_start = now_ts - 86400 * 90
     # ts_end = now_ts
-    per_page = 100
-    api = 'https://hn.algolia.com/api/v1/search_by_date'
+    per_page: int = 100
+    api: str = 'https://hn.algolia.com/api/v1/search_by_date'
     # tags=story&query=python&numericFilters=created_at_i%3E1553174400,points%3E1&page=2&hitsPerPage=10
-    params = {
+    params: dict = {
         'tags': 'story',
         'query': 'python',
         'numericFilters': f'created_at_i>={ts_start},created_at_i<={ts_end},points>={min_points}',
@@ -977,7 +976,7 @@ async def hn_python() -> list:
                 break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item['title']
                 url = item['url'] or ''
                 if not url:
@@ -1004,10 +1003,10 @@ async def hn_python() -> list:
 # @register_test
 async def snarky() -> list:
     """Brett Cannon"""
-    source = 'Brett Cannon'
+    source: str = 'Brett Cannon'
     articles: list = []
-    max_page = 1
-    api = 'https://snarky.ca/page/{page}/'
+    max_page: int = 1
+    api: str = 'https://snarky.ca/page/{page}/'
     # 判断发布时间如果是 1 小时前就 break
     break_time = ttime(time.time() - 60 * 60)
     host = 'https://snarky.ca/'
@@ -1026,7 +1025,7 @@ async def snarky() -> list:
             break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 href = item.cssselect('a.post-card-content-link')[0].get(
                     'href', '')
                 if not href:
@@ -1082,9 +1081,9 @@ async def snarky() -> list:
 # @register_test
 async def jiqizhixin() -> list:
     """机器之心"""
-    source = '机器之心'
+    source: str = '机器之心'
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     # 有 cookie 和 防跨域验证
     curl_string = r'''curl 'https://www.jiqizhixin.com/api/v1/search?type=articles&page=1&keywords=python&published=0&is_exact_match=false&search_internet=true&sort=time' -H 'Cookie: ahoy_visitor=1; _Synced_session=2' -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Accept: */*' -H 'Referer: https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time' -H 'X-Requested-With: XMLHttpRequest' -H 'If-None-Match: W/"3e034aa5e8cb79dd92652f5ba70a65a5"' -H 'Connection: keep-alive' --compressed'''
     request_args = curlparse(curl_string)
@@ -1117,7 +1116,7 @@ async def jiqizhixin() -> list:
             break
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 desc = item['content']
                 # 2019/05/27 00:09
                 article['ts_publish'] = ttime(
@@ -1146,9 +1145,9 @@ async def jiqizhixin() -> list:
 # @register_test
 async def lilydjwg() -> list:
     """依云's Blog"""
-    source = "依云's Blog"
+    source: str = "依云's Blog"
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     seed = 'https://blog.lilydjwg.me/tag/python?page={page}'
     for page in range(1, max_page + 1):
         r = await req.get(seed.format(page=page),
@@ -1169,7 +1168,7 @@ async def lilydjwg() -> list:
             )
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item.cssselect('.storytitle>a')[0].text
                 href = item.cssselect('.storytitle>a')[0].get('href', '')
                 url = add_host(href, host).replace(
@@ -1203,10 +1202,10 @@ async def lilydjwg() -> list:
 # @register_test
 async def dev_io() -> list:
     """DEV Community"""
-    source = "DEV Community"
+    source: str = "DEV Community"
     articles: list = []
-    max_page = 1
-    per_page = 15
+    max_page: int = 1
+    per_page: int = 15
     curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_by_published_at_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
         per_page)
     curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
@@ -1228,7 +1227,7 @@ async def dev_io() -> list:
             )
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = item['title']
                 path = item['path']
                 url = add_host(path, host)
@@ -1253,7 +1252,7 @@ async def dev_io() -> list:
 # @register_test
 async def zhihu_zhuanlan_pythoncat() -> list:
     """Python猫"""
-    source = "Python猫"
+    source: str = "Python猫"
     articles: list = []
     limit = 10
     name = 'pythonCat'
@@ -1269,7 +1268,7 @@ async def zhihu_zhuanlan_pythoncat() -> list:
 # @register_test
 async def zhihu_zhuanlan_python_cn() -> list:
     """Python之美"""
-    source = "Python之美"
+    source: str = "Python之美"
     articles: list = []
     limit = 10
     name = 'python-cn'
@@ -1285,11 +1284,11 @@ async def zhihu_zhuanlan_python_cn() -> list:
 # @register_test
 async def cuiqingcai() -> list:
     """静觅"""
-    source = "静觅"
+    source: str = "静觅"
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     # max_page = 20
-    api = 'https://cuiqingcai.com/category/technique/python/page/'
+    api: str = 'https://cuiqingcai.com/category/technique/python/page/'
     now = ttime()
     this_date = now[5:10]
     this_year = now[:4]
@@ -1359,7 +1358,7 @@ async def cuiqingcai() -> list:
             )
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 title = null_tree.css(item, 'header>h2>a').text
                 url = null_tree.css(item, 'header>h2>a').get('href', '')
                 desc = null_tree.css(item, '.note').text_content()
@@ -1387,9 +1386,9 @@ async def cuiqingcai() -> list:
 # @register_test
 async def tuicool_cn() -> list:
     """推酷(中文)"""
-    source = "推酷(中文)"
+    source: str = "推酷(中文)"
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     articles = await common_spider_tuicool('cn',
                                            source,
                                            max_page=max_page,
@@ -1405,9 +1404,9 @@ async def tuicool_cn() -> list:
 # @register_test
 async def tuicool_en() -> list:
     """推酷(英文)"""
-    source = "推酷(英文)"
+    source: str = "推酷(英文)"
     articles: list = []
-    max_page = 1
+    max_page: int = 1
     articles = await common_spider_tuicool('en',
                                            source,
                                            max_page=max_page,
@@ -1423,13 +1422,13 @@ async def tuicool_en() -> list:
 # @register_test
 async def kf_toutiao() -> list:
     """稀土掘金"""
-    source = "稀土掘金"
+    source: str = "稀土掘金"
     articles: list = []
-    max_page = 1
-    per_page = 20
+    max_page: int = 1
+    per_page: int = 20
     sort_by = 'rankIndex'  # 'createdAt' 是按时间顺序
-    api = 'https://timeline-merger-ms.juejin.im/v1/get_tag_entry'
-    params = {
+    api: str = 'https://timeline-merger-ms.juejin.im/v1/get_tag_entry'
+    params: dict = {
         'src': 'web',
         'tagId': '559a7227e4b08a686d25744f',
         'page': 0,
@@ -1463,7 +1462,7 @@ async def kf_toutiao() -> list:
             )
         for item in items:
             try:
-                article = {'source': source}
+                article: dict = {'source': source}
                 # 2019-05-05T03:51:12.886Z
                 gmt_time = re.sub(r'\..*', '',
                                   item['createdAt']).replace('T', ' ')
@@ -1474,6 +1473,85 @@ async def kf_toutiao() -> list:
                 article['cover'] = item['screenshot']
                 article['desc'] = item['summaryInfo']
                 article['url'] = item['originalUrl']
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def freelycode() -> list:
+    """Python部落"""
+    source: str = "Python部落"
+    articles: list = []
+    max_page: int = 1
+    api: str = 'https://python.freelycode.com/contribution/list/0'
+    params: dict = {
+        'page_no': 1,
+    }
+
+    def fix_time(raw_time):
+        # 2019-03-27 7:02 a.m.
+        # 2019-03-22 9:27 a.m.
+        # 2019-07-17 9 a.m.
+        raw_time = raw_time.replace('中午', '12:01 p.m.')
+        if ':' not in raw_time:
+            raw_time = f'{raw_time[:-5]}:00{raw_time[-5:]}'
+        raw_time = raw_time.replace('.m.', 'm')
+        formated_time = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
+        return formated_time
+
+    for page in range(1, max_page + 1):
+        params['page_no'] = page
+        r = await req.get(
+            api,
+            ssl=False,
+            params=params,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect(
+            '.table-bordered tr:nth-child(n+2)')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        host: str = 'https://python.freelycode.com/'
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = item.cssselect('td:nth-child(2)>a')
+                if not title_href:
+                    continue
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                url = add_host(href, host)
+                desc: str = null_tree.css(item, 'td:nth-child(3)').text
+                if desc:
+                    desc = f'作者: {desc}'
+                raw_time: str = null_tree.css(item, 'td:nth-child(4)').text
+                ts_publish = fix_time(raw_time)
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = desc
+                article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
             except Exception:
