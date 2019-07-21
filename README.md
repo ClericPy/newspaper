@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 23 / 35
+* 收录进度: 24 / 37
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -63,50 +63,52 @@
 | 25 | [开发者头条](https://toutiao.io/tags/python?type=latest) | 3 | CN | <span style="color: red">X</span> | 推文类站点, 但是没有发布时间, 暂不收录 |
 | 26 | [稀土掘金](https://juejin.im/tag/Python) | 3 | CN | <span style="color: green">√</span> | 推文类站点. 按热门排序 |
 | 27 | [Python部落](https://python.freelycode.com/contribution/list/0?page_no=1) | 3 | CN | <span style="color: green">√</span> | 推文+译文 |
-| 28 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | <span style="color: orange">=</span> | Web 开发相关的内容挺多, 质量较高 |
-| 29 | [Ned Batchelder](https://nedbatchelder.com/blog/) | 3 | EN | <span style="color: orange">=</span> | 热门博主 |
+| 28 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | <span style="color: green">√</span> | Web 开发相关的内容挺多, 质量较高 |
+| 29 | [Ned Batchelder](https://nedbatchelder.com/blog/tag/python.html) | 3 | EN | <span style="color: orange">=</span> | 热门博主。planetpython 也有 |
 | 30 | [Full Stack Python](https://www.fullstackpython.com/blog.html) | 3 | EN | <span style="color: orange">=</span> | 全栈可以有 |
-| 31 | [Eli Bendersky's website](https://eli.thegreenplace.net/tag/python) | 3 | EN | <span style="color: orange">=</span> | 值得一看 |
+| 31 | [Eli Bendersky's website](https://eli.thegreenplace.net/tag/python) | 3 | EN | <span style="color: orange">=</span> | 值得一看，planetpython 也有 |
 | 32 | [Manjusaka](https://manjusaka.itscoder.com/tags/Python/) | 3 | CN | <span style="color: orange">=</span> | [墙] 原创还不错 |
-| 33 | [the5fire的技术博客](https://www.the5fire.com/) | 3 | CN | <span style="color: orange">=</span> | 保持更新的热门中文博主 |
-| 34 | [Python之禅](https://foofish.net/) | 3 | CN | <span style="color: orange">=</span> | 文章较基础, 但质量还不错 |
-| 35 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | <span style="color: orange">=</span> | 社区类, 只收录 回复数 10+ 的吧 |
-| 36 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | <span style="color: orange">=</span> | 有点类似推酷, 质量参差不齐 |
-| 37 | [Python 3 Module of the Week](https://pymotw.com/3/) | 3 | EN | <span style="color: red">X</span> | 看起来不怎么更新了, 暂不收录 |
-| 38 | [The Invent with Python Blog](https://inventwithpython.com/blog/index.html) | 3 | EN | <span style="color: orange">=</span> | 感觉不错 |
-| 39 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | <span style="color: orange">=</span> | Flask 作者 Armin Ronacher |
-| 40 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | <span style="color: red">X</span> | 知名 Python 开源组织, 不过没有文章类的 post |
-| 41 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | <span style="color: red">X</span> | 课外读物, 非 Python 主题, 暂不收录 |
-| 42 | [编程派](http://codingpy.com/) | 3 | CN | <span style="color: red">X</span> | 原创, 停更了, 暂不收录 |
-| 43 | [峰云's blog](http://xiaorui.cc/category/python/) | 3 | CN | <span style="color: red">X</span> | 起码是个原创的, 很久不更了, 暂不收录 |
-| 44 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | <span style="color: red">X</span> | 一年不更新了, 先不收录了 |
-| 45 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | <span style="color: red">X</span> | 最后更新 Thu 13 September 2018, 暂不收录 |
-| 46 | [开源中国翻译](https://www.oschina.net/translate/tag/python) | 3 | CN | <span style="color: red">X</span> | 入库留着吧, 估计不更了, 暂不收录 |
-| 47 | [Trey Hunner](https://treyhunner.com/blog/archives/) | 3 | EN | <span style="color: orange">=</span> | 保持更新 |
-| 48 | [Python Central](https://www.pythoncentral.io/) | 3 | EN | <span style="color: red">X</span> | 不更新了, 暂不收录 |
-| 49 | [Inside the Head of PyDanny](https://www.pydanny.com/) | 3 | EN | <span style="color: red">X</span> | 不更新了, 暂不收录 |
-| 50 | [华蟒用户组,CPyUG](https://groups.google.com/forum/#!forum/python-cn) | 3 | EN | <span style="color: red">X</span> | [墙] 社区类, 自己看看就好, 暂不收录 |
-| 51 | [Treehl](https://family-treesy.github.io/tags/PYTHON/) | 3 | CN | <span style="color: red">X</span> | 文章较基础, 久不更新, 暂不收录 |
-| 52 | [蠎周刊](http://weekly.pychina.org) | 3 | CN | <span style="color: red">X</span> | 官网已挂, 实际是那些周刊的译文 |
-| 53 | [zzzeek](https://techspot.zzzeek.org/) | 3 | EN | <span style="color: red">X</span> | 2016 年后停更了 |
-| 54 | [Yu’s blog](https://gofisher.github.io/) | 3 | CN | <span style="color: red">X</span> | 原创, 但是久不更新了, 网站 http://blog.rainy.im/ 挂了 |
-| 55 | [程序师](http://www.techug.com/tag/python) | 3 | CN | <span style="color: red">X</span> | 原创较少, 文章较旧 |
-| 56 | [一根笨茄子](http://blog.guoyb.com/tags/Python/) | 3 | CN | <span style="color: red">X</span> | 文章更新较少, 质量参差 |
-| 57 | [追梦人物](https://www.zmrenwu.com/) | 2 | CN | <span style="color: red">X</span> | 像个学习博客 |
-| 58 | [anshengme](https://blog.ansheng.me/) | 2 | CN | <span style="color: red">X</span> | 质量一般 |
-| 59 | [Pegasus](http://ningning.today/categories/python/) | 2 | CN | <span style="color: red">X</span> | 不怎么更新 |
-| 60 | [FunHacks](https://funhacks.net/categories/Python/) | 2 | CN | <span style="color: red">X</span> | 太久不更新了, 不过python 之旅还行 |
-| 61 | [Peter Norvig's essays](http://norvig.com/) | 2 | EN | <span style="color: red">X</span> | 这排版驾驭不了... |
-| 62 | [Peterbe.com](https://www.peterbe.com/plog/) | 2 | EN | <span style="color: red">X</span> | 不是太值得收录 |
-| 63 | [Python Tips](https://pythontips.com/) | 2 | EN | <span style="color: red">X</span> | 很火, 但我不喜欢 |
-| 64 | [脚本之家](https://www.jb51.net/list/list_97_1.htm) | 2 | CN | <span style="color: red">X</span> | 文章的质量啊~~~ |
-| 65 | [开源中国搜索](https://www.oschina.net/search?scope=translate&q=python&category=0&onlytitle=0&sort_by_time=1) | 2 | CN | <span style="color: red">X</span> | 质量不太高 |
-| 66 | [伯乐在线头条](http://top.jobbole.com/tag/python/?sort=latest) | 2 | CN | <span style="color: red">X</span> | 停更 |
-| 67 | [代码片段](http://www.phpxs.com/code/python) | 2 | CN | <span style="color: red">X</span> | 文章太老了, 停更了 |
-| 68 | [segmentfault](https://segmentfault.com/t/python/blogs) | 2 | CN | <span style="color: red">X</span> | 文章质量 |
-| 69 | [Python China](http://python-china.org/api/topics/timeline) | 2 | CN | <span style="color: red">X</span> | 欠费网站挂了 |
-| 70 | [麦穗技术](http://www.58maisui.com/category/python/) | 2 | CN | <span style="color: red">X</span> | 网站挂了 |
-| 71 | [CSDN](https://so.csdn.net/so/search/s.do?q=python&t=blog&u=) | 1 | CN | <span style="color: red">X</span> | 文章质量啊~~~ |
+| 33 | [Python程序员](https://zhuanlan.zhihu.com/pythoncxy) | 3 | CN | <span style="color: orange">=</span> | 关注破万的知乎专栏 |
+| 34 | [Python头条](https://zhuanlan.zhihu.com/c_111369541) | 3 | CN | <span style="color: orange">=</span> | 关注破万的知乎专栏 |
+| 35 | [the5fire的技术博客](https://www.the5fire.com/) | 3 | CN | <span style="color: orange">=</span> | 保持更新的热门中文博主 |
+| 36 | [Python之禅](https://foofish.net/) | 3 | CN | <span style="color: orange">=</span> | 文章较基础, 但质量还不错 |
+| 37 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | <span style="color: orange">=</span> | 社区类, 只收录 回复数 10+ 的吧 |
+| 38 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | <span style="color: orange">=</span> | 有点类似推酷, 质量参差不齐 |
+| 39 | [Python 3 Module of the Week](https://pymotw.com/3/) | 3 | EN | <span style="color: red">X</span> | 看起来不怎么更新了, 暂不收录 |
+| 40 | [The Invent with Python Blog](https://inventwithpython.com/blog/index.html) | 3 | EN | <span style="color: orange">=</span> | 感觉不错 |
+| 41 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | <span style="color: orange">=</span> | Flask 作者 Armin Ronacher |
+| 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | <span style="color: red">X</span> | 知名 Python 开源组织, 不过没有文章类的 post |
+| 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | <span style="color: red">X</span> | 课外读物, 非 Python 主题, 暂不收录 |
+| 44 | [编程派](http://codingpy.com/) | 3 | CN | <span style="color: red">X</span> | 原创, 停更了, 暂不收录 |
+| 45 | [峰云's blog](http://xiaorui.cc/category/python/) | 3 | CN | <span style="color: red">X</span> | 起码是个原创的, 很久不更了, 暂不收录 |
+| 46 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | <span style="color: red">X</span> | 一年不更新了, 先不收录了 |
+| 47 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | <span style="color: red">X</span> | 最后更新 Thu 13 September 2018, 暂不收录 |
+| 48 | [开源中国翻译](https://www.oschina.net/translate/tag/python) | 3 | CN | <span style="color: red">X</span> | 入库留着吧, 估计不更了, 暂不收录 |
+| 49 | [Trey Hunner](https://treyhunner.com/blog/archives/) | 3 | EN | <span style="color: orange">=</span> | 保持更新 |
+| 50 | [Python Central](https://www.pythoncentral.io/) | 3 | EN | <span style="color: red">X</span> | 不更新了, 暂不收录 |
+| 51 | [Inside the Head of PyDanny](https://www.pydanny.com/) | 3 | EN | <span style="color: red">X</span> | 不更新了, 暂不收录 |
+| 52 | [华蟒用户组,CPyUG](https://groups.google.com/forum/#!forum/python-cn) | 3 | EN | <span style="color: red">X</span> | [墙] 社区类, 自己看看就好, 暂不收录 |
+| 53 | [Treehl](https://family-treesy.github.io/tags/PYTHON/) | 3 | CN | <span style="color: red">X</span> | 文章较基础, 久不更新, 暂不收录 |
+| 54 | [蠎周刊](http://weekly.pychina.org) | 3 | CN | <span style="color: red">X</span> | 官网已挂, 实际是那些周刊的译文 |
+| 55 | [zzzeek](https://techspot.zzzeek.org/) | 3 | EN | <span style="color: red">X</span> | 2016 年后停更了 |
+| 56 | [Yu’s blog](https://gofisher.github.io/) | 3 | CN | <span style="color: red">X</span> | 原创, 但是久不更新了, 网站 http://blog.rainy.im/ 挂了 |
+| 57 | [程序师](http://www.techug.com/tag/python) | 3 | CN | <span style="color: red">X</span> | 原创较少, 文章较旧 |
+| 58 | [一根笨茄子](http://blog.guoyb.com/tags/Python/) | 3 | CN | <span style="color: red">X</span> | 文章更新较少, 质量参差 |
+| 59 | [追梦人物](https://www.zmrenwu.com/) | 2 | CN | <span style="color: red">X</span> | 像个学习博客 |
+| 60 | [anshengme](https://blog.ansheng.me/) | 2 | CN | <span style="color: red">X</span> | 质量一般 |
+| 61 | [Pegasus](http://ningning.today/categories/python/) | 2 | CN | <span style="color: red">X</span> | 不怎么更新 |
+| 62 | [FunHacks](https://funhacks.net/categories/Python/) | 2 | CN | <span style="color: red">X</span> | 太久不更新了, 不过python 之旅还行 |
+| 63 | [Peter Norvig's essays](http://norvig.com/) | 2 | EN | <span style="color: red">X</span> | 这排版驾驭不了... |
+| 64 | [Peterbe.com](https://www.peterbe.com/plog/) | 2 | EN | <span style="color: red">X</span> | 不是太值得收录 |
+| 65 | [Python Tips](https://pythontips.com/) | 2 | EN | <span style="color: red">X</span> | 很火, 但我不喜欢 |
+| 66 | [脚本之家](https://www.jb51.net/list/list_97_1.htm) | 2 | CN | <span style="color: red">X</span> | 文章的质量啊~~~ |
+| 67 | [开源中国搜索](https://www.oschina.net/search?scope=translate&q=python&category=0&onlytitle=0&sort_by_time=1) | 2 | CN | <span style="color: red">X</span> | 质量不太高 |
+| 68 | [伯乐在线头条](http://top.jobbole.com/tag/python/?sort=latest) | 2 | CN | <span style="color: red">X</span> | 停更 |
+| 69 | [代码片段](http://www.phpxs.com/code/python) | 2 | CN | <span style="color: red">X</span> | 文章太老了, 停更了 |
+| 70 | [segmentfault](https://segmentfault.com/t/python/blogs) | 2 | CN | <span style="color: red">X</span> | 文章质量 |
+| 71 | [Python China](http://python-china.org/api/topics/timeline) | 2 | CN | <span style="color: red">X</span> | 欠费网站挂了 |
+| 72 | [麦穗技术](http://www.58maisui.com/category/python/) | 2 | CN | <span style="color: red">X</span> | 网站挂了 |
+| 73 | [CSDN](https://so.csdn.net/so/search/s.do?q=python&t=blog&u=) | 1 | CN | <span style="color: red">X</span> | 文章质量啊~~~ |
 
 
 <!-- providers end -->

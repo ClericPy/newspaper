@@ -192,15 +192,15 @@ content_sources = [{
     "url": "https://blog.miguelgrinberg.com/index",
     "level": 3,
     "lang": "EN",
-    "status": "=",
+    "status": "√",
     "desc": "Web 开发相关的内容挺多, 质量较高"
 }, {
     "title": "Ned Batchelder",
-    "url": "https://nedbatchelder.com/blog/",
+    "url": "https://nedbatchelder.com/blog/tag/python.html",
     "level": 3,
     "lang": "EN",
     "status": "=",
-    "desc": "热门博主"
+    "desc": "热门博主。planetpython 也有"
 }, {
     "title": "Full Stack Python",
     "url": "https://www.fullstackpython.com/blog.html",
@@ -214,7 +214,7 @@ content_sources = [{
     "level": 3,
     "lang": "EN",
     "status": "=",
-    "desc": "值得一看"
+    "desc": "值得一看，planetpython 也有"
 }, {
     "title": "Manjusaka",
     "url": "https://manjusaka.itscoder.com/tags/Python/",
@@ -222,6 +222,20 @@ content_sources = [{
     "lang": "CN",
     "status": "=",
     "desc": "[墙] 原创还不错"
+}, {
+    "title": "Python程序员",
+    "url": "https://zhuanlan.zhihu.com/pythoncxy",
+    "level": 3,
+    "lang": "CN",
+    "status": "=",
+    "desc": "关注破万的知乎专栏"
+}, {
+    "title": "Python头条",
+    "url": "https://zhuanlan.zhihu.com/c_111369541",
+    "level": 3,
+    "lang": "CN",
+    "status": "=",
+    "desc": "关注破万的知乎专栏"
 }, {
     "title": "the5fire的技术博客",
     "url": "https://www.the5fire.com/",
