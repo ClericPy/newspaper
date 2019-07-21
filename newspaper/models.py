@@ -63,9 +63,8 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('ts_publish', '1970-01-01 08:00:01')
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
-                article['desc'])
+                article['desc']).strip()
             article['title'] = article['title'].strip()
-            article['desc'] = article['desc'].strip()
             # mysql 会报错 0000-00-00 00:00:00 格式错误; 顺便尝试转换掉错误的发布时间
             if ttime(ptime(article['ts_publish'])) == '1970-01-01 08:00:00':
                 article['ts_publish'] = '1970-01-01 08:00:01'

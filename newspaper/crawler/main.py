@@ -24,8 +24,6 @@ async def test_spider_workflow():
             assert isinstance(item.get('source'), str)
             assert isinstance(item.get('title'), str)
             assert isinstance(item.get('url'), str)
-            if item.get('desc'):
-                item['desc'] = item['desc'][:100]
         pprint(articles)
 
 
@@ -52,7 +50,7 @@ async def online_workflow():
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:
-            for task in done:
+            for idx, task in enumerate(done, 1):
                 articles = task.result()
                 func_name = task._coro.__name__
                 source_name = function_sources.get(func_name, func_name)
@@ -62,7 +60,7 @@ async def online_workflow():
                 else:
                     insert_result = 0
                 spider_logger.info(
-                    f'{"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
+                    f'{idx: 3}. {"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
                 )
     await clear_cache()
 
@@ -83,7 +81,7 @@ async def history_workflow():
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:
-            for task in done:
+            for idx, task in enumerate(done, 1):
                 articles = task.result()
                 func_name = task._coro.__name__
                 source_name = function_sources.get(func_name, func_name)
@@ -93,6 +91,6 @@ async def history_workflow():
                 else:
                     insert_result = 0
                 spider_logger.info(
-                    f'{"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
+                    f'{idx: 3}. {"+" if articles else "?????????"} {insert_result} / {len(articles)} articles.\t[{source_name}]'
                 )
     await clear_cache()

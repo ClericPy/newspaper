@@ -6,8 +6,9 @@ import zlib
 
 from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
-from torequests.utils import (curlparse, find_one, md5, parse_qsl, ptime, re,
-                              time, ttime, unparse_qsl, urlparse, urlunparse)
+from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
+                              re, time, ttime, unparse_qsl, urlparse,
+                              urlunparse)
 
 from ..config import global_configs
 from ..config import spider_logger as logger
@@ -15,7 +16,8 @@ from ..config import spider_logger as logger
 test_spiders = []
 online_spiders = []
 history_spiders = []
-CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+# CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+CHROME_PC_UA = UA.Chrome
 friendly_crawling_interval = 1
 # default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
 req = Requests(default_host_frequency=(1, 3))
@@ -79,10 +81,13 @@ def add_host(url, host):
 
 
 def shorten_desc(desc: str) -> str:
+    """Shorten the desc too long (more than 50)."""
     if not desc:
         return ''
-    desc = re.sub(r'(\n|\.\s)[\s\S]+', '', desc.strip())
-    desc = re.sub('<[^>]+>', '', desc)
+    # remain sentence before ./\n/。/!
+    desc = re.sub(r'(.{50,})(\n|\.|。|！|!|？|\?)\s?[\s\S]+', r'\1\2', desc)
+    # remove html tag
+    desc = re.sub('<[^>]+>', '', desc).strip()
     return desc
 
 
@@ -1542,7 +1547,7 @@ async def freelycode() -> list:
                     continue
                 title: str = title_href[0].text
                 href: str = title_href[0].get('href', '')
-                url = add_host(href, host)
+                url: str = add_host(href, host)
                 desc: str = null_tree.css(item, 'td:nth-child(3)').text
                 if desc:
                     desc = f'作者: {desc}'
@@ -1551,6 +1556,70 @@ async def freelycode() -> list:
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def miguelgrinberg() -> list:
+    """miguelgrinberg"""
+    source: str = "miguelgrinberg"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api: str = 'https://blog.miguelgrinberg.com/index/page/'
+
+    for page in range(start_page, max_page + 1):
+        page_url = f'{api}{page}'
+        r = await req.get(
+            page_url,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': page_url,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        scode = re.sub(r'<!--[\s\S]*?-->', '', scode)
+        items: list = fromstring(scode).cssselect('#main>.post')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        host: str = 'https://blog.miguelgrinberg.com/'
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = item.cssselect('h1.post-title>a')
+                if not title_href:
+                    continue
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                url: str = add_host(href, host)
+                desc: str = null_tree.css(item, '.post_body>p').text_content()
+                raw_time: str = null_tree.css(item, '.date>span').get(
+                    'data-timestamp', '').replace('T', ' ').replace('Z', '')
+                ts_publish = ttime(ptime(raw_time, tzone=0))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
                 article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
