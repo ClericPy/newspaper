@@ -304,8 +304,8 @@ content_sources = [{
     "url": "http://codingpy.com/",
     "level": 3,
     "lang": "CN",
-    "status": "X",
-    "desc": "原创, 停更了, 暂不收录"
+    "status": "√",
+    "desc": "原创+译文"
 }, {
     "title": "峰云's blog",
     "url": "http://xiaorui.cc/category/python/",
@@ -518,12 +518,6 @@ def main():
     import pathlib
     import re
     # =: 待收录, √: 已收录, X: 不收录, -: 入库不追更
-    status_colors = {
-        '=': '<span style="color: orange">=</span>',
-        '√': '<span style="color: green">√</span>',
-        'X': '<span style="color: red">X</span>',
-        '-': '<span style="color: black">-</span>',
-    }
 
     titles = [i['title'] for i in content_sources]
     # 确保没有重复的
@@ -543,11 +537,13 @@ def main():
         data.append(title_link)
         data.append(str(item['level']))
         data.append(item['lang'])
+        status = item['status']
         if item['status'] == '√':
             finish_counts += 1
+            status = f'[√](https://www.clericpy.top/newspaper/articles.query.html?source={item["title"]})'
         elif item['status'] == '=':
             todo_counts += 1
-        data.append(status_colors.get(item['status'], item['status']))
+        data.append(status)
         data.append(item['desc'])
         string = ' | '.join(data)
         providers += '| ' + string + ' |\n'
