@@ -160,27 +160,42 @@ def register_history(function: typing.Callable) -> typing.Callable:
 
 async def common_spider_zhihu_zhuanlan(name, source, limit=10):
     articles = []
-    api: str = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={limit}&offset=0'
-    r = await req.get(
-        api,
-        ssl=False,
-        headers={
-            "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
-        })
-    if not r:
-        logger.info(f'crawl zhihu_zhuanlan {name} limit={limit} failed: {r}')
-        return articles
-    for item in r.json()['data']:
-        if not (item['type'] == 'article' and item['state'] == 'published'):
-            continue
-        article: dict = {'source': source}
-        article['ts_publish'] = ttime(item['created'])
-        article['cover'] = item['image_url']
-        article['title'] = item['title']
-        article['desc'] = re.sub('<[^>]+>', ' ', item.get('excerpt') or '')
-        article['url'] = item['url']
-        article['url_key'] = get_url_key(article['url'])
-        articles.append(article)
+    offset: int = 0
+    # 分页
+    chunk_size: int = 50
+    # 最多只要 2000 篇，再多没意义
+    for _ in range(2000 // chunk_size):
+        _limit = min((limit - offset, chunk_size))
+        # or limit == offset
+        if not _limit:
+            break
+        api: str = f'https://zhuanlan.zhihu.com/api/columns/{name}/articles?limit={_limit}&offset={offset}'
+        r = await req.get(
+            api,
+            ssl=False,
+            headers={
+                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+            })
+        if not r:
+            logger.info(
+                f'crawl zhihu_zhuanlan {name} limit={limit} failed: {r}')
+            return articles
+        items = r.json()['data']
+        if not items:
+            break
+        for item in items:
+            if not (item['type'] == 'article' and item['state'] == 'published'):
+                continue
+            article: dict = {'source': source}
+            article['ts_publish'] = ttime(item['created'])
+            article['cover'] = item['image_url']
+            article['title'] = item['title']
+            article['desc'] = re.sub('<[^>]+>', ' ', item.get('excerpt') or '')
+            article['url'] = item['url']
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        offset += _limit
+
     return articles
 
 
@@ -1260,9 +1275,9 @@ async def dev_io() -> list:
 async def zhihu_zhuanlan_pythoncat() -> list:
     """Python猫"""
     source: str = "Python猫"
+    name: str = 'pythonCat'
     articles: list = []
     limit = 10
-    name = 'pythonCat'
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
@@ -1276,9 +1291,25 @@ async def zhihu_zhuanlan_pythoncat() -> list:
 async def zhihu_zhuanlan_python_cn() -> list:
     """Python之美"""
     source: str = "Python之美"
+    name: str = 'python-cn'
     articles: list = []
     limit = 10
-    name = 'python-cn'
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def zhihu_zhuanlan_pythoncxy() -> list:
+    """Python程序员"""
+    source: str = "Python程序员"
+    name: str = 'pythoncxy'
+    articles: list = []
+    limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
