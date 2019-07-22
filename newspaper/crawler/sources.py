@@ -304,7 +304,7 @@ content_sources = [{
     "url": "http://codingpy.com/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "原创+译文"
 }, {
     "title": "峰云's blog",

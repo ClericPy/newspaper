@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 24 / 38
+* 收录进度: 25 / 38
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -79,7 +79,7 @@
 | 41 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | = | Flask 作者 Armin Ronacher |
 | 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | X | 知名 Python 开源组织, 不过没有文章类的 post |
 | 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | X | 课外读物, 非 Python 主题, 暂不收录 |
-| 44 | [编程派](http://codingpy.com/) | 3 | CN | = | 原创+译文 |
+| 44 | [编程派](http://codingpy.com/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=编程派) | 原创+译文 |
 | 45 | [峰云's blog](http://xiaorui.cc/category/python/) | 3 | CN | X | 起码是个原创的, 很久不更了, 暂不收录 |
 | 46 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | X | 一年不更新了, 先不收录了 |
 | 47 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | X | 最后更新 Thu 13 September 2018, 暂不收录 |
