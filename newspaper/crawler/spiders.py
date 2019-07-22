@@ -39,8 +39,8 @@ class null_tree:
         return default
 
     @classmethod
-    def css(cls, item, csspath):
-        return (item.cssselect(csspath) or [cls])[0]
+    def css(cls, item, csspath, idx=0):
+        return (item.cssselect(csspath) or [cls])[idx]
 
 
 def sort_url_query(url, reverse=False, _replace_kwargs=None):
@@ -73,6 +73,8 @@ def get_url_key(url) -> str:
 
 
 def add_host(url, host):
+    if not url:
+        return ''
     if url.startswith('//'):
         return f'https:{url}'
     if not host.endswith('/'):
@@ -1619,6 +1621,76 @@ async def miguelgrinberg() -> list:
                 ts_publish = ttime(ptime(raw_time, tzone=0))
                 article['ts_publish'] = ts_publish
                 article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def codingpy() -> list:
+    """编程派"""
+    source: str = "编程派"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api: str = 'https://codingpy.com/article/'
+    params: dict = {'page': 1}
+
+    for page in range(start_page, max_page + 1):
+        params['page'] = page
+        r = await req.get(
+            api,
+            params=params,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect('.archive-main>article')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        host: str = 'https://codingpy.com/'
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = item.cssselect('.list-item-title>a')
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                bg: str = null_tree.css(item, '.lim-cover').get('style', '')
+                # background-image:url(/media/articles/why-python-for-startups.jpg)
+                cover: str = find_one(r'background-image:url\((.*?)\)', bg)[1]
+                cover = add_host(cover, host)
+                url: str = add_host(href, host)
+                desc: str = null_tree.css(
+                    item, '.list-item-summary>p').text_content()
+                raw_time: str = null_tree.css(item,
+                                              '.list-item-meta>p>span').text
+                # 2015.11.03
+                ts_publish = ttime(ptime(raw_time, fmt='%Y.%m.%d'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['cover'] = cover
                 article['desc'] = shorten_desc(desc)
                 article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
