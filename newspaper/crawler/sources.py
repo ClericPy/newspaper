@@ -1,3 +1,5 @@
+from torequests.utils import quote_plus
+
 content_sources = [{
     "title": "Python Software Foundation News",
     "url": "https://pyfound.blogspot.com/",
@@ -227,7 +229,7 @@ content_sources = [{
     "url": "https://zhuanlan.zhihu.com/pythoncxy",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "关注破万的知乎专栏"
 }, {
     "title": "Python头条",
@@ -540,7 +542,7 @@ def main():
         status = item['status']
         if item['status'] == '√':
             finish_counts += 1
-            status = f'[√](https://www.clericpy.top/newspaper/articles.query.html?source={item["title"]})'
+            status = f'[√](https://www.clericpy.top/newspaper/articles.query.html?source={quote_plus(item["title"])})'
         elif item['status'] == '=':
             todo_counts += 1
         data.append(status)
