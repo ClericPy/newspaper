@@ -5,6 +5,7 @@ import typing
 import zlib
 
 from lxml.html import fromstring, tostring
+from lxml.etree import ElementBase
 from torequests.dummy import Requests
 from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
                               re, time, ttime, unparse_qsl, urlparse,
@@ -41,6 +42,13 @@ class null_tree:
     @classmethod
     def css(cls, item, csspath, idx=0):
         return (item.cssselect(csspath) or [cls])[idx]
+
+    @classmethod
+    def tostring(cls, doc, **kwargs):
+        if isinstance(doc, ElementBase):
+            return tostring(doc, **kwargs)
+        else:
+            return ''
 
 
 def sort_url_query(url, reverse=False, _replace_kwargs=None):
@@ -1729,6 +1737,67 @@ async def codingpy() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def nedbatchelder() -> list:
+    """Ned Batchelder"""
+    source: str = "Ned Batchelder"
+    articles: list = []
+    limit: int = 5
+    api: str = 'https://nedbatchelder.com/blog/tag/python.html'
+    r = await req.get(
+        api,
+        ssl=False,
+        # proxy=proxy,
+        retry=3,
+        timeout=5,
+        headers={
+            'Referer': api,
+            'User-Agent': CHROME_PC_UA
+        },
+    )
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    scode: str = r.content.decode('u8', 'ignore')
+    container_html = null_tree.tostring(
+        null_tree.css(fromstring(scode), '.category')).decode('utf-8')
+    if not container_html:
+        logger.error(f'{source} not found container_html.')
+        return articles
+    split_by: str = '<!--split-tag-->'
+    container_html = container_html.replace(
+        '<p class="date">', f'{split_by}<p class="date">').replace(
+            '</div>', '').replace('<div class="category">', '')
+    items: list = container_html.split(split_by)[1:limit + 1]
+    if not items:
+        return articles
+    host: str = 'https://nedbatchelder.com/'
+    for item in items:
+        try:
+            article: dict = {'source': source}
+            title_href = find_one(r'<p>\s*<a href="([^"]+)">([^<]+?)</a>', item)
+            title: str = title_href[2]
+            href: str = title_href[1]
+            url: str = add_host(href, host)
+            raw_time: str = find_one(r'<p class="date">(\d+ .*?\d+):</p>',
+                                     item)[1]
+            ts_publish = ttime(ptime(raw_time, fmt='%d %b %Y'))
+            article['ts_publish'] = ts_publish
+            article['title'] = title
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
