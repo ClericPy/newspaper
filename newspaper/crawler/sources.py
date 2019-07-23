@@ -201,7 +201,7 @@ content_sources = [{
     "url": "https://nedbatchelder.com/blog/tag/python.html",
     "level": 3,
     "lang": "EN",
-    "status": "=",
+    "status": "√",
     "desc": "热门博主。planetpython 也有"
 }, {
     "title": "Full Stack Python",

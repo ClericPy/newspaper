@@ -53,7 +53,6 @@ class Storage(object, metaclass=abc.ABCMeta):
             for ensure_key in ('url_key', 'title'):
                 if not article.get(ensure_key):
                     continue
-            article['desc'] = article['desc'].strip()
             article.setdefault('cover', '')
             article.setdefault('desc', '')
             article.setdefault('source', 'unknown')

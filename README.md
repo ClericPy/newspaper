@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 26 / 38
+* 收录进度: 27 / 38
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -64,7 +64,7 @@
 | 26 | [稀土掘金](https://juejin.im/tag/Python) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%A8%80%E5%9C%9F%E6%8E%98%E9%87%91) | 推文类站点. 按热门排序 |
 | 27 | [Python部落](https://python.freelycode.com/contribution/list/0?page_no=1) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E9%83%A8%E8%90%BD) | 推文+译文 |
 | 28 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=miguelgrinberg) | Web 开发相关的内容挺多, 质量较高 |
-| 29 | [Ned Batchelder](https://nedbatchelder.com/blog/tag/python.html) | 3 | EN | = | 热门博主。planetpython 也有 |
+| 29 | [Ned Batchelder](https://nedbatchelder.com/blog/tag/python.html) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Ned+Batchelder) | 热门博主。planetpython 也有 |
 | 30 | [Full Stack Python](https://www.fullstackpython.com/blog.html) | 3 | EN | = | 全栈可以有 |
 | 31 | [Eli Bendersky's website](https://eli.thegreenplace.net/tag/python) | 3 | EN | = | 值得一看，planetpython 也有 |
 | 32 | [Manjusaka](https://manjusaka.itscoder.com/tags/Python/) | 3 | CN | = | [墙] 原创还不错 |
