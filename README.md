@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 27 / 38
+* 收录进度: 28 / 35
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -65,11 +65,11 @@
 | 27 | [Python部落](https://python.freelycode.com/contribution/list/0?page_no=1) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E9%83%A8%E8%90%BD) | 推文+译文 |
 | 28 | [miguelgrinberg](https://blog.miguelgrinberg.com/index) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=miguelgrinberg) | Web 开发相关的内容挺多, 质量较高 |
 | 29 | [Ned Batchelder](https://nedbatchelder.com/blog/tag/python.html) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Ned+Batchelder) | 热门博主。planetpython 也有 |
-| 30 | [Full Stack Python](https://www.fullstackpython.com/blog.html) | 3 | EN | = | 全栈可以有 |
-| 31 | [Eli Bendersky's website](https://eli.thegreenplace.net/tag/python) | 3 | EN | = | 值得一看，planetpython 也有 |
-| 32 | [Manjusaka](https://manjusaka.itscoder.com/tags/Python/) | 3 | CN | = | [墙] 原创还不错 |
+| 30 | [Full Stack Python](https://www.fullstackpython.com/blog.html) | 3 | EN | X | 热门博主。planetpython 有了, 文章比较少, 暂不收录 |
+| 31 | [Eli Bendersky's website](https://eli.thegreenplace.net/tag/python) | 3 | EN | X | 值得一看，planetpython 有, 暂不收录 |
+| 32 | [Manjusaka](https://manjusaka.itscoder.com/tags/Python/) | 3 | CN | X | 原创还不错, 但是文章较少, 暂不收录 |
 | 33 | [Python程序员](https://zhuanlan.zhihu.com/pythoncxy) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E7%A8%8B%E5%BA%8F%E5%91%98) | 关注破万的知乎专栏 |
-| 34 | [Python头条](https://zhuanlan.zhihu.com/c_111369541) | 3 | CN | = | 关注破万的知乎专栏 |
+| 34 | [Python头条](https://zhuanlan.zhihu.com/c_111369541) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E5%A4%B4%E6%9D%A1) | 关注破万的知乎专栏 |
 | 35 | [the5fire的技术博客](https://www.the5fire.com/) | 3 | CN | = | 保持更新的热门中文博主 |
 | 36 | [Python之禅](https://foofish.net/) | 3 | CN | = | 文章较基础, 但质量还不错 |
 | 37 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | = | 社区类, 只收录 回复数 10+ 的吧 |

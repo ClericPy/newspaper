@@ -1328,6 +1328,22 @@ async def zhihu_zhuanlan_pythoncxy() -> list:
 @register_online
 # @register_history
 # @register_test
+async def zhihu_zhuanlan_c_111369541() -> list:
+    """Python头条"""
+    source: str = "Python头条"
+    name: str = 'c_111369541'
+    articles: list = []
+    limit = 10
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
 async def cuiqingcai() -> list:
     """静觅"""
     source: str = "静觅"

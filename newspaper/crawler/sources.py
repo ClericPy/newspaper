@@ -208,22 +208,22 @@ content_sources = [{
     "url": "https://www.fullstackpython.com/blog.html",
     "level": 3,
     "lang": "EN",
-    "status": "=",
-    "desc": "全栈可以有"
+    "status": "X",
+    "desc": "热门博主。planetpython 有了, 文章比较少, 暂不收录"
 }, {
     "title": "Eli Bendersky's website",
     "url": "https://eli.thegreenplace.net/tag/python",
     "level": 3,
     "lang": "EN",
-    "status": "=",
-    "desc": "值得一看，planetpython 也有"
+    "status": "X",
+    "desc": "值得一看，planetpython 有, 暂不收录"
 }, {
     "title": "Manjusaka",
     "url": "https://manjusaka.itscoder.com/tags/Python/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "[墙] 原创还不错"
+    "status": "X",
+    "desc": "原创还不错, 但是文章较少, 暂不收录"
 }, {
     "title": "Python程序员",
     "url": "https://zhuanlan.zhihu.com/pythoncxy",
@@ -236,7 +236,7 @@ content_sources = [{
     "url": "https://zhuanlan.zhihu.com/c_111369541",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "关注破万的知乎专栏"
 }, {
     "title": "the5fire的技术博客",
