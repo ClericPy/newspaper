@@ -1873,9 +1873,12 @@ async def the5fire() -> list:
                     raw_time)[1].replace('.', '')
                 # 2019-03-20 10:07 p.m.
                 # 2011-05-28 10 a.m.
+                # 2011-12-08 午夜
                 if ':' not in raw_time:
-                    raw_time = f'{raw_time[:-5]}:00{raw_time[-5:]}'
-                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
+                    raw_time = raw_time[:10]
+                    ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                else:
+                    ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = shorten_desc(desc)
