@@ -257,15 +257,15 @@ content_sources = [{
     "url": "https://www.v2ex.com/go/python",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "社区类, 只收录 回复数 10+ 的吧"
+    "status": "X",
+    "desc": "社区类, api 失效, web 端乱七八糟的, 不收录"
 }, {
     "title": "伯乐在线",
     "url": "http://python.jobbole.com/all-posts/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "有点类似推酷, 质量参差不齐"
+    "status": "X",
+    "desc": "有点类似推酷, 质量参差不齐. HTTP ERROR 503"
 }, {
     "title": "Python 3 Module of the Week",
     "url": "https://pymotw.com/3/",
@@ -278,7 +278,7 @@ content_sources = [{
     "url": "https://inventwithpython.com/blog/index.html",
     "level": 3,
     "lang": "EN",
-    "status": "=",
+    "status": "√",
     "desc": "感觉不错"
 }, {
     "title": "Armin Ronacher's Thoughts and Writings",

@@ -1912,10 +1912,10 @@ async def foofish() -> list:
     host: str = 'https://foofish.net/'
 
     for page in range(start_page, max_page + 1):
-        if page != 1:
-            seed = api.replace('index.html', f'index{page}.html')
-        else:
+        if page == 1:
             seed = api
+        else:
+            seed = api.replace('index.html', f'index{page}.html')
         r = await req.get(
             seed,
             ssl=False,
@@ -1952,6 +1952,69 @@ async def foofish() -> list:
                 url: str = add_host(href, host)
                 raw_time: str = null_tree.css(item, 'dt').text
                 ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def inventwithpython() -> list:
+    """The Invent with Python Blog"""
+    source: str = "The Invent with Python Blog"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api: str = 'https://inventwithpython.com/blog/index.html'
+    host: str = 'https://inventwithpython.com/'
+
+    for page in range(start_page, max_page + 1):
+        if page == 1:
+            seed = api
+        else:
+            seed = api.replace('index.html', f'index{page}.html')
+        r = await req.get(
+            seed,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect('#content>article')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = null_tree.css(item, 'h1>a')
+                title: str = title_href.text
+                href: str = title_href.get('href', '')
+                url: str = add_host(href, host)
+                raw_time: str = null_tree.css(
+                    item, '.article-header-date').text.strip()
+                # Wed 05 June 2019
+                ts_publish = ttime(ptime(raw_time, fmt='%a %d %B %Y'))
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['url'] = url

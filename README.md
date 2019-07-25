@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 30 / 35
+* 收录进度: 31 / 33
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -72,10 +72,10 @@
 | 34 | [Python头条](https://zhuanlan.zhihu.com/c_111369541) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E5%A4%B4%E6%9D%A1) | 关注破万的知乎专栏 |
 | 35 | [the5fire的技术博客](https://www.the5fire.com/category/python/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=the5fire%E7%9A%84%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2) | 保持更新的热门中文博主 |
 | 36 | [Python之禅](https://foofish.net/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E4%B9%8B%E7%A6%85) | 文章较基础, 质量不错 |
-| 37 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | = | 社区类, 只收录 回复数 10+ 的吧 |
-| 38 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | = | 有点类似推酷, 质量参差不齐 |
+| 37 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | X | 社区类, api 失效, web 端乱七八糟的, 不收录 |
+| 38 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | X | 有点类似推酷, 质量参差不齐. HTTP ERROR 503 |
 | 39 | [Python 3 Module of the Week](https://pymotw.com/3/) | 3 | EN | X | 看起来不怎么更新了, 暂不收录 |
-| 40 | [The Invent with Python Blog](https://inventwithpython.com/blog/index.html) | 3 | EN | = | 感觉不错 |
+| 40 | [The Invent with Python Blog](https://inventwithpython.com/blog/index.html) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=The+Invent+with+Python+Blog) | 感觉不错 |
 | 41 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | = | Flask 作者 Armin Ronacher |
 | 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | X | 知名 Python 开源组织, 不过没有文章类的 post |
 | 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | X | 课外读物, 非 Python 主题, 暂不收录 |
