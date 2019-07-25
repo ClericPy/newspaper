@@ -1831,7 +1831,8 @@ async def the5fire() -> list:
     articles: list = []
     start_page: int = 1
     max_page: int = 1
-    api = host = 'https://www.the5fire.com/'
+    api: str = 'https://www.the5fire.com/category/python/'
+    host: str = 'https://www.the5fire.com/'
     params: dict = {'page': 1}
 
     for page in range(start_page, max_page + 1):
@@ -1868,15 +1869,19 @@ async def the5fire() -> list:
                 desc: str = null_tree.css(item, '.caption>p').text_content()
                 raw_time: str = null_tree.css(item, '.info').text_content()
                 # 发布：2019-02-22 9:47 p.m.
-                raw_time = find_one(
-                    r'发布：(\d\d\d\d-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2} [pa]\.m\.)',
-                    raw_time)[1].replace('.', '')
+                raw_time = find_one(r'发布：(\d\d\d\d-\d{1,2}-\d{1,2}.*)',
+                                    raw_time)[1].replace('.', '')
                 # 2019-03-20 10:07 p.m.
                 # 2011-05-28 10 a.m.
                 # 2011-12-08 午夜
                 if ':' not in raw_time:
-                    raw_time = raw_time[:10]
-                    ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                    if 'm' in raw_time:
+                        raw_time = re.sub('m.*', 'm', raw_time)
+                        ts_publish = ttime(ptime(raw_time,
+                                                 fmt='%Y-%m-%d %I %p'))
+                    else:
+                        raw_time = raw_time[:10]
+                        ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
                 else:
                     ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
                 article['ts_publish'] = ts_publish

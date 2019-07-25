@@ -240,7 +240,7 @@ content_sources = [{
     "desc": "关注破万的知乎专栏"
 }, {
     "title": "the5fire的技术博客",
-    "url": "https://www.the5fire.com/",
+    "url": "https://www.the5fire.com/category/python/",
     "level": 3,
     "lang": "CN",
     "status": "√",
