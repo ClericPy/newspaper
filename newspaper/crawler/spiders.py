@@ -80,9 +80,11 @@ def get_url_key(url) -> str:
     return ""
 
 
-def add_host(url, host):
+def add_host(url: str, host: str) -> str:
     if not url:
         return ''
+    if re.match('^https?://', url):
+        return url
     if url.startswith('//'):
         return f'https:{url}'
     if not host.endswith('/'):
@@ -1328,6 +1330,22 @@ async def zhihu_zhuanlan_pythoncxy() -> list:
 @register_online
 # @register_history
 # @register_test
+async def zhihu_zhuanlan_c_111369541() -> list:
+    """Python头条"""
+    source: str = "Python头条"
+    name: str = 'c_111369541'
+    articles: list = []
+    limit = 10
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
 async def cuiqingcai() -> list:
     """静觅"""
     source: str = "静觅"
@@ -1542,6 +1560,7 @@ async def freelycode() -> list:
     params: dict = {
         'page_no': 1,
     }
+    host: str = 'https://python.freelycode.com/'
 
     def fix_time(raw_time):
         # 2019-03-27 7:02 a.m.
@@ -1579,7 +1598,6 @@ async def freelycode() -> list:
             logger.info(
                 f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
             )
-        host: str = 'https://python.freelycode.com/'
         for item in items:
             try:
                 article: dict = {'source': source}
@@ -1619,6 +1637,7 @@ async def miguelgrinberg() -> list:
     start_page: int = 1
     max_page: int = 1
     api: str = 'https://blog.miguelgrinberg.com/index/page/'
+    host: str = 'https://blog.miguelgrinberg.com/'
 
     for page in range(start_page, max_page + 1):
         page_url = f'{api}{page}'
@@ -1644,7 +1663,6 @@ async def miguelgrinberg() -> list:
             logger.info(
                 f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
             )
-        host: str = 'https://blog.miguelgrinberg.com/'
         for item in items:
             try:
                 article: dict = {'source': source}
@@ -1684,6 +1702,7 @@ async def codingpy() -> list:
     max_page: int = 1
     api: str = 'https://codingpy.com/article/'
     params: dict = {'page': 1}
+    host: str = 'https://codingpy.com/'
 
     for page in range(start_page, max_page + 1):
         params['page'] = page
@@ -1709,7 +1728,6 @@ async def codingpy() -> list:
             logger.info(
                 f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
             )
-        host: str = 'https://codingpy.com/'
         for item in items:
             try:
                 article: dict = {'source': source}
@@ -1752,6 +1770,7 @@ async def nedbatchelder() -> list:
     articles: list = []
     limit: int = 5
     api: str = 'https://nedbatchelder.com/blog/tag/python.html'
+    host: str = 'https://nedbatchelder.com/'
     r = await req.get(
         api,
         ssl=False,
@@ -1779,7 +1798,6 @@ async def nedbatchelder() -> list:
     items: list = container_html.split(split_by)[1:limit + 1]
     if not items:
         return articles
-    host: str = 'https://nedbatchelder.com/'
     for item in items:
         try:
             article: dict = {'source': source}
@@ -1798,6 +1816,139 @@ async def nedbatchelder() -> list:
         except Exception:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def the5fire() -> list:
+    """the5fire的技术博客"""
+    source: str = "the5fire的技术博客"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api = host = 'https://www.the5fire.com/'
+    params: dict = {'page': 1}
+
+    for page in range(start_page, max_page + 1):
+        params['page'] = page
+        r = await req.get(
+            api,
+            params=params,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect('#main>.caption')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = item.cssselect('h3>a')
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                url: str = add_host(href, host)
+                desc: str = null_tree.css(item, '.caption>p').text_content()
+                raw_time: str = null_tree.css(item, '.info').text_content()
+                # 发布：2019-02-22 9:47 p.m.
+                raw_time = find_one(
+                    r'发布：(\d\d\d\d-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2} [pa]\.m\.)',
+                    raw_time)[1].replace('.', '')
+                # 2019-03-20 10:07 p.m.
+                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def foofish() -> list:
+    """Python之禅"""
+    source: str = "Python之禅"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api: str = 'https://foofish.net/index.html'
+    host: str = 'https://foofish.net/'
+
+    for page in range(start_page, max_page + 1):
+        if page != 1:
+            seed = api.replace('index.html', f'index{page}.html')
+        else:
+            seed = api
+        r = await req.get(
+            seed,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        container: str = find_one(r'<dl class="dl-horizontal">[\s\S]*?</dl>',
+                                  scode)[0]
+        if not container:
+            logger.error('container not found')
+            return articles
+        items: list = re.findall(r'<dt>[\S\s]*?</dd>', container)
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item_html in items:
+            try:
+                article: dict = {'source': source}
+                item = fromstring(item_html)
+                title_href = item.cssselect('a')
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                url: str = add_host(href, host)
+                raw_time: str = null_tree.css(item, 'dt').text
+                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
