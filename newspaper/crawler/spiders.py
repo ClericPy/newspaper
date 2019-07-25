@@ -9,7 +9,7 @@ from lxml.etree import ElementBase
 from torequests.dummy import Requests
 from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
                               re, time, ttime, unparse_qsl, urlparse,
-                              urlunparse)
+                              urlunparse, escape)
 
 from ..config import global_configs
 from ..config import spider_logger as logger
@@ -100,7 +100,7 @@ def shorten_desc(desc: str) -> str:
     desc = re.sub(r'(.{50,})(\n|\.|。|！|!|？|\?)\s?[\s\S]+', r'\1\2', desc)
     # remove html tag
     desc = re.sub('<[^>]+>', '', desc).strip()
-    return desc
+    return escape(desc)
 
 
 async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
@@ -1872,7 +1872,13 @@ async def the5fire() -> list:
                     r'发布：(\d\d\d\d-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2} [pa]\.m\.)',
                     raw_time)[1].replace('.', '')
                 # 2019-03-20 10:07 p.m.
-                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
+                # 2011-05-28 10 a.m.
+                # 2011-12-08 午夜
+                if ':' not in raw_time:
+                    raw_time = raw_time[:10]
+                    ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                else:
+                    ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %I:%M %p'))
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = shorten_desc(desc)
