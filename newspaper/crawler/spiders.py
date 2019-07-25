@@ -80,9 +80,11 @@ def get_url_key(url) -> str:
     return ""
 
 
-def add_host(url, host):
+def add_host(url: str, host: str) -> str:
     if not url:
         return ''
+    if re.match('^https?://', url):
+        return url
     if url.startswith('//'):
         return f'https:{url}'
     if not host.endswith('/'):
@@ -1874,6 +1876,73 @@ async def the5fire() -> list:
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def foofish() -> list:
+    """Python之禅"""
+    source: str = "Python之禅"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    api: str = 'https://foofish.net/index.html'
+    host: str = 'https://foofish.net/'
+
+    for page in range(start_page, max_page + 1):
+        if page != 1:
+            seed = api.replace('index.html', f'index{page}.html')
+        else:
+            seed = api
+        r = await req.get(
+            seed,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        container: str = find_one(r'<dl class="dl-horizontal">[\s\S]*?</dl>',
+                                  scode)[0]
+        if not container:
+            logger.error('container not found')
+            return articles
+        items: list = re.findall(r'<dt>[\S\s]*?</dd>', container)
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item_html in items:
+            try:
+                article: dict = {'source': source}
+                item = fromstring(item_html)
+                title_href = item.cssselect('a')
+                title: str = title_href[0].text
+                href: str = title_href[0].get('href', '')
+                url: str = add_host(href, host)
+                raw_time: str = null_tree.css(item, 'dt').text
+                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
                 article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)

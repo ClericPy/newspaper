@@ -250,8 +250,8 @@ content_sources = [{
     "url": "https://foofish.net/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
-    "desc": "文章较基础, 但质量还不错"
+    "status": "√",
+    "desc": "文章较基础, 质量不错"
 }, {
     "title": "V2EX",
     "url": "https://www.v2ex.com/go/python",
