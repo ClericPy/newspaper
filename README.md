@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 28 / 35
+* 收录进度: 29 / 35
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -70,7 +70,7 @@
 | 32 | [Manjusaka](https://manjusaka.itscoder.com/tags/Python/) | 3 | CN | X | 原创还不错, 但是文章较少, 暂不收录 |
 | 33 | [Python程序员](https://zhuanlan.zhihu.com/pythoncxy) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E7%A8%8B%E5%BA%8F%E5%91%98) | 关注破万的知乎专栏 |
 | 34 | [Python头条](https://zhuanlan.zhihu.com/c_111369541) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E5%A4%B4%E6%9D%A1) | 关注破万的知乎专栏 |
-| 35 | [the5fire的技术博客](https://www.the5fire.com/) | 3 | CN | = | 保持更新的热门中文博主 |
+| 35 | [the5fire的技术博客](https://www.the5fire.com/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=the5fire%E7%9A%84%E6%8A%80%E6%9C%AF%E5%8D%9A%E5%AE%A2) | 保持更新的热门中文博主 |
 | 36 | [Python之禅](https://foofish.net/) | 3 | CN | = | 文章较基础, 但质量还不错 |
 | 37 | [V2EX](https://www.v2ex.com/go/python) | 3 | CN | = | 社区类, 只收录 回复数 10+ 的吧 |
 | 38 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | = | 有点类似推酷, 质量参差不齐 |

@@ -243,7 +243,7 @@ content_sources = [{
     "url": "https://www.the5fire.com/",
     "level": 3,
     "lang": "CN",
-    "status": "=",
+    "status": "√",
     "desc": "保持更新的热门中文博主"
 }, {
     "title": "Python之禅",
