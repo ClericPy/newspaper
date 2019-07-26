@@ -2092,3 +2092,53 @@ async def lucumr() -> list:
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
     return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def treyhunner() -> list:
+    """Trey Hunner"""
+    source: str = "Trey Hunner"
+    articles: list = []
+    limit: int = 5
+    api: str = 'https://treyhunner.com/blog/categories/python/'
+    host: str = 'https://treyhunner.com/'
+
+    r = await req.get(
+        api,
+        ssl=False,
+        # proxy=proxy,
+        retry=1,
+        headers={
+            'Referer': api,
+            'User-Agent': CHROME_PC_UA
+        },
+    )
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    scode: str = r.content.decode('u8', 'ignore')
+    items: list = fromstring(scode).cssselect('#blog-archives>article')
+    for item in items[:limit]:
+        try:
+            article: dict = {'source': source}
+            title_href = null_tree.css(item, 'h1>a')
+            title: str = title_href.text
+            href: str = title_href.get('href', '')
+            url: str = add_host(href, host)
+            raw_time: str = null_tree.css(item, 'time').get('datetime')
+            # 2019-06-18T09:15:00-07:00
+            ts_publish = ttime(ptime(raw_time.replace('T', ' ')[:19], tzone=-7))
+            article['ts_publish'] = ts_publish
+            article['title'] = title
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles

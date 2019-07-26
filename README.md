@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 32 / 33
+* 收录进度: 33 / 33
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -84,7 +84,7 @@
 | 46 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | X | 一年不更新了, 先不收录了 |
 | 47 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | X | 最后更新 Thu 13 September 2018, 暂不收录 |
 | 48 | [开源中国翻译](https://www.oschina.net/translate/tag/python) | 3 | CN | X | 入库留着吧, 估计不更了, 暂不收录 |
-| 49 | [Trey Hunner](https://treyhunner.com/blog/archives/) | 3 | EN | = | 保持更新 |
+| 49 | [Trey Hunner](https://treyhunner.com/blog/archives/) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Trey+Hunner) | Help developers level-up their Python skills |
 | 50 | [Python Central](https://www.pythoncentral.io/) | 3 | EN | X | 不更新了, 暂不收录 |
 | 51 | [Inside the Head of PyDanny](https://www.pydanny.com/) | 3 | EN | X | 不更新了, 暂不收录 |
 | 52 | [华蟒用户组,CPyUG](https://groups.google.com/forum/#!forum/python-cn) | 3 | EN | X | [墙] 社区类, 自己看看就好, 暂不收录 |
