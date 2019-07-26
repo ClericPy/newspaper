@@ -285,7 +285,7 @@ content_sources = [{
     "url": "http://lucumr.pocoo.org/",
     "level": 3,
     "lang": "EN",
-    "status": "=",
+    "status": "√",
     "desc": "Flask 作者 Armin Ronacher"
 }, {
     "title": "aio-libs",
