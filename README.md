@@ -30,7 +30,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 31 / 33
+* 收录进度: 32 / 33
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -76,7 +76,7 @@
 | 38 | [伯乐在线](http://python.jobbole.com/all-posts/) | 3 | CN | X | 有点类似推酷, 质量参差不齐. HTTP ERROR 503 |
 | 39 | [Python 3 Module of the Week](https://pymotw.com/3/) | 3 | EN | X | 看起来不怎么更新了, 暂不收录 |
 | 40 | [The Invent with Python Blog](https://inventwithpython.com/blog/index.html) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=The+Invent+with+Python+Blog) | 感觉不错 |
-| 41 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | = | Flask 作者 Armin Ronacher |
+| 41 | [Armin Ronacher's Thoughts and Writings](http://lucumr.pocoo.org/) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Armin+Ronacher%27s+Thoughts+and+Writings) | Flask 作者 Armin Ronacher |
 | 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | X | 知名 Python 开源组织, 不过没有文章类的 post |
 | 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | X | 课外读物, 非 Python 主题, 暂不收录 |
 | 44 | [编程派](http://codingpy.com/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%BC%96%E7%A8%8B%E6%B4%BE) | 原创+译文 |
