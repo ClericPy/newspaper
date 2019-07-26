@@ -341,8 +341,8 @@ content_sources = [{
     "url": "https://treyhunner.com/blog/archives/",
     "level": 3,
     "lang": "EN",
-    "status": "=",
-    "desc": "保持更新"
+    "status": "√",
+    "desc": "Help developers level-up their Python skills"
 }, {
     "title": "Python Central",
     "url": "https://www.pythoncentral.io/",
