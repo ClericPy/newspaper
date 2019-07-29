@@ -1456,7 +1456,7 @@ async def tuicool_cn() -> list:
     articles = await common_spider_tuicool('cn',
                                            source,
                                            max_page=max_page,
-                                           ignore_descs={'稀土掘金'})
+                                           ignore_descs={'稀土掘金', 'Python猫'})
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
@@ -1499,6 +1499,8 @@ async def kf_toutiao() -> list:
         'pageSize': per_page,
         'sort': sort_by
     }
+
+    ignore_usernames: set = {'豌豆花下猫'}
     for page in range(0, max_page):
         params['page'] = page
         r = await req.get(
@@ -1527,6 +1529,9 @@ async def kf_toutiao() -> list:
         for item in items:
             try:
                 article: dict = {'source': source}
+                # 过滤一下已收录过的源
+                if item.get('user', {}).get('username', '') in ignore_usernames:
+                    continue
                 # 2019-05-05T03:51:12.886Z
                 gmt_time = re.sub(r'\..*', '',
                                   item['createdAt']).replace('T', ' ')
