@@ -15,8 +15,9 @@
 - [x] 开发
 - [x] 测试
 - [x] 上线
-- [ ] 补充内容源
-- [ ] Python 日报 github pages
+- [x] 补充内容源
+- [ ] Python 日报静态页面 github pages + rss
+- [ ] 人工筛选生成日报/周报, 公众号推送
 
 ### 内容源列表
 
