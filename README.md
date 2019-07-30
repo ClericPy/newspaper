@@ -32,7 +32,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 33 / 33
+* 收录进度: 34 / 34
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -111,6 +111,8 @@
 | 71 | [Python China](http://python-china.org/api/topics/timeline) | 2 | CN | X | 欠费网站挂了 |
 | 72 | [麦穗技术](http://www.58maisui.com/category/python/) | 2 | CN | X | 网站挂了 |
 | 73 | [CSDN](https://so.csdn.net/so/search/s.do?q=python&t=blog&u=) | 1 | CN | X | 文章质量啊~~~ |
+| 74 | [Stack Overflow](https://stackoverflow.com/?tab=hot) | 3 | EN | X | 已解决 + python + vote>=5, 但是问题有点弱智, 暂不收录 |
+| 75 | [Reddit](https://www.reddit.com/r/Python/top/) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Reddit) | 知名社区. 质量参差, 收录每日 ups>=20 |
 
 
 <!-- providers end -->
