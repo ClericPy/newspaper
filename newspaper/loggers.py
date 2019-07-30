@@ -1,10 +1,6 @@
-import json
 import logging
-import os
 import pathlib
 from logging.handlers import RotatingFileHandler
-
-from .loggers import logger, spider_logger
 
 log_dir = pathlib.Path(__file__).parent.parent / 'logs'
 
@@ -33,24 +29,5 @@ def init_logger(logger_name=None, file_name='server.log'):
     return logger
 
 
-def init_config():
-    global_configs = os.getenv('newspaper_config')
-    if global_configs:
-        global_configs = json.loads(global_configs)
-    else:
-        newspaper_config_template = '{"anti_gfw": {"url": "xxx"}, "mysql_config": {"mysql_host": "xxx", "mysql_port": 0, "mysql_user": "xxx", "mysql_password": "xxx", "mysql_db": "xxx"}}'
-        logger.error(
-            f'environment variable `newspaper_config` not found, it should be set as json like: {newspaper_config_template}'
-        )
-        raise RuntimeError('environment variable `newspaper_config` not found')
-    return global_configs
-
-
-def init_db():
-    from .models import MySQLStorage
-    db = MySQLStorage(global_configs['mysql_config'])
-    return db
-
-
-global_configs = init_config()
-db = init_db()
+logger = init_logger('server', 'server.log')
+spider_logger = init_logger('spider_logger', 'spider.log')
