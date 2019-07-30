@@ -1,14 +1,15 @@
 import abc
 import re
+import sqlite3
 import typing
 import warnings
 from datetime import datetime
 
 import aiomysql
 from async_lru import alru_cache
-from torequests.utils import time, ttime, ptime
+from torequests.utils import ptime, time, ttime
 
-from .config import logger
+from .loggers import logger
 from .crawler.sources import content_sources_dict
 
 # 用了 insert ignore 还总是 warning, 又不想 insert try, 只好全禁掉了...
@@ -223,7 +224,8 @@ class MySQLStorage(Storage):
         if is_exists:
             logger.info('`articles` table exists.')
             return
-        logger.info('start creating `articles` table.')
+        logger.info('start creating `articles` table for table missing.')
+        #! 每次修改这里要确定好和下面的 sqlite 部分是一致的
         sql = '''CREATE TABLE `articles` (
   `url_key` char(32) NOT NULL COMMENT '通过 url 计算的 md5',
   `title` varchar(128) NOT NULL DEFAULT '无题' COMMENT '文章标题',
@@ -364,6 +366,63 @@ class MySQLStorage(Storage):
 class Sqlite3Storage(Storage):
     """本地数据库, 主要用来备份线上数据避免阿里云翻车或者迁移的时候用."""
 
+    def __init__(self, file_path):
+        self.db = sqlite3.connect(file_path)
+        self.cursor = self.db.cursor()
+
+    def __del__(self):
+        self.db.close()
+
+    def add_articles(self, articles):
+        articles = self.ensure_articles(articles)
+        if not articles:
+            return
+        for article in articles:
+            keys = list(article.keys())
+            keys_str = ', '.join([f'`{key}`' for key in keys])
+            values = [article[key] for key in keys]
+            value_keys = ','.join([f'?' for key in keys])
+            sql = f'''insert or ignore into `articles` ({keys_str}) values ({value_keys})'''
+            result = self.cursor.execute(sql, values)
+        self.db.commit()
+        return result
+
+    def del_articles(self, *args, **kwargs):
+        pass
+
+    def update_articles(self, *args, **kwargs):
+        pass
+
+    def query_articles(self, *args, **kwargs):
+        pass
+
+    def _ensure_article_table_exists(self):
+        self.cursor.execute(
+            "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='articles'"
+        )
+        is_exists = bool(self.cursor.fetchone()[0])
+        if is_exists:
+            logger.info('`articles` table exists. [sqlite]')
+            return
+        logger.info(
+            'start creating `articles` table for table missing. [sqlite]')
+        #! sqlite 只用来备份, 所以不建索引, 不支持 mysql 的 ENGINE, INDEX, COMMENT
+        self.cursor.execute("""CREATE TABLE `articles` (
+`url_key` char(32) NOT NULL ,
+`title` varchar(128) NOT NULL DEFAULT '无题' ,
+`url` varchar(255) NOT NULL ,
+`cover` varchar(255) NOT NULL DEFAULT '' ,
+`desc` text ,
+`source` varchar(32) NOT NULL DEFAULT '未知' ,
+`level` tinyint(4) NOT NULL ,
+`lang` char(2) DEFAULT NULL ,
+`review` varchar(255) NOT NULL DEFAULT '' ,
+`ts_publish` timestamp NOT NULL DEFAULT '1970-01-01 08:00:01' ,
+`ts_create` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+`ts_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`url_key`)
+)""")
+
 
 class MongoDBStorage(Storage):
-    """连接免费的 mongolab 数据库, 之后迁移到 heroku 的时候使用它."""
+    """连接免费的 mongolab 数据库, 之后迁移到 heroku + mlab(免费 mongodb) 的时候使用它."""
