@@ -115,9 +115,13 @@ async def articles_query(req):
     elif output == 'html':
         return app.templates.TemplateResponse('articles.html', {"request": req})
     elif output == 'rss':
-        return PlainTextResponse('未实现')
+        # 只保留日报的 RSS 接口, 不再对 Timeline 做 rss 了, 没有必要
+        # https://www.clericpy.top/newspaper/daily.python.list.rss.any
+        params = dict(req.query_params)
+        lang = params.get('lang', 'any').lower()
+        return RedirectResponse(f'/newspaper/daily.python.list.rss.{lang}', 302)
     else:
-        return PlainTextResponse('未实现')
+        return PlainTextResponse("NotImplemented")
 
 
 @app.route("/newspaper/daily.python/{date}")
