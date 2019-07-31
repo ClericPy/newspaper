@@ -134,7 +134,7 @@ async def daily_python(req):
     result = await app.db.query_articles(date=date, **params)
     return app.templates.TemplateResponse('daily_python.html', {
         "request": req,
-        "articles": json.dumps(result),
+        "articles": json.dumps(result).replace('`', "'"),
         "title": date
     })
 
