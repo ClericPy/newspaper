@@ -154,13 +154,14 @@ async def daily_python_list(req):
         },
         'items': []
     }
-    for date_delta in range(0, limit + 1):
-        date: str = ttime(time.time() - 86400 * date_delta)[:10]
+    for date_delta in range(1, limit + 1):
+        ts: float = time.time() - 86400 * date_delta
+        date: str = ttime(ts)[:10]
         # Wed, 18 Jun 2008
-        pubDate: str = ttime(ptime(date), fmt='%a, %d %b %Y')
+        pubDate: str = ttime(ts, fmt='%a, %d %b %Y')
         link: str = f'https://{ONLINE_HOST}/newspaper/daily.python/{date}?lang={language}'
         item: dict = {
-            'title': f'Python Daily {date}',
+            'title': f'Python Daily [{date}]',
             'link': link,
             'guid': link,
             'pubDate': pubDate

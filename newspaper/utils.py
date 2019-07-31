@@ -1,4 +1,5 @@
 import aiofiles
+from torequests.utils import escape
 
 
 async def tail_file(fp, size=100):
@@ -18,12 +19,6 @@ async def tail_file(fp, size=100):
         return text
 
 
-def cdata(string):
-    if not string:
-        return ''
-    return f"<![CDATA[{string.replace(']]>', ']>')}]]>"
-
-
 def gen_rss(data):
     nodes = []
     channel = data['channel']
@@ -36,14 +31,14 @@ def gen_rss(data):
         item_nodes = []
         for key in item_keys:
             value = item.get(key)
-            if key:
-                item_nodes.append(f'<{key}>{cdata(value)}</{key}>')
-        nodes.append(''.join((f'<item>{tmp}</item>' for tmp in item_nodes)))
-    items_string = ''.join(nodes)
+            if value:
+                item_nodes.append(f'<{key}>{escape(value)}</{key}>')
+        nodes.append(''.join(item_nodes))
+    items_string = ''.join((f'<item>{tmp}</item>' for tmp in nodes))
     return rf'''<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
 <channel>
-  <title>{cdata(channel_title)}</title>
+  <title>{channel_title}</title>
   <link>{channel_link}</link>
   <description>{channel_desc}</description>
   <language>{channel_language}</language>
