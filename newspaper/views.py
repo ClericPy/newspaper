@@ -4,12 +4,14 @@ import traceback
 from urllib.parse import urlencode
 
 from starlette.responses import (JSONResponse, PlainTextResponse,
-                                 RedirectResponse)
+                                 RedirectResponse, Response)
+from torequests.utils import ptime, time, ttime
 
 from .api import app
-from .config import log_dir
+from .config import ONLINE_HOST
 from .crawler.sources import content_sources_dict
-from .utils import tail_file
+from .loggers import log_dir
+from .utils import gen_rss, tail_file
 
 
 class APIError(Exception):
@@ -131,6 +133,41 @@ async def daily_python(req):
         "articles": json.dumps(result),
         "title": date
     })
+
+
+@app.route("/newspaper/daily.python.list.rss.{language}")
+async def daily_python_list(req):
+    """Python 日报列表, 其实就是个按照日期伪造的页面, 用来订阅 rss"""
+    language = req.path_params['language'].lower()
+    if language not in {'cn', 'en', 'any'}:
+        return PlainTextResponse('language should be cn / en / any.')
+    limit: int = int(req.query_params.get('limit') or 10)
+    xml_data: dict = {
+        'channel': {
+            'title': 'Python Daily',
+            'description': 'Python Daily Newspaper',
+            'link': f'https://{ONLINE_HOST}/newspaper/daily.python.list.rss.{language}',
+            'language': {
+                'cn': 'zh-cn',
+                'any': 'zh-cn'
+            }.get(language, 'en'),
+        },
+        'items': []
+    }
+    for date_delta in range(0, limit + 1):
+        date: str = ttime(time.time() - 86400 * date_delta)[:10]
+        # Wed, 18 Jun 2008
+        pubDate: str = ttime(ptime(date), fmt='%a, %d %b %Y')
+        link: str = f'https://{ONLINE_HOST}/newspaper/daily.python/{date}?lang={language}'
+        item: dict = {
+            'title': f'Python Daily {date}',
+            'link': link,
+            'guid': link,
+            'pubDate': pubDate
+        }
+        xml_data['items'].append(item)
+    xml: str = gen_rss(xml_data)
+    return Response(xml, media_type='text/xml')
 
 
 @app.route("/newspaper/source.redirect")

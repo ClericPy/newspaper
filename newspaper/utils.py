@@ -16,3 +16,38 @@ async def tail_file(fp, size=100):
         await f.seek(stop_pos)
         text = (await f.read())[-size:]
         return text
+
+
+def cdata(string):
+    if not string:
+        return ''
+    return f"<![CDATA[{string.replace(']]>', ']>')}]]>"
+
+
+def gen_rss(data):
+    nodes = []
+    channel = data['channel']
+    channel_title = channel['title']
+    channel_desc = channel['description']
+    channel_link = channel['link']
+    channel_language = channel.get('language', 'zh-cn')
+    item_keys = ['title', 'description', 'link', 'guid', 'pubDate']
+    for item in data['items']:
+        item_nodes = []
+        for key in item_keys:
+            value = item.get(key)
+            if key:
+                item_nodes.append(f'<{key}>{cdata(value)}</{key}>')
+        nodes.append(''.join((f'<item>{tmp}</item>' for tmp in item_nodes)))
+    items_string = ''.join(nodes)
+    return rf'''<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+<channel>
+  <title>{cdata(channel_title)}</title>
+  <link>{channel_link}</link>
+  <description>{channel_desc}</description>
+  <language>{channel_language}</language>
+  {items_string}
+</channel>
+</rss>
+'''

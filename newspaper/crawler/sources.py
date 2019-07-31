@@ -1,4 +1,8 @@
 from torequests.utils import quote_plus
+import sys
+import pathlib
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
+from config import ONLINE_HOST
 
 content_sources = [
     {
@@ -632,7 +636,7 @@ def main():
         status = item['status']
         if item['status'] == '√':
             finish_counts += 1
-            status = f'[√](https://www.clericpy.top/newspaper/articles.query.html?source={quote_plus(item["title"])})'
+            status = f'[√](https://{ONLINE_HOST}/newspaper/articles.query.html?source={quote_plus(item["title"])})'
         elif item['status'] == '=':
             todo_counts += 1
         data.append(status)
