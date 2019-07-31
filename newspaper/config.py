@@ -2,35 +2,6 @@ import json
 import logging
 import os
 import pathlib
-from logging.handlers import RotatingFileHandler
-
-from .loggers import logger, spider_logger
-
-log_dir = pathlib.Path(__file__).parent.parent / 'logs'
-
-
-def init_logger(logger_name=None, file_name='server.log'):
-    if not log_dir.is_dir():
-        log_dir.mkdir()
-    formatter_str = (
-        "%(asctime)s %(levelname)-5s [%(name)s] %(filename)s(%(lineno)s): %(message)s"
-    )
-    datefmt = "%Y-%m-%d %H:%M:%S"
-    formatter = logging.Formatter(formatter_str, datefmt=datefmt)
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.INFO)
-    stream_hl = logging.StreamHandler()
-    stream_hl.setFormatter(formatter)
-    stream_hl.setLevel(logging.INFO)
-    logger.addHandler(stream_hl)
-
-    file_hl = RotatingFileHandler(filename=log_dir / file_name,
-                                  maxBytes=1024 * 1024 * 100,
-                                  encoding='utf-8')
-    file_hl.setFormatter(formatter)
-    file_hl.setLevel(logging.INFO)
-    logger.addHandler(file_hl)
-    return logger
 
 
 def init_config():
@@ -39,7 +10,7 @@ def init_config():
         global_configs = json.loads(global_configs)
     else:
         newspaper_config_template = '{"anti_gfw": {"url": "xxx"}, "mysql_config": {"mysql_host": "xxx", "mysql_port": 0, "mysql_user": "xxx", "mysql_password": "xxx", "mysql_db": "xxx"}}'
-        logger.error(
+        logging.error(
             f'environment variable `newspaper_config` not found, it should be set as json like: {newspaper_config_template}'
         )
         raise RuntimeError('environment variable `newspaper_config` not found')
@@ -53,4 +24,4 @@ def init_db():
 
 
 global_configs = init_config()
-db = init_db()
+ONLINE_HOST = 'www.clericpy.top'

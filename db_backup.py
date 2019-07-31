@@ -8,11 +8,12 @@ from torequests import tPool
 from torequests.utils import ttime
 
 from newspaper.models import Sqlite3Storage, logger
+from newspaper.config import ONLINE_HOST
 
 
 def fetch_artcles(ts_start):
     req = tPool()
-    api = 'https://www.clericpy.top/newspaper/articles.query.json'
+    api = f'https://{ONLINE_HOST}/newspaper/articles.query.json'
     next_url = ''
     start_params = {
         'query': '',
@@ -43,7 +44,7 @@ def fetch_artcles(ts_start):
             # 没有文章, 并没有下一页
             logger.info(f'fetch_artcles finished, last url: {url}')
             return
-        next_url = re.sub('^/', 'https://www.clericpy.top/', next_url)
+        next_url = re.sub('^/', f'https://{ONLINE_HOST}/', next_url)
 
 
 def get_ts_latest(cursor):

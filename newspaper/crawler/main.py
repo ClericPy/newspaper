@@ -2,8 +2,11 @@ import asyncio
 
 from torequests.dummy import Requests
 
-from ..config import db, spider_logger
+from ..config import init_db
+from ..loggers import spider_logger
 from .spiders import history_spiders, online_spiders
+
+db = init_db()
 
 
 async def test_spider_workflow():

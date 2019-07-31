@@ -12,7 +12,7 @@ from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
                               urlunparse, escape)
 
 from ..config import global_configs
-from ..config import spider_logger as logger
+from ..loggers import spider_logger as logger
 
 test_spiders = []
 online_spiders = []
