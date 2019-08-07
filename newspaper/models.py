@@ -38,6 +38,7 @@ class Storage(object, metaclass=abc.ABCMeta):
         keys_set = None
         now = ttime()
         today_0_0 = f'{now[:10]} 00:00:00'
+        before_3_day_0_0 = f'{ttime(time.time() - 86400*3)[:10]} 00:00:00'
         for article in articles:
             if not isinstance(article, dict):
                 continue
@@ -69,13 +70,13 @@ class Storage(object, metaclass=abc.ABCMeta):
             if ttime(ptime(article['ts_publish'])) == '1970-01-01 08:00:00':
                 article['ts_publish'] = '1970-01-01 08:00:01'
             if not article.get('ts_create'):
-                # 今天发布的, 使用当前时间做抓取时间
+                # 最近 3 天发布的, 使用当前时间做抓取时间
                 # 如果发布时间不存在, 也使用当前时间做抓取时间
-                if article['ts_publish'] >= today_0_0 or article[
+                if article['ts_publish'] >= before_3_day_0_0 or article[
                         'ts_publish'] == '1970-01-01 08:00:01':
                     article['ts_create'] = now
                 else:
-                    # 不是今天发布的, 使用发布时间做抓取时间
+                    # 不是 3 天内发布的, 使用发布时间做抓取时间
                     article['ts_create'] = article['ts_publish']
             valid_articles.append(article)
         return valid_articles
