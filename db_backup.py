@@ -5,7 +5,7 @@
 import re
 
 from torequests import tPool
-from torequests.utils import ttime
+from torequests.utils import ttime, time
 
 from newspaper.models import Sqlite3Storage, logger
 from newspaper.config import ONLINE_HOST
@@ -66,7 +66,9 @@ def main():
         db.add_articles(articles)
         article_cnt += len(articles)
         logger.info(f'+ {len(articles)} articles => {article_cnt}')
+    logger.info(f'+ {article_cnt} new articles.')
 
 
 if __name__ == "__main__":
     main()
+    time.sleep(3)
