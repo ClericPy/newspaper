@@ -13,7 +13,7 @@ Description=newspaper web service
 
 [Service]
 Type=simple
-ExecStart=cd {str(this_fp.parent.parent)};/usr/local/bin/pipenv run python run_server.py
+ExecStart=cd {str(this_fp.parent.parent.absolute())};/usr/local/bin/pipenv run python run_server.py
 
 [Install]
 WantedBy=multi-user.target
@@ -30,7 +30,7 @@ Description=newspaper spider service
 
 [Service]
 Type=simple
-ExecStart=cd {str(this_fp.parent.parent)};/usr/local/bin/pipenv run python crawl_online.py
+ExecStart=cd {str(this_fp.parent.parent.absolute())};/usr/local/bin/pipenv run python crawl_online.py
 
 [Install]
 WantedBy=multi-user.target
