@@ -7,7 +7,7 @@ this_fp = pathlib.Path(__file__)
 
 # web 服务启动
 
-newspaper_web_service = r'''
+newspaper_web_service = fr'''
 [Unit]
 Description=newspaper web service
 
