@@ -1,7 +1,7 @@
 from torequests.utils import quote_plus
 import sys
 import pathlib
-sys.path.append(str(pathlib.Path(__file__).parent.parent))
+sys.path.append(str(pathlib.Path(__file__).absolute().parent.parent))
 from config import ONLINE_HOST
 
 content_sources = [
@@ -644,7 +644,7 @@ def main():
         string = ' | '.join(data)
         providers += '| ' + string + ' |\n'
     proc = f'* 收录进度: {finish_counts} / {finish_counts + todo_counts}\n\n\t> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更\n\n'
-    README_FP = pathlib.Path(__file__).parent.parent.parent / 'README.md'
+    README_FP = pathlib.Path(__file__).absolute().parent.parent.parent / 'README.md'
     with README_FP.open('r', encoding='u8') as f:
         old = f.read()
         new = re.sub(
