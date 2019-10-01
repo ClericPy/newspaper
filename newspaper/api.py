@@ -9,8 +9,8 @@ from starlette.templating import Jinja2Templates
 from .config import init_db, global_configs
 from .loggers import logger
 
-static_dir = pathlib.Path(__file__).parent / 'static'
-templates_dir = pathlib.Path(__file__).parent / 'templates'
+static_dir = pathlib.Path(__file__).absolute().parent / 'static'
+templates_dir = pathlib.Path(__file__).absolute().parent / 'templates'
 
 app = Starlette()
 app.mount('/static', StaticFiles(directory=str(static_dir)), name='static')

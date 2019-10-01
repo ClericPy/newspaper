@@ -2,7 +2,7 @@ import logging
 import pathlib
 from logging.handlers import RotatingFileHandler
 
-log_dir = pathlib.Path(__file__).parent.parent / 'logs'
+log_dir = pathlib.Path(__file__).absolute().parent.parent / 'logs'
 
 
 def init_logger(logger_name=None, file_name='server.log'):

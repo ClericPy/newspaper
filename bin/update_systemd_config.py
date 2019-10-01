@@ -3,7 +3,8 @@ user_systemd_dir = pathlib.Path.home() / '.config/systemd/user'
 if not user_systemd_dir.is_dir():
     user_systemd_dir.mkdir()
 
-this_fp = pathlib.Path(__file__)
+newspaper_product_dir = pathlib.Path(
+    __file__).absolute().parent.parent.absolute()
 
 # web 服务启动
 
@@ -13,7 +14,7 @@ Description=newspaper web service
 
 [Service]
 Type=simple
-ExecStart=cd {str(this_fp.parent.parent.absolute())};/usr/local/bin/pipenv run python run_server.py
+ExecStart=cd {newspaper_product_dir};/usr/local/bin/pipenv run python run_server.py
 
 [Install]
 WantedBy=multi-user.target
@@ -30,7 +31,7 @@ Description=newspaper spider service
 
 [Service]
 Type=simple
-ExecStart=cd {str(this_fp.parent.parent.absolute())};/usr/local/bin/pipenv run python crawl_online.py
+ExecStart=cd {newspaper_product_dir};/usr/local/bin/pipenv run python crawl_online.py
 
 [Install]
 WantedBy=multi-user.target
