@@ -15,4 +15,4 @@
 
 
 ### vscode task 升级更新脚本
-```git co master ; git merge dev; git push; git co dev;ssh aliyun 'cd newspaper/bin;sh git-sync.sh;systemctl daemon-reload;systemctl --user restart newspaper_web'```
+```git co master ; git merge dev; git push; git co dev;ssh aliyun 'cd newspaper/bin;sh git-sync.sh;systemctl daemon-reload;systemctl --user restart newspaper_web.service'```
