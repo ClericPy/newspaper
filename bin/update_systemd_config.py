@@ -14,8 +14,8 @@ Description=newspaper web service
 
 [Service]
 Type=simple
-ExecStart=cd {newspaper_product_dir};/usr/local/bin/pipenv run python run_server.py
-
+ExecStart=/usr/local/bin/pipenv run python run_server.py
+WorkingDirectory={newspaper_product_dir}
 [Install]
 WantedBy=multi-user.target
 WantedBy=network-online.target
@@ -31,7 +31,8 @@ Description=newspaper spider service
 
 [Service]
 Type=simple
-ExecStart=cd {newspaper_product_dir};/usr/local/bin/pipenv run python crawl_online.py
+ExecStart=/usr/local/bin/pipenv run python crawl_online.py
+WorkingDirectory={newspaper_product_dir}
 
 [Install]
 WantedBy=multi-user.target
