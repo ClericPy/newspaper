@@ -58,4 +58,4 @@ WantedBy=multi-user.target
 WantedBy=network-online.target
 '''
 newspaper_spider_timer_fp = user_systemd_dir / 'newspaper_spider.timer'
-newspaper_spider_timer_fp.write_text(newspaper_spider_service, encoding='utf-8')
+newspaper_spider_timer_fp.write_text(newspaper_spider_timer, encoding='utf-8')
