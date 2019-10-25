@@ -276,7 +276,7 @@
         <br><br><br><br>
         <hr>
     </div>
-    <script src="https://cdn.boot1css.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
     <script>
         try {
             new window.ClipboardJS('.share-button', {
@@ -358,7 +358,7 @@
                         <span class="stars star_level_${item.level}">${stars}</span> - 
                         <span class="source"><a href="?source=${item.source}">🔍</a> <a href="/newspaper/source.redirect?name=${item.source}" target="_blank">${item.source}</a></span> - 
                         <span class="host">${host}</span>
-                        <button class="share share-button" article_id="_${item.url_key}">Share</button>
+                        <button class="share share-button" title="Click to Copy" article_id="_${item.url_key}">Share</button>
                     </p>
                     `
                 node.appendChild(child)
