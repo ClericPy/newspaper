@@ -200,6 +200,11 @@
             -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)
         }
+
+        button {
+            border: 1px outset;
+            background-color: white;
+        }
     </style>
 </head>
 
@@ -271,7 +276,21 @@
         <br><br><br><br>
         <hr>
     </div>
+    <script src="https://cdn.boot1css.com/clipboard.js/2.0.4/clipboard.min.js"></script>
     <script>
+        try {
+            new window.ClipboardJS('.share-button', {
+                text: function (trigger) {
+                    var article_id = trigger.getAttribute('article_id')
+                    var title_node = document.querySelector('#' + article_id + '>.title>a')
+                    var text = '[' + title_node.innerText + '](' + title_node.getAttribute("href") + ')'
+                    return text
+                }
+            });
+        } catch (error) {
+            console.error(error)
+        }
+
         var next_url = window.location.href.replace('articles.query.html', 'articles.query.json')
 
         function fill_form_params(data) {
@@ -340,6 +359,7 @@
                         <span class="stars star_level_${item.level}">${stars}</span> - 
                         <span class="source"><a href="?source=${item.source}">🔍</a> <a href="/newspaper/source.redirect?name=${item.source}" target="_blank">${item.source}</a></span> - 
                         <span class="host">${host}</span>
+                        <button class="share share-button" article_id="_${item.url_key}">Share</button>
                     </p>
 
                     `
