@@ -354,14 +354,12 @@
                     <p class="desc" onclick="show_all_desc('_${item.url_key}')">${item.desc}</p>
                     <p class="review">${item.review}</p>
                     <p class="article-source">
-                        ${is_new} <span class="ts_publish" title="${item.ts_create}">${item.ts_publish}</span> - 
-
+                        ${is_new} <span class="ts_create" title="${item.ts_publish}">${item.ts_create}</span> - 
                         <span class="stars star_level_${item.level}">${stars}</span> - 
                         <span class="source"><a href="?source=${item.source}">🔍</a> <a href="/newspaper/source.redirect?name=${item.source}" target="_blank">${item.source}</a></span> - 
                         <span class="host">${host}</span>
                         <button class="share share-button" article_id="_${item.url_key}">Share</button>
                     </p>
-
                     `
                 node.appendChild(child)
             }
