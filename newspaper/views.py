@@ -8,7 +8,7 @@ from starlette.responses import (JSONResponse, PlainTextResponse,
 from torequests.utils import ptime, time, ttime
 
 from .api import app
-from .config import ONLINE_HOST
+from .config import ONLINE_HOST, GA_ID
 from .crawler.sources import content_sources_dict
 from .loggers import log_dir
 from .utils import gen_rss, tail_file
@@ -113,7 +113,10 @@ async def articles_query(req):
         result = await app.db.query_articles(**params)
         return JSONResponse(handle_pagination_response(req.url._url, result))
     elif output == 'html':
-        return app.templates.TemplateResponse('articles.html', {"request": req})
+        return app.templates.TemplateResponse('articles.html', {
+            "request": req,
+            "GA_ID": GA_ID
+        })
     elif output == 'rss':
         # 只保留日报的 RSS 接口, 不再对 Timeline 做 rss 了, 没有必要
         # https://www.clericpy.top/newspaper/daily.python.list.rss.any
@@ -132,11 +135,13 @@ async def daily_python(req):
     # 默认按发布时间
     params.setdefault('order_by', 'ts_publish')
     result = await app.db.query_articles(date=date, **params)
-    return app.templates.TemplateResponse('daily_python.html', {
-        "request": req,
-        "articles": json.dumps(result).replace('`', "'"),
-        "title": date
-    })
+    return app.templates.TemplateResponse(
+        'daily_python.html', {
+            "request": req,
+            "articles": json.dumps(result).replace('`', "'"),
+            "title": date,
+            "GA_ID": GA_ID
+        })
 
 
 @app.route("/newspaper/daily.python.list.rss.{language}")
