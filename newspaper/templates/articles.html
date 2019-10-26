@@ -8,6 +8,19 @@
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Python Timeline</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', '{{GA_ID}}');
+    </script>
+
     <style>
         a[href^="http"]:empty::before {
             content: attr(href);
