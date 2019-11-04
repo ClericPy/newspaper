@@ -704,6 +704,8 @@ async def planet_python() -> list:
             pubDate = item.xpath('./pubdate/text()')
             if not (guid and title):
                 continue
+            if 'بايثون العربي' in title:
+                continue
             url = guid[0]
             title = title[0]
             if 'Python Software Foundation: ' in title:
