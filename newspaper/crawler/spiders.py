@@ -942,13 +942,15 @@ async def infoq_python() -> list:
         for item in items:
             try:
                 article: dict = {'source': source}
+                desc = shorten_desc(item['article_summary'])
+                if '本文分享 方巍' in desc:
+                    continue
                 title = item['article_title']
                 url = f"https://www.infoq.cn/article/{item['uuid']}"
-                desc = item['article_summary']
                 ts_publish = ttime(item['publish_time'])
                 article['ts_publish'] = ts_publish
                 article['title'] = title
-                article['desc'] = shorten_desc(desc)
+                article['desc'] = desc
                 article['url'] = url
                 article['url_key'] = get_url_key(article['url'])
                 articles.append(article)
