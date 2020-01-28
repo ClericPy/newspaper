@@ -2209,3 +2209,70 @@ async def reddit() -> list:
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
     return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def codetengu() -> list:
+    """码天狗"""
+    source: str = "码天狗"
+    articles: list = []
+    start_page: int = 1
+    # max_page: int = 999
+    max_page: int = 1
+    api: str = 'https://weekly.codetengu.com/issues'
+    params: dict = {'page': 1}
+    host: str = 'https://weekly.codetengu.com/'
+
+    for page in range(start_page, max_page + 1):
+        params['page'] = page
+        r = await req.get(
+            api,
+            params=params,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            timeout=10,
+            headers={
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect('.item__list > li.item')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title: str = item.cssselect('.item__title')[0].text
+                href: str = item.cssselect('a')[0].get('href', '')
+                cover: str = null_tree.css(item, 'img').get('src', '')
+                cover = add_host(cover, host)
+                url: str = add_host(href, host)
+                desc: str = null_tree.css(item, '.item__title').text_content()
+                raw_time: str = null_tree.css(item, 'time.published').get(
+                    'datetime', '1970-01-01')
+                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['cover'] = cover
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles

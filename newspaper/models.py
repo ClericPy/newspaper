@@ -37,7 +37,6 @@ class Storage(object, metaclass=abc.ABCMeta):
         #                "review", "ts_publish", "lang")
         keys_set = None
         now = ttime()
-        today_0_0 = f'{now[:10]} 00:00:00'
         before_3_day_0_0 = f'{ttime(time.time() - 86400*3)[:10]} 00:00:00'
         for article in articles:
             if not isinstance(article, dict):
