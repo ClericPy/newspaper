@@ -605,6 +605,14 @@ content_sources = [
         "status": "√",
         "desc": "知名社区. 质量参差, 收录每日 ups>=20"
     },
+    {
+        "title": "码天狗",
+        "url": "https://weekly.codetengu.com/issues",
+        "level": 4,
+        "lang": "CN",
+        "status": "√",
+        "desc": "综合类周报, 2018-11-23 之后不更了"
+    },
 ]
 
 content_sources_dict = {i['title']: i for i in content_sources}
@@ -644,7 +652,8 @@ def main():
         string = ' | '.join(data)
         providers += '| ' + string + ' |\n'
     proc = f'* 收录进度: {finish_counts} / {finish_counts + todo_counts}\n\n\t> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更\n\n'
-    README_FP = pathlib.Path(__file__).absolute().parent.parent.parent / 'README.md'
+    README_FP = pathlib.Path(
+        __file__).absolute().parent.parent.parent / 'README.md'
     with README_FP.open('r', encoding='u8') as f:
         old = f.read()
         new = re.sub(
