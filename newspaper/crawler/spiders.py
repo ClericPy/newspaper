@@ -2276,3 +2276,57 @@ async def codetengu() -> list:
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
     return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def pychina() -> list:
+    """蠎周刊"""
+    source: str = "蠎周刊"
+    articles: list = []
+    limit: int = 5
+    api: str = 'http://weekly.pychina.org/archives.html'
+    host: str = 'http://weekly.pychina.org/'
+
+    r = await req.get(
+        api,
+        ssl=False,
+        # proxy=proxy,
+        retry=1,
+        timeout=10,
+        headers={
+            'Referer': '',
+            'User-Agent': CHROME_PC_UA
+        },
+    )
+    if not r:
+        logger.error(f'{source} crawl failed: {r}, {r.text}')
+        return articles
+    scode: str = r.content.decode('u8', 'ignore')
+    items: list = fromstring(scode).cssselect('#content li')
+    for item in items[:limit]:
+        try:
+            article: dict = {'source': source}
+            title_href = item.cssselect('a[title]')
+            if not title_href:
+                continue
+            title: str = title_href[0].text.strip()
+            href: str = title_href[0].get('href', '')
+            url: str = add_host(href, host)
+            raw_time: str = null_tree.css(item, 'sup').text
+            ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d %H:%M'))
+            article['ts_publish'] = ts_publish
+            article['title'] = title
+            article['cover'] = ''
+            article['desc'] = ''
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles

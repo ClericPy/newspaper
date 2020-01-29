@@ -36,7 +36,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 35 / 35
+* 收录进度: 36 / 36
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -95,7 +95,7 @@
 | 51 | [Inside the Head of PyDanny](https://www.pydanny.com/) | 3 | EN | X | 不更新了, 暂不收录 |
 | 52 | [华蟒用户组,CPyUG](https://groups.google.com/forum/#!forum/python-cn) | 3 | EN | X | [墙] 社区类, 自己看看就好, 暂不收录 |
 | 53 | [Treehl](https://family-treesy.github.io/tags/PYTHON/) | 3 | CN | X | 文章较基础, 久不更新, 暂不收录 |
-| 54 | [蠎周刊](http://weekly.pychina.org) | 3 | CN | X | 官网已挂, 实际是那些周刊的译文 |
+| 54 | [蠎周刊](http://weekly.pychina.org) | 4 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E8%A0%8E%E5%91%A8%E5%88%8A) | 各种 weekly 中译版 |
 | 55 | [zzzeek](https://techspot.zzzeek.org/) | 3 | EN | X | 2016 年后停更了 |
 | 56 | [Yu’s blog](https://gofisher.github.io/) | 3 | CN | X | 原创, 但是久不更新了, 网站 http://blog.rainy.im/ 挂了 |
 | 57 | [程序师](http://www.techug.com/tag/python) | 3 | CN | X | 原创较少, 文章较旧 |

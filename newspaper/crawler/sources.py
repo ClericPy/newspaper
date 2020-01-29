@@ -432,10 +432,10 @@ content_sources = [
     {
         "title": "蠎周刊",
         "url": "http://weekly.pychina.org",
-        "level": 3,
+        "level": 4,
         "lang": "CN",
-        "status": "X",
-        "desc": "官网已挂, 实际是那些周刊的译文"
+        "status": "√",
+        "desc": "各种 weekly 中译版"
     },
     {
         "title": "zzzeek",
