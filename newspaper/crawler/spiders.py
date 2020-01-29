@@ -2330,3 +2330,71 @@ async def pychina() -> list:
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
     return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def xiaoruicc() -> list:
+    """峰云就她了"""
+    source: str = "峰云就她了"
+    articles: list = []
+    start_page: int = 1
+    max_page: int = 1
+    # max_page: int = 999
+    api: str = 'http://xiaorui.cc/category/python'
+    host: str = 'http://xiaorui.cc/'
+
+    for page in range(start_page, max_page + 1):
+        api_url = f'{api}{"/page/" + str(page) if page != 1 else ""}/'
+        r = await req.get(
+            api_url,
+            ssl=False,
+            # proxy=proxy,
+            retry=1,
+            timeout=10,
+            headers={
+                'Referer': api_url,
+                'User-Agent': CHROME_PC_UA
+            },
+        )
+        if not r:
+            if getattr(r, 'status_code', None) != 404:
+                logger.error(f'{source} crawl failed: {r}, {r.text}')
+            return articles
+        scode: str = r.content.decode('u8', 'ignore')
+        items: list = fromstring(scode).cssselect('.content-area>article')
+        if not items:
+            break
+        if max_page > 1:
+            logger.info(
+                f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+            )
+        for item in items:
+            try:
+                article: dict = {'source': source}
+                title_href = item.cssselect('.entry-title>a')
+                if not title_href:
+                    continue
+                title: str = title_href[0].text.strip()
+                href: str = title_href[0].get('href', '')
+                url: str = add_host(href, host)
+                desc: str = null_tree.css(item, '.entry-summary>*:first-child').text_content()
+                raw_time: str = null_tree.css(item, 'time.published').get(
+                    'datetime', '1970-01-01')
+                ts_publish = ttime(
+                    ptime(raw_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                article['ts_publish'] = ts_publish
+                article['title'] = title
+                article['cover'] = ''
+                article['desc'] = shorten_desc(desc)
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+            except Exception:
+                logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+                break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
