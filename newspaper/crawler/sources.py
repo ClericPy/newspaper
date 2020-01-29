@@ -358,12 +358,12 @@ content_sources = [
         "desc": "原创+译文"
     },
     {
-        "title": "峰云's blog",
+        "title": "峰云就她了",
         "url": "http://xiaorui.cc/category/python/",
         "level": 3,
         "lang": "CN",
-        "status": "X",
-        "desc": "起码是个原创的, 很久不更了, 暂不收录"
+        "status": "√",
+        "desc": "原创博客, 质量比较不错"
     },
     {
         "title": "Dan Bader",
@@ -432,10 +432,10 @@ content_sources = [
     {
         "title": "蠎周刊",
         "url": "http://weekly.pychina.org",
-        "level": 3,
+        "level": 4,
         "lang": "CN",
-        "status": "X",
-        "desc": "官网已挂, 实际是那些周刊的译文"
+        "status": "√",
+        "desc": "各种 weekly 中译版"
     },
     {
         "title": "zzzeek",

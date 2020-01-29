@@ -36,7 +36,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 35 / 35
+* 收录进度: 37 / 37
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -86,7 +86,7 @@
 | 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | X | 知名 Python 开源组织, 不过没有文章类的 post |
 | 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | X | 课外读物, 非 Python 主题, 暂不收录 |
 | 44 | [编程派](http://codingpy.com/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%BC%96%E7%A8%8B%E6%B4%BE) | 原创+译文 |
-| 45 | [峰云's blog](http://xiaorui.cc/category/python/) | 3 | CN | X | 起码是个原创的, 很久不更了, 暂不收录 |
+| 45 | [峰云就她了](http://xiaorui.cc/category/python/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E5%B3%B0%E4%BA%91%E5%B0%B1%E5%A5%B9%E4%BA%86) | 原创博客, 质量比较不错 |
 | 46 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | X | 一年不更新了, 先不收录了 |
 | 47 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | X | 最后更新 Thu 13 September 2018, 暂不收录 |
 | 48 | [开源中国翻译](https://www.oschina.net/translate/tag/python) | 3 | CN | X | 入库留着吧, 估计不更了, 暂不收录 |
@@ -95,7 +95,7 @@
 | 51 | [Inside the Head of PyDanny](https://www.pydanny.com/) | 3 | EN | X | 不更新了, 暂不收录 |
 | 52 | [华蟒用户组,CPyUG](https://groups.google.com/forum/#!forum/python-cn) | 3 | EN | X | [墙] 社区类, 自己看看就好, 暂不收录 |
 | 53 | [Treehl](https://family-treesy.github.io/tags/PYTHON/) | 3 | CN | X | 文章较基础, 久不更新, 暂不收录 |
-| 54 | [蠎周刊](http://weekly.pychina.org) | 3 | CN | X | 官网已挂, 实际是那些周刊的译文 |
+| 54 | [蠎周刊](http://weekly.pychina.org) | 4 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E8%A0%8E%E5%91%A8%E5%88%8A) | 各种 weekly 中译版 |
 | 55 | [zzzeek](https://techspot.zzzeek.org/) | 3 | EN | X | 2016 年后停更了 |
 | 56 | [Yu’s blog](https://gofisher.github.io/) | 3 | CN | X | 原创, 但是久不更新了, 网站 http://blog.rainy.im/ 挂了 |
 | 57 | [程序师](http://www.techug.com/tag/python) | 3 | CN | X | 原创较少, 文章较旧 |
