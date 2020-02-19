@@ -616,10 +616,10 @@ content_sources = [
     {
         "title": "Medium",
         "url": "https://medium.com/tag/python",
-        "level": 4,
+        "level": 3,
         "lang": "EN",
         "status": "√",
-        "desc": "大名鼎鼎的 Medium, 收录 RSS 部分"
+        "desc": "Medium 的 Python tag, 收录 RSS"
     },
 ]
 

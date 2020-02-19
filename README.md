@@ -118,7 +118,7 @@
 | 74 | [Stack Overflow](https://stackoverflow.com/?tab=hot) | 3 | EN | X | 已解决 + python + vote>=5, 但是问题有点弱智, 暂不收录 |
 | 75 | [Reddit](https://www.reddit.com/r/Python/top/) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Reddit) | 知名社区. 质量参差, 收录每日 ups>=20 |
 | 76 | [码天狗](https://weekly.codetengu.com/issues) | 4 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%A0%81%E5%A4%A9%E7%8B%97) | 综合类周报, 2018-11-23 之后不更了 |
-| 77 | [Medium](https://medium.com/tag/python) | 4 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Medium) | 大名鼎鼎的 Medium, 收录 RSS 部分 |
+| 77 | [Medium](https://medium.com/tag/python) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Medium) | Medium 的 Python tag, 收录 RSS |
 
 
 <!-- providers end -->
