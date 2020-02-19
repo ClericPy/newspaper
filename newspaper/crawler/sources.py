@@ -613,6 +613,14 @@ content_sources = [
         "status": "√",
         "desc": "综合类周报, 2018-11-23 之后不更了"
     },
+    {
+        "title": "Medium",
+        "url": "https://medium.com/tag/python",
+        "level": 4,
+        "lang": "EN",
+        "status": "√",
+        "desc": "大名鼎鼎的 Medium, 收录 RSS 部分"
+    },
 ]
 
 content_sources_dict = {i['title']: i for i in content_sources}

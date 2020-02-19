@@ -5,7 +5,7 @@ import typing
 import zlib
 
 from lxml.html import fromstring, tostring
-from lxml.etree import ElementBase
+from lxml.etree import ElementBase, XMLParser
 from torequests.dummy import Requests
 from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
                               re, time, ttime, unparse_qsl, urlparse,
@@ -2379,11 +2379,11 @@ async def xiaoruicc() -> list:
                 title: str = title_href[0].text.strip()
                 href: str = title_href[0].get('href', '')
                 url: str = add_host(href, host)
-                desc: str = null_tree.css(item, '.entry-summary>*:first-child').text_content()
+                desc: str = null_tree.css(
+                    item, '.entry-summary>*:first-child').text_content()
                 raw_time: str = null_tree.css(item, 'time.published').get(
                     'datetime', '1970-01-01')
-                ts_publish = ttime(
-                    ptime(raw_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
+                ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%dT%H:%M:%S%z'))
                 article['ts_publish'] = ts_publish
                 article['title'] = title
                 article['cover'] = ''
@@ -2394,6 +2394,68 @@ async def xiaoruicc() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
+    logger.info(
+        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def medium_python() -> list:
+    """Medium"""
+    source: str = 'Medium'
+    articles: list = []
+    limit = 10
+    seed = 'https://medium.com/feed/tag/python'
+    # 避免超时, 用外部访问
+    scode = await outlands_request({
+        'method': 'get',
+        'url': seed,
+    }, 'u8')
+    items = fromstring(scode.encode('utf-8'),
+                       parser=XMLParser()).xpath('//channel/item')
+    now = ttime()
+    for item in items[:limit]:
+        try:
+            article: dict = {'source': source}
+            guid = item.xpath('./guid/text()')
+            title = item.xpath('./title/text()')
+            description = item.xpath('./description/text()')
+            author = item.xpath("./*[local-name()='creator']/text()")
+            pubDate = item.xpath("./*[local-name()='updated']/text()")
+            if not (guid and title):
+                continue
+            url = guid[0]
+            title = title[0]
+            if description:
+                desc = fromstring(description[0]).text_content()
+                # 去掉 <>
+                desc = re.sub('<[^>]*>', ' ', desc)
+                # 只保留第一个换行前面的
+                desc = shorten_desc(desc)
+            else:
+                desc = ''
+            if author:
+                desc = f'[{author[0]}] {desc}'
+            if pubDate:
+                raw_pub_date = pubDate[0]
+                # Wed, 22 May 2019 01:47:44 +0000
+                raw_pub_date = re.sub('\..*', '', raw_pub_date).strip()
+                ts_publish = ttime(
+                    ptime(raw_pub_date, fmt='%Y-%m-%dT%H:%M:%S') + 3600 * 8)
+            else:
+                ts_publish = now
+            article['ts_publish'] = ts_publish
+            article['title'] = title
+            article['desc'] = desc
+            article['url'] = url
+            article['url_key'] = get_url_key(article['url'])
+            articles.append(article)
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+            break
     logger.info(
         f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
     )
