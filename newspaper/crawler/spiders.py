@@ -2437,7 +2437,7 @@ async def medium_python() -> list:
                 desc = shorten_desc(desc)
             else:
                 desc = ''
-            if 'Continue reading on Medium' in desc:
+            if 'Continue reading on' in desc:
                 continue
             if author:
                 desc = f'[{author[0]}] {desc}'
