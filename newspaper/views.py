@@ -110,6 +110,8 @@ async def articles_query(req):
     output = req.path_params['output']
     if output == 'json':
         params = dict(req.query_params)
+        params['limit'] = params.get('limit') or 10
+        params['offset'] = params.get('offset') or 0
         result = await app.db.query_articles(**params)
         return JSONResponse(handle_pagination_response(req.url._url, result))
     elif output == 'html':
