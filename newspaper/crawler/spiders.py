@@ -4,22 +4,23 @@ import traceback
 import typing
 import zlib
 
-from lxml.html import fromstring, tostring
 from lxml.etree import ElementBase, XMLParser
+from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
-from torequests.utils import (UA, curlparse, find_one, md5, parse_qsl, ptime,
-                              re, time, ttime, unparse_qsl, urlparse,
-                              urlunparse, escape)
+from torequests.utils import (curlparse, escape, find_one, md5, parse_qsl,
+                              ptime, re, time, timeago, ttime, unparse_qsl,
+                              urlparse, urlunparse)
 
 from ..config import global_configs
 from ..loggers import spider_logger as logger
 
+START_TIME = time.time()
 test_spiders = []
 online_spiders = []
 history_spiders = []
-# CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
-CHROME_PC_UA = UA.Chrome
+CHROME_PC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
 friendly_crawling_interval = 1
+outlands_req = Requests()
 # default_host_frequency 是默认的单域名并发控制: 每 3 秒一次请求
 req = Requests(default_host_frequency=(1, 3))
 # 多次请求时的友好抓取频率
@@ -103,7 +104,9 @@ def shorten_desc(desc: str) -> str:
     return escape(desc)
 
 
-async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
+async def outlands_request(request_dict: dict = None,
+                           encoding: str = 'u8',
+                           **request_args) -> str:
     """小水管不开源, 无法用来 FQ.
 
     例:
@@ -115,14 +118,16 @@ async def outlands_request(request_dict: dict, encoding: str = 'u8') -> str:
             print(text)
             return text
     """
-    if not request_dict.get('headers', {}).get('User-Agent'):
-        request_dict.setdefault('headers', {})
-        request_dict['headers'][
-            'User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+    request_dict = request_dict or {}
+    request_dict.update(request_args)
+    request_dict.setdefault('method', 'get')
+    request_dict.setdefault('ssl', False)
+    request_dict.setdefault('headers', {})
+    request_dict['headers'].setdefault('User-Agent', CHROME_PC_UA)
     json_data = json.dumps(request_dict)
     data = zlib.compress(json_data.encode('u8'))
     url = global_configs['anti_gfw']['url']
-    r = await req.post(url, timeout=60, data=data)
+    r = await outlands_req.post(url, timeout=60, data=data)
     if r:
         return zlib.decompress(r.content).decode(encoding)
     else:
@@ -184,7 +189,7 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
             api,
             ssl=False,
             headers={
-                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
             })
         if not r:
             logger.info(
@@ -211,7 +216,7 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
 
 async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     articles = []
-    langs = {'cn': 1, 'en': 2}
+    langs = {'CN': 1, 'EN': 2}
     lang_num = langs[lang]
     host = 'https://www.tuicool.com/'
     this_year = ttime()[:4]
@@ -282,6 +287,62 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     return articles
 
 
+async def common_spider_juejin(user, source, max_page=1):
+    articles = []
+    host = 'https://juejin.im/'
+    now = ttime(fmt="%Y-%m-%dT%H:%M:%S.000Z")
+    api: str = 'https://timeline-merger-ms.juejin.im/v1/get_entry_by_self'
+    params: dict = {
+        'src': 'web',
+        'targetUid': user,
+        'type': 'post',
+        'before': now,
+        'limit': 20,
+        'order': 'createdAt'
+    }
+    for page in range(max_page):
+        try:
+            params['before'] = now
+            r = await req.get(api,
+                              ssl=False,
+                              params=params,
+                              retry=1,
+                              timeout=5,
+                              headers={"User-Agent": CHROME_PC_UA})
+            if not r:
+                logger.info(f'crawl juejin page={page} failed: {r}')
+                return articles
+            items = r.json()['d']['entrylist']
+            if max_page > 1:
+                logger.info(
+                    f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+                )
+            if not items:
+                break
+            for item in items:
+                article: dict = {'source': source}
+                url = item['originalUrl']
+                url = add_host(url, host)
+                title = item['title']
+                cover = item.get('screenshot') or ''
+                now = item['createdAt']
+                if now:
+                    ts_publish = re.sub('\..*', '', now)
+                    article['ts_publish'] = ts_publish.replace('T', ' ')
+                desc = item.get('summaryInfo') or ''
+                article['cover'] = cover
+                article['title'] = title
+                article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+                if not now:
+                    break
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+    return articles
+
+
 @register_online
 async def python_news() -> list:
     """Python Software Foundation News"""
@@ -315,7 +376,7 @@ async def python_news() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -357,7 +418,7 @@ async def python_news_history() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -368,6 +429,7 @@ def _python_weekly_calculate_date(issue_id):
 
 
 @register_online
+# @register_test
 async def python_weekly() -> list:
     """Python Weekly"""
     source: str = 'Python Weekly'
@@ -404,7 +466,7 @@ async def python_weekly() -> list:
                 detail_url,
                 ssl=False,
                 headers={
-                    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
                 })
             if not r:
                 logger.error(f'fetch {detail_url} failed: {r}')
@@ -432,7 +494,7 @@ async def python_weekly() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -451,7 +513,7 @@ async def python_weekly_history() -> list:
                 detail_url,
                 ssl=False,
                 headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
                 })
             if '<title>404: Page Not Found' in r.text:
                 logger.warn('python_weekly_history break for 404 page')
@@ -482,7 +544,7 @@ async def python_weekly_history() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -523,7 +585,7 @@ async def pycoder_weekly() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -575,12 +637,13 @@ async def importpython() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
 
 @register_online
+# @register_test
 async def awesome_python() -> list:
     """Awesome Python Newsletter"""
     source: str = 'Awesome Python Newsletter'
@@ -588,15 +651,12 @@ async def awesome_python() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://python.libhunt.com/newsletter/archive'
-    r = await req.get(seed,
-                      retry=1,
-                      timeout=20,
-                      headers={"User-Agent": CHROME_PC_UA})
-    if not r:
-        logger.error(f'{source} crawl failed: {r}, {r.text}')
-        return articles
+    scode = await outlands_request({
+        'method': 'get',
+        'url': seed,
+    }, 'u8')
     hrefs = re.findall(
-        r'<td class="text-right">\s*<a href=\'(/newsletter/\d+)\'>', r.text)
+        r'<td class="text-right">\s*<a href=\'(/newsletter/\d+)\'>', scode)
     for href in hrefs[:limit]:
         try:
             article: dict = {'source': source}
@@ -631,7 +691,7 @@ async def awesome_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -676,7 +736,7 @@ async def real_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -737,26 +797,26 @@ async def planet_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
 
 @register_online
+# @register_test
 async def julien_danjou() -> list:
     """Julien Danjou"""
     # 历史文章只要不断改页码迭代就好了
     source: str = 'Julien Danjou'
     articles: list = []
     seed = 'https://julien.danjou.info/page/1/'
-    r = await req.get(seed,
-                      retry=1,
-                      timeout=20,
-                      headers={"User-Agent": CHROME_PC_UA})
-    if not r:
-        logger.error(f'{source} crawl failed: {r}, {r.text}')
-        return articles
-    scode = r.text
+    scode = await outlands_request(
+        {
+            'method': 'get',
+            'timeout': 5,
+            'retry': 2,
+            'url': seed,
+        }, 'u8')
     items = fromstring(scode).cssselect('.post-feed>article.post-card')
     # 判断发布时间如果是 1 小时前就 break
     break_time = ttime(time.time() - 60 * 60)
@@ -774,15 +834,15 @@ async def julien_danjou() -> list:
                     [null_tree])[0].text
             if not (title and url):
                 raise ValueError(f'{source} no title {url}')
-            detail_resp = await req.get(
-                url,
-                ssl=False,
-                headers={
-                    "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
-                })
-            if not detail_resp:
-                raise ValueError(f'{source} request href failed {detail_resp}')
-            detail_scode = detail_resp.text
+            detail_scode = await outlands_request(
+                {
+                    'method': 'get',
+                    'timeout': 5,
+                    'retry': 2,
+                    'url': url,
+                }, 'u8')
+            if not detail_scode:
+                raise ValueError(f'{source} has no detail_scode {url}')
             raw_pub_time = find_one(
                 'property="article:published_time" content="(.+?)"',
                 detail_scode)[1]
@@ -807,7 +867,7 @@ async def julien_danjou() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -854,7 +914,7 @@ async def doughellmann() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -870,14 +930,14 @@ async def mouse_vs_python() -> list:
     # max_page:int = 101
     seed = 'https://www.blog.pythonlibrary.org/page/{page}/'
     for page in range(1, max_page + 1):
-        r = await req.get(seed.format(page=page),
-                          retry=1,
-                          timeout=20,
-                          headers={"User-Agent": CHROME_PC_UA})
-        if not r:
-            logger.error(f'{source} crawl failed: {r}, {r.text}')
-            return articles
-        scode = r.text
+        api = seed.format(page=page)
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'timeout': 5,
+                'retry': 2,
+                'url': api,
+            }, 'u8')
         items = fromstring(scode).cssselect('#content>article')
         if max_page > 1:
             logger.info(
@@ -905,7 +965,7 @@ async def mouse_vs_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -919,10 +979,10 @@ async def infoq_python() -> list:
     articles: list = []
     max_page: int = 1
     # max_page:int = 101
-    curl_string = r'''curl 'https://www.infoq.cn/public/v1/article/getList' -H 'Origin: https://www.infoq.cn' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://www.infoq.cn/topic/python' -H 'Cookie: SERVERID=0|0|0' -H 'Connection: keep-alive' -H 'DNT: 1' --data-binary '{"type":1,"size":12,"id":50,"score":0}' --compressed'''
+    curl_string = r'''curl 'https://www.infoq.cn/public/v1/article/getList' -H 'Origin: https://www.infoq.cn' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: https://www.infoq.cn/topic/python' -H 'Cookie: SERVERID=0|0|0' -H 'Connection: keep-alive' -H 'DNT: 1' --data-binary '{"type":1,"size":12,"id":50,"score":0}' --compressed'''
     request_args = curlparse(curl_string)
     for page in range(1, max_page + 1):
-        r = await req.request(retry=1, timeout=20, **request_args)
+        r = await req.request(retry=2, timeout=5, **request_args)
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -958,7 +1018,7 @@ async def infoq_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -994,8 +1054,8 @@ async def hn_python() -> list:
         params['page'] = page
         r = await req.get(api,
                           params=params,
-                          retry=1,
-                          timeout=20,
+                          retry=2,
+                          timeout=10,
                           headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
@@ -1029,7 +1089,7 @@ async def hn_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1048,14 +1108,10 @@ async def snarky() -> list:
     host = 'https://snarky.ca/'
     for page in range(1, max_page + 1):
         seed = api.format(page=page)
-        r = await req.get(seed,
-                          retry=1,
-                          timeout=20,
-                          headers={"User-Agent": CHROME_PC_UA})
-        if not r:
-            logger.error(f'{source} crawl failed: {r}, {r.text}')
+        scode = await outlands_request(url=seed, retry=1, timeout=20)
+        if not scode:
+            logger.error(f'{source} crawl failed: {scode}')
             return articles
-        scode = r.text
         items = fromstring(scode).cssselect('.post-feed>article.post-card')
         if not items:
             break
@@ -1077,7 +1133,7 @@ async def snarky() -> list:
                     url,
                     ssl=False,
                     headers={
-                        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
                     })
                 if not detail_resp:
                     raise ValueError(
@@ -1107,7 +1163,7 @@ async def snarky() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1121,7 +1177,7 @@ async def jiqizhixin() -> list:
     articles: list = []
     max_page: int = 1
     # 有 cookie 和 防跨域验证
-    curl_string = r'''curl 'https://www.jiqizhixin.com/api/v1/search?type=articles&page=1&keywords=python&published=0&is_exact_match=false&search_internet=true&sort=time' -H 'Cookie: ahoy_visitor=1; _Synced_session=2' -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'Accept: */*' -H 'Referer: https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time' -H 'X-Requested-With: XMLHttpRequest' -H 'If-None-Match: W/"3e034aa5e8cb79dd92652f5ba70a65a5"' -H 'Connection: keep-alive' --compressed'''
+    curl_string = r'''curl 'https://www.jiqizhixin.com/api/v1/search?type=articles&page=1&keywords=python&published=0&is_exact_match=false&search_internet=true&sort=time' -H 'Cookie: ahoy_visitor=1; _Synced_session=2' -H 'DNT: 1' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: zh-CN,zh;q=0.9' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36' -H 'Accept: */*' -H 'Referer: https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time' -H 'X-Requested-With: XMLHttpRequest' -H 'If-None-Match: W/"3e034aa5e8cb79dd92652f5ba70a65a5"' -H 'Connection: keep-alive' --compressed'''
     request_args = curlparse(curl_string)
     for page in range(1, max_page + 1):
         # 部分时候请求返回结果为空, 需要重试
@@ -1171,7 +1227,7 @@ async def jiqizhixin() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1228,7 +1284,7 @@ async def lilydjwg() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1243,7 +1299,7 @@ async def dev_io() -> list:
     max_page: int = 1
     per_page: int = 15
     filt_score: int = 10
-    curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
+    curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
         per_page)
     curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
     for page in range(0, max_page):
@@ -1282,7 +1338,7 @@ async def dev_io() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1290,15 +1346,15 @@ async def dev_io() -> list:
 @register_online
 # @register_history
 # @register_test
-async def zhihu_zhuanlan_pythoncat() -> list:
+async def pythoncat() -> list:
     """Python猫"""
+    # 采集掘金的, 知乎专栏的更新太慢了
     source: str = "Python猫"
-    name: str = 'pythonCat'
-    articles: list = []
-    limit = 10
-    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    user: str = '57b26118a341310060fa74da'
+    max_page = 1
+    articles: list = await common_spider_juejin(user, source, max_page=max_page)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1314,7 +1370,7 @@ async def zhihu_zhuanlan_python_cn() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1330,7 +1386,7 @@ async def zhihu_zhuanlan_pythoncxy() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1346,7 +1402,7 @@ async def zhihu_zhuanlan_c_111369541() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1415,7 +1471,7 @@ async def cuiqingcai() -> list:
             timeout=20,
             ssl=False,
             headers={
-                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'
+                "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36'
             })
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
@@ -1448,7 +1504,7 @@ async def cuiqingcai() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1462,12 +1518,12 @@ async def tuicool_cn() -> list:
     articles: list = []
     max_page: int = 1
     articles = await common_spider_tuicool(
-        'cn',
+        'CN',
         source,
         max_page=max_page,
         ignore_descs={'稀土掘金', 'Python猫', 'InfoQ'})
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1485,7 +1541,7 @@ async def tuicool_en() -> list:
                                            max_page=max_page,
                                            ignore_descs={'Real Python'})
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1508,27 +1564,27 @@ async def kf_toutiao() -> list:
         'pageSize': per_page,
         'sort': sort_by
     }
-
+    # 豌豆花下猫 单独收录了
     ignore_usernames: set = {'豌豆花下猫'}
     for page in range(0, max_page):
         params['page'] = page
-        r = await req.get(
-            api,
-            params=params,
-            ssl=False,
-            # proxy=proxy,
-            retry=1,
-            headers={
-                'Referer': 'https://juejin.im/tag/Python?sort=popular',
-                'Origin': 'https://juejin.im',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
-                'Dnt': '1'
-            },
-        )
-        if not r:
-            logger.error(f'{source} crawl failed: {r}, {r.text}')
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'params': params,
+                'url': api,
+                'ssl': False,
+                'retry': 1,
+                'headers': {
+                    'Referer': 'https://juejin.im/tag/Python?sort=popular',
+                    'Origin': 'https://juejin.im',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+                }
+            }, 'u8')
+        if not scode:
+            logger.error(f'{source} crawl failed: {scode}')
             return articles
-        items = r.json().get('d', {}).get('entrylist', [])
+        items = json.loads(scode).get('d', {}).get('entrylist', [])
         if not items:
             break
         if max_page > 1:
@@ -1546,7 +1602,7 @@ async def kf_toutiao() -> list:
                                   item['createdAt']).replace('T', ' ')
                 ts_publish = ttime(ptime(gmt_time, tzone=0))
                 article['ts_publish'] = ts_publish
-                article['lang'] = 'en' if item['english'] else 'cn'
+                article['lang'] = 'en' if item['english'] else 'CN'
                 article['title'] = item['title']
                 article['cover'] = item['screenshot']
                 article['desc'] = item['summaryInfo']
@@ -1557,7 +1613,7 @@ async def kf_toutiao() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1594,7 +1650,8 @@ async def freelycode() -> list:
             ssl=False,
             params=params,
             # proxy=proxy,
-            retry=1,
+            retry=2,
+            timeout=5,
             headers={
                 'Referer': api,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
@@ -1636,7 +1693,7 @@ async def freelycode() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1655,20 +1712,10 @@ async def miguelgrinberg() -> list:
 
     for page in range(start_page, max_page + 1):
         page_url = f'{api}{page}'
-        r = await req.get(
-            page_url,
-            ssl=False,
-            # proxy=proxy,
-            retry=1,
-            headers={
-                'Referer': page_url,
-                'User-Agent': CHROME_PC_UA
-            },
-        )
-        if not r:
-            logger.error(f'{source} crawl failed: {r}, {r.text}')
+        scode = await outlands_request({'url': page_url}, retry=1)
+        if not scode:
+            logger.error(f'{source} crawl failed: {scode}')
             return articles
-        scode: str = r.content.decode('u8', 'ignore')
         scode = re.sub(r'<!--[\s\S]*?-->', '', scode)
         items: list = fromstring(scode).cssselect('#main>.post')
         if not items:
@@ -1700,7 +1747,7 @@ async def miguelgrinberg() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1725,7 +1772,8 @@ async def codingpy() -> list:
             params=params,
             ssl=False,
             # proxy=proxy,
-            retry=1,
+            retry=2,
+            timeout=5,
             headers={
                 'Referer': api,
                 'User-Agent': CHROME_PC_UA
@@ -1770,7 +1818,7 @@ async def codingpy() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1785,21 +1833,16 @@ async def nedbatchelder() -> list:
     limit: int = 5
     api: str = 'https://nedbatchelder.com/blog/tag/python.html'
     host: str = 'https://nedbatchelder.com/'
-    r = await req.get(
-        api,
-        ssl=False,
-        # proxy=proxy,
-        retry=3,
-        timeout=5,
-        headers={
-            'Referer': api,
-            'User-Agent': CHROME_PC_UA
-        },
-    )
-    if not r:
-        logger.error(f'{source} crawl failed: {r}, {r.text}')
-        return articles
-    scode: str = r.content.decode('u8', 'ignore')
+    scode = await outlands_request(
+        {
+            'method': 'get',
+            'timeout': 5,
+            'headers': {
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA,
+            },
+            'url': api,
+        }, 'u8')
     container_html = null_tree.tostring(
         null_tree.css(fromstring(scode), '.category')).decode('utf-8')
     if not container_html:
@@ -1831,7 +1874,7 @@ async def nedbatchelder() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1908,7 +1951,7 @@ async def the5fire() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1975,7 +2018,7 @@ async def foofish() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2038,7 +2081,7 @@ async def inventwithpython() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2103,7 +2146,7 @@ async def lucumr() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2153,7 +2196,7 @@ async def treyhunner() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2206,7 +2249,7 @@ async def reddit() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2273,7 +2316,7 @@ async def codetengu() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2327,7 +2370,7 @@ async def pychina() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2351,8 +2394,8 @@ async def xiaoruicc() -> list:
             api_url,
             ssl=False,
             # proxy=proxy,
-            retry=1,
-            timeout=10,
+            retry=2,
+            timeout=8,
             headers={
                 'Referer': api_url,
                 'User-Agent': CHROME_PC_UA
@@ -2395,7 +2438,7 @@ async def xiaoruicc() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2459,6 +2502,6 @@ async def medium_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles

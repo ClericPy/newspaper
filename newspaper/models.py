@@ -61,6 +61,7 @@ class Storage(object, metaclass=abc.ABCMeta):
             article.setdefault('level', source.get('level', 3))
             article.setdefault('lang', source.get('lang', 'CN'))
             article.setdefault('ts_publish', '1970-01-01 08:00:01')
+            article['lang'] = article['lang'].upper()
             article['desc'] = re.sub(
                 r'<script[\s\S]*?</script>|<style[\s\S]*?</style>', '',
                 article['desc']).strip()
