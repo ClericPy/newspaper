@@ -429,6 +429,7 @@ def _python_weekly_calculate_date(issue_id):
 
 
 @register_online
+# @register_history
 # @register_test
 async def python_weekly() -> list:
     """Python Weekly"""
