@@ -8,12 +8,13 @@ from lxml.etree import ElementBase, XMLParser
 from lxml.html import fromstring, tostring
 from torequests.dummy import Requests
 from torequests.utils import (curlparse, escape, find_one, md5, parse_qsl,
-                              ptime, re, time, ttime, unparse_qsl, urlparse,
-                              urlunparse)
+                              ptime, re, time, timeago, ttime, unparse_qsl,
+                              urlparse, urlunparse)
 
 from ..config import global_configs
 from ..loggers import spider_logger as logger
 
+START_TIME = time.time()
 test_spiders = []
 online_spiders = []
 history_spiders = []
@@ -215,7 +216,7 @@ async def common_spider_zhihu_zhuanlan(name, source, limit=10):
 
 async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     articles = []
-    langs = {'cn': 1, 'en': 2}
+    langs = {'CN': 1, 'EN': 2}
     lang_num = langs[lang]
     host = 'https://www.tuicool.com/'
     this_year = ttime()[:4]
@@ -286,6 +287,62 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     return articles
 
 
+async def common_spider_juejin(user, source, max_page=1):
+    articles = []
+    host = 'https://juejin.im/'
+    now = ttime(fmt="%Y-%m-%dT%H:%M:%S.000Z")
+    api: str = 'https://timeline-merger-ms.juejin.im/v1/get_entry_by_self'
+    params: dict = {
+        'src': 'web',
+        'targetUid': user,
+        'type': 'post',
+        'before': now,
+        'limit': 20,
+        'order': 'createdAt'
+    }
+    for page in range(max_page):
+        try:
+            params['before'] = now
+            r = await req.get(api,
+                              ssl=False,
+                              params=params,
+                              retry=1,
+                              timeout=5,
+                              headers={"User-Agent": CHROME_PC_UA})
+            if not r:
+                logger.info(f'crawl juejin page={page} failed: {r}')
+                return articles
+            items = r.json()['d']['entrylist']
+            if max_page > 1:
+                logger.info(
+                    f'{source} crawling page {page}, + {len(items)} items = {len(articles)} articles'
+                )
+            if not items:
+                break
+            for item in items:
+                article: dict = {'source': source}
+                url = item['originalUrl']
+                url = add_host(url, host)
+                title = item['title']
+                cover = item.get('screenshot') or ''
+                now = item['createdAt']
+                if now:
+                    ts_publish = re.sub('\..*', '', now)
+                    article['ts_publish'] = ts_publish.replace('T', ' ')
+                desc = item.get('summaryInfo') or ''
+                article['cover'] = cover
+                article['title'] = title
+                article['desc'] = desc
+                article['url'] = url
+                article['url_key'] = get_url_key(article['url'])
+                articles.append(article)
+                if not now:
+                    break
+        except Exception:
+            logger.error(f'{source} crawl failed: {traceback.format_exc()}')
+    return articles
+
+
 @register_online
 async def python_news() -> list:
     """Python Software Foundation News"""
@@ -319,7 +376,7 @@ async def python_news() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -361,7 +418,7 @@ async def python_news_history() -> list:
             except Exception:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -437,7 +494,7 @@ async def python_weekly() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -487,7 +544,7 @@ async def python_weekly_history() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -528,7 +585,7 @@ async def pycoder_weekly() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -580,7 +637,7 @@ async def importpython() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -634,7 +691,7 @@ async def awesome_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -679,7 +736,7 @@ async def real_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -740,7 +797,7 @@ async def planet_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -810,7 +867,7 @@ async def julien_danjou() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -857,7 +914,7 @@ async def doughellmann() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -908,7 +965,7 @@ async def mouse_vs_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -961,7 +1018,7 @@ async def infoq_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1032,7 +1089,7 @@ async def hn_python() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1106,7 +1163,7 @@ async def snarky() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1170,7 +1227,7 @@ async def jiqizhixin() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1227,7 +1284,7 @@ async def lilydjwg() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1281,24 +1338,23 @@ async def dev_io() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
 
-# @register_online
+@register_online
 # @register_history
 # @register_test
-async def zhihu_zhuanlan_pythoncat() -> list:
+async def pythoncat() -> list:
     """Python猫"""
-    # 采集掘金的
+    # 采集掘金的, 知乎专栏的更新太慢了
     source: str = "Python猫"
-    name: str = 'pythonCat'
-    articles: list = []
-    limit = 10
-    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    user: str = '57b26118a341310060fa74da'
+    max_page = 1
+    articles: list = await common_spider_juejin(user, source, max_page=max_page)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1314,7 +1370,7 @@ async def zhihu_zhuanlan_python_cn() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1330,7 +1386,7 @@ async def zhihu_zhuanlan_pythoncxy() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1346,7 +1402,7 @@ async def zhihu_zhuanlan_c_111369541() -> list:
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1448,7 +1504,7 @@ async def cuiqingcai() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1462,12 +1518,12 @@ async def tuicool_cn() -> list:
     articles: list = []
     max_page: int = 1
     articles = await common_spider_tuicool(
-        'cn',
+        'CN',
         source,
         max_page=max_page,
         ignore_descs={'稀土掘金', 'Python猫', 'InfoQ'})
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1485,7 +1541,7 @@ async def tuicool_en() -> list:
                                            max_page=max_page,
                                            ignore_descs={'Real Python'})
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1508,8 +1564,8 @@ async def kf_toutiao() -> list:
         'pageSize': per_page,
         'sort': sort_by
     }
-
-    ignore_usernames: set = {''}
+    # 豌豆花下猫 单独收录了
+    ignore_usernames: set = {'豌豆花下猫'}
     for page in range(0, max_page):
         params['page'] = page
         scode = await outlands_request(
@@ -1546,7 +1602,7 @@ async def kf_toutiao() -> list:
                                   item['createdAt']).replace('T', ' ')
                 ts_publish = ttime(ptime(gmt_time, tzone=0))
                 article['ts_publish'] = ts_publish
-                article['lang'] = 'en' if item['english'] else 'cn'
+                article['lang'] = 'en' if item['english'] else 'CN'
                 article['title'] = item['title']
                 article['cover'] = item['screenshot']
                 article['desc'] = item['summaryInfo']
@@ -1557,7 +1613,7 @@ async def kf_toutiao() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1637,7 +1693,7 @@ async def freelycode() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1691,7 +1747,7 @@ async def miguelgrinberg() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1762,7 +1818,7 @@ async def codingpy() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1818,7 +1874,7 @@ async def nedbatchelder() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1895,7 +1951,7 @@ async def the5fire() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -1962,7 +2018,7 @@ async def foofish() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2025,7 +2081,7 @@ async def inventwithpython() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2090,7 +2146,7 @@ async def lucumr() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2140,7 +2196,7 @@ async def treyhunner() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2193,7 +2249,7 @@ async def reddit() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2260,7 +2316,7 @@ async def codetengu() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2314,7 +2370,7 @@ async def pychina() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2338,8 +2394,8 @@ async def xiaoruicc() -> list:
             api_url,
             ssl=False,
             # proxy=proxy,
-            retry=1,
-            timeout=10,
+            retry=2,
+            timeout=8,
             headers={
                 'Referer': api_url,
                 'User-Agent': CHROME_PC_UA
@@ -2382,7 +2438,7 @@ async def xiaoruicc() -> list:
                 logger.error(f'{source} crawl failed: {traceback.format_exc()}')
                 break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles
 
@@ -2446,6 +2502,6 @@ async def medium_python() -> list:
             logger.error(f'{source} crawl failed: {traceback.format_exc()}')
             break
     logger.info(
-        f'crawled {len(articles)} articles [{source}]{" ?????????" if not articles else ""}'
+        f'[{source}] crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)}. {" ?????????" if not articles else ""}'
     )
     return articles

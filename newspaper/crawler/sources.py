@@ -159,11 +159,11 @@ content_sources = [
     },
     {
         "title": "Python猫",
-        "url": "https://zhuanlan.zhihu.com/pythonCat",
+        "url": "https://juejin.im/user/57b26118a341310060fa74da/posts?sort=newest",
         "level": 3,
         "lang": "CN",
         "status": "√",
-        "desc": "2018 年末比较热情的博主, 原创"
+        "desc": "2018 年末比较热情的博主, 原创 + 优质译文"
     },
     {
         "title": "Python之美",
