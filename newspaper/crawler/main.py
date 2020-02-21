@@ -49,7 +49,10 @@ async def online_workflow():
     done, fail = await asyncio.wait(coros, timeout=120)
     spider_logger.info(f'{"=" * 30}')
     if fail:
-        spider_logger.warn(f'failing spiders: {len(fail)}')
+        fail_names = [
+            f'{idx}. {task._coro.__name__}' for idx, task in enumerate(fail, 1)
+        ]
+        spider_logger.warn(f'failing spiders: {len(fail)}.\n{fail_names}')
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:
@@ -80,7 +83,10 @@ async def history_workflow():
     done, fail = await asyncio.wait(coros, timeout=9999)
     spider_logger.info(f'{"=" * 30}')
     if fail:
-        spider_logger.warn(f'failing spiders: {len(fail)}')
+        fail_names = [
+            f'{idx}. {task._coro.__name__}' for idx, task in enumerate(fail, 1)
+        ]
+        spider_logger.warn(f'failing spiders: {len(fail)}.\n{fail_names}')
     pool = await db.get_pool()
     async with pool.acquire() as conn:
         async with conn.cursor() as cursor:
