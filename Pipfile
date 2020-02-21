@@ -4,9 +4,6 @@ verify_ssl = false
 name = "pypi"
 
 [dev-packages]
-pytest = "*"
-flake8 = "*"
-yapf = "*"
 
 [packages]
 uvloop = {version = "*",sys_platform = "!= 'win32'"}
