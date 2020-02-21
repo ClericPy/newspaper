@@ -5,7 +5,10 @@ from logging.handlers import RotatingFileHandler
 log_dir = pathlib.Path(__file__).absolute().parent.parent / 'logs'
 
 
-def init_logger(logger_name=None, file_name='server.log', max_mb=100):
+def init_logger(logger_name=None,
+                file_name='server.log',
+                max_mb=50,
+                backupCount=1):
     if not log_dir.is_dir():
         log_dir.mkdir()
     formatter_str = (
@@ -22,6 +25,7 @@ def init_logger(logger_name=None, file_name='server.log', max_mb=100):
 
     file_hl = RotatingFileHandler(filename=log_dir / file_name,
                                   maxBytes=1024 * 1024 * max_mb,
+                                  backupCount=backupCount,
                                   encoding='utf-8')
     file_hl.setFormatter(formatter)
     file_hl.setLevel(logging.INFO)
@@ -30,4 +34,7 @@ def init_logger(logger_name=None, file_name='server.log', max_mb=100):
 
 
 logger = init_logger('server', 'server.log')
-spider_logger = init_logger('spider_logger', 'spider.log', max_mb=10)
+spider_logger = init_logger('spider_logger',
+                            'spider.log',
+                            max_mb=5,
+                            backupCount=1)
