@@ -1537,7 +1537,7 @@ async def tuicool_en() -> list:
     source: str = "推酷(英文)"
     articles: list = []
     max_page: int = 1
-    articles = await common_spider_tuicool('en',
+    articles = await common_spider_tuicool('EN',
                                            source,
                                            max_page=max_page,
                                            ignore_descs={'Real Python'})
