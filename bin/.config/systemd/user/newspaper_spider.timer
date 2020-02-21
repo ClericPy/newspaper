@@ -1,0 +1,11 @@
+[Unit]
+Description=newspaper spider timer
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=15min
+Unit=newspaper_spider.service
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target

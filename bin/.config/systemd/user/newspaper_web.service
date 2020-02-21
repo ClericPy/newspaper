@@ -1,0 +1,10 @@
+[Unit]
+Description=newspaper web service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pipenv run python run_server.py
+WorkingDirectory=/root/newspaper
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=newspaper spider service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pipenv run python crawl_online.py
+WorkingDirectory=/root/newspaper
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target
