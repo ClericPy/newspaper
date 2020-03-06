@@ -3,12 +3,12 @@ import re
 import traceback
 from urllib.parse import urlencode
 
-from starlette.responses import (JSONResponse, PlainTextResponse,
+from starlette.responses import (HTMLResponse, JSONResponse, PlainTextResponse,
                                  RedirectResponse, Response)
 from torequests.utils import ptime, time, ttime
 
 from .api import app
-from .config import ONLINE_HOST, GA_ID
+from .config import BEIAN_ID, GA_ID, ONLINE_HOST
 from .crawler.sources import content_sources_dict
 from .loggers import log_dir
 from .utils import gen_rss, tail_file
@@ -60,7 +60,9 @@ def handle_api_error(req, error):
 
 @app.route('/')
 async def index(req):
-    return RedirectResponse('/newspaper/articles.query.html', 302)
+    beian = '<div style="height: 90%;"></div><a href="http://www.beian.miit.gov.cn" style="font-size: 0.4em;" target="_blank">{BEIAN_ID}</a><script>setTimeout(() => {{window.location.href="/newspaper/articles.query.html"}}, 1000);</script>'.format(
+        BEIAN_ID=BEIAN_ID)
+    return HTMLResponse(beian)
 
 
 @app.route("/newspaper/articles.cache.clear")
@@ -117,7 +119,8 @@ async def articles_query(req):
     elif output == 'html':
         return app.templates.TemplateResponse('articles.html', {
             "request": req,
-            "GA_ID": GA_ID
+            "GA_ID": GA_ID,
+            "BEIAN_ID": BEIAN_ID,
         })
     elif output == 'rss':
         # 只保留日报的 RSS 接口, 不再对 Timeline 做 rss 了, 没有必要
@@ -168,10 +171,11 @@ async def daily_python_list(req):
     for date_delta in range(1, limit):
         title_date: str = ttime(time.time() - 86400 * date_delta)[:10]
         # 当日 0 点发布前一天的结果
-        pubDate: str = ttime(ptime(ttime(time.time() - 86400 *
-                                         (date_delta - 1))[:10],
-                                   fmt='%Y-%m-%d'),
-                             fmt='%a, %d %b %Y')
+        pubDate: str = ttime(
+            ptime(
+                ttime(time.time() - 86400 * (date_delta - 1))[:10],
+                fmt='%Y-%m-%d'),
+            fmt='%a, %d %b %Y')
         link: str = f'https://{ONLINE_HOST}/newspaper/daily.python/{title_date}?lang={language}'
         item: dict = {
             'title': f'Python Daily [{title_date}]',
@@ -189,6 +193,5 @@ async def source_redirect(req):
     """Python 日报, 按 date 取文章, 以后考虑支持更多参数(过滤订阅源, 过滤 level, 过滤中英文)"""
     name = req.query_params['name']
     return RedirectResponse(
-        content_sources_dict.get(name,
-                                 {}).get('url',
-                                         '/newspaper/articles.query.html'), 302)
+        content_sources_dict.get(name, {}).get(
+            'url', '/newspaper/articles.query.html'), 302)

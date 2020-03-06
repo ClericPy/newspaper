@@ -28,3 +28,4 @@ def init_db():
 global_configs = init_config()
 ONLINE_HOST = 'www.clericpy.top'
 GA_ID = 'UA-150991415-2'
+BEIAN_ID = '鲁ICP备19021778号-1'
