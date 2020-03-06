@@ -145,7 +145,8 @@ async def daily_python(req):
             "request": req,
             "articles": json.dumps(result).replace('`', "'"),
             "title": date,
-            "GA_ID": GA_ID
+            "GA_ID": GA_ID,
+            "BEIAN_ID": BEIAN_ID,
         })
 
 
