@@ -1,5 +1,14 @@
+from re import compile as re_compile
+
 import aiofiles
 from torequests.utils import escape
+
+com = re_compile(r'[\u4e00-\u9fa5\Wa-zA-Z0-9]+')
+
+
+def ensure_cn_en(string):
+    new_string = com.sub('', string)
+    return new_string.encode('u8') == new_string.encode('gb18030')
 
 
 async def tail_file(fp, size=100):

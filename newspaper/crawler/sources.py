@@ -610,8 +610,8 @@ content_sources = [
         "url": "https://weekly.codetengu.com/issues",
         "level": 4,
         "lang": "CN",
-        "status": "√",
-        "desc": "综合类周报, 2018-11-23 之后不更了"
+        "status": "X",
+        "desc": "综合类周报, 2018-11-23 之后不更了. 挂了, 下线."
     },
     {
         "title": "Medium",
