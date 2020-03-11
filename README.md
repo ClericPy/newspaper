@@ -36,7 +36,7 @@
 
 <!-- providers start -->
 
-* 收录进度: 38 / 38
+* 收录进度: 37 / 37
 
 	> = 待收录  |  √ 已收录  |  X 不收录  |  - 入库不追更
 
@@ -117,7 +117,7 @@
 | 73 | [CSDN](https://so.csdn.net/so/search/s.do?q=python&t=blog&u=) | 1 | CN | X | 文章质量啊~~~ |
 | 74 | [Stack Overflow](https://stackoverflow.com/?tab=hot) | 3 | EN | X | 已解决 + python + vote>=5, 但是问题有点弱智, 暂不收录 |
 | 75 | [Reddit](https://www.reddit.com/r/Python/top/) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Reddit) | 知名社区. 质量参差, 收录每日 ups>=20 |
-| 76 | [码天狗](https://weekly.codetengu.com/issues) | 4 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%A0%81%E5%A4%A9%E7%8B%97) | 综合类周报, 2018-11-23 之后不更了 |
+| 76 | [码天狗](https://weekly.codetengu.com/issues) | 4 | CN | X | 综合类周报, 2018-11-23 之后不更了. 挂了, 下线. |
 | 77 | [Medium](https://medium.com/tag/python) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Medium) | Medium 的 Python tag, 收录 RSS |
 
 
