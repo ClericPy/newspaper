@@ -86,7 +86,7 @@
 | 42 | [aio-libs](https://groups.google.com/forum/#!forum/aio-libs) | 3 | EN | X | 知名 Python 开源组织, 不过没有文章类的 post |
 | 43 | [码农周刊](https://weekly.manong.io/issues/) | 3 | CN | X | 课外读物, 非 Python 主题, 暂不收录 |
 | 44 | [编程派](http://codingpy.com/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E7%BC%96%E7%A8%8B%E6%B4%BE) | 原创+译文 |
-| 45 | [峰云就她了](http://xiaorui.cc/category/python/) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E5%B3%B0%E4%BA%91%E5%B0%B1%E5%A5%B9%E4%BA%86) | 原创博客, 质量比较不错 |
+| 45 | [峰云就她了](http://xiaorui.cc/archives/category/python) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E5%B3%B0%E4%BA%91%E5%B0%B1%E5%A5%B9%E4%BA%86) | 原创博客, 质量比较不错 |
 | 46 | [Dan Bader](https://dbader.org/blog/) | 3 | EN | X | 一年不更新了, 先不收录了 |
 | 47 | [Pythonic Perambulations](https://jakevdp.github.io/) | 3 | EN | X | 最后更新 Thu 13 September 2018, 暂不收录 |
 | 48 | [开源中国翻译](https://www.oschina.net/translate/tag/python) | 3 | CN | X | 入库留着吧, 估计不更了, 暂不收录 |
