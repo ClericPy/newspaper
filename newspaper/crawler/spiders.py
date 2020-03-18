@@ -2374,7 +2374,7 @@ async def xiaoruicc() -> list:
     start_page: int = 1
     max_page: int = 1
     # max_page: int = 999
-    api: str = 'http://xiaorui.cc/category/python'
+    api: str = 'http://xiaorui.cc/archives/category/python'
     host: str = 'http://xiaorui.cc/'
 
     for page in range(start_page, max_page + 1):

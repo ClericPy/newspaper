@@ -359,7 +359,7 @@ content_sources = [
     },
     {
         "title": "峰云就她了",
-        "url": "http://xiaorui.cc/category/python/",
+        "url": "http://xiaorui.cc/archives/category/python",
         "level": 3,
         "lang": "CN",
         "status": "√",
