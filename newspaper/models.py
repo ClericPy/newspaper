@@ -276,7 +276,7 @@ class MySQLStorage(Storage):
     async def update_articles(self, *args, **kwargs):
         raise NotImplementedError
 
-    @alru_cache(maxsize=10)
+    @alru_cache(maxsize=30)
     async def query_articles(
             self,
             query: str = None,
