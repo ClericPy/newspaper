@@ -605,8 +605,7 @@ async def importpython() -> list:
     limit = 1
     seed = 'https://importpython.com/newsletter/archive/'
     r = await req.get(seed,
-                      retry=1,
-                      timeout=20,
+                      timeout=15,
                       ssl=False,
                       headers={"User-Agent": CHROME_PC_UA})
     if not r:
