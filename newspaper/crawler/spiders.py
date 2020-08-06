@@ -239,9 +239,14 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     proxy = None
     for page in range(0, max_page):
         # st 参数: 0 是按时间顺序, 1 是热门文章
-        api: str = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
-        r = await req.get(
-            api, ssl=False, proxy=proxy, retry=1, timeout=5, headers=headers)
+        api: str = f'https://www.tuicool.com/ah/0?st=1&lang={lang_num}&pn={page}'
+        r = await req.get(api,
+                          ssl=False,
+                          proxy=proxy,
+                          retry=1,
+                          timeout=5,
+                          headers=headers)
+        # print(r.text)
         if not r:
             logger.info(f'crawl tuicool {lang} page={page} failed: {r}')
             return articles
@@ -255,12 +260,12 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
             break
         for item in items:
             article: dict = {'source': source}
-            url = null_tree.css(item, '.aricle_item_info>.title>a').get(
-                'href', '')
+            url = null_tree.css(item,
+                                '.aricle_item_info>.title>a').get('href', '')
             url = add_host(url, host)
             title = null_tree.css(item, '.aricle_item_info>.title>a').text
-            cover = null_tree.css(item, '.article_thumb_image>img').get(
-                'src', '')
+            cover = null_tree.css(item,
+                                  '.article_thumb_image>img').get('src', '')
             cover = cover.replace(
                 'https://static0.tuicool.com/images/abs_img_no_small.jpg', '')
             time_span = null_tree.css(item,
@@ -273,6 +278,8 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
             desc = null_tree.css(
                 item,
                 '.aricle_item_info>div.tip>span:nth-of-type(1)').text.strip()
+            if not re.search('Python|python', f'{title}{desc}'):
+                continue
             if desc in ignore_descs:
                 continue
             article['cover'] = cover
@@ -300,13 +307,12 @@ async def common_spider_juejin(user, source, max_page=1):
     for page in range(max_page):
         try:
             params['before'] = now
-            r = await req.get(
-                api,
-                ssl=False,
-                params=params,
-                retry=1,
-                timeout=5,
-                headers={"User-Agent": CHROME_PC_UA})
+            r = await req.get(api,
+                              ssl=False,
+                              params=params,
+                              retry=1,
+                              timeout=5,
+                              headers={"User-Agent": CHROME_PC_UA})
             if not r:
                 logger.info(f'crawl juejin page={page} failed: {r}')
                 return articles
@@ -365,8 +371,8 @@ async def python_news() -> list:
                 # 兼容下没有 desc 的情况
                 node = item.cssselect('.post-body.entry-content') or [null_tree]
                 desc = node[0].text_content()
-                article['desc'] = desc.split('\n\n\n', 1)[0].strip().replace(
-                    '\n', ' ')
+                article['desc'] = desc.split('\n\n\n',
+                                             1)[0].strip().replace('\n', ' ')
                 article['url'] = item.cssselect(
                     '.post-title.entry-title>a')[0].get('href', '')
                 article['url_key'] = get_url_key(article['url'])
@@ -407,8 +413,8 @@ async def python_news_history() -> list:
                 # 兼容下没有 desc 的情况
                 node = item.cssselect('.post-body.entry-content') or [null_tree]
                 desc = node[0].text_content()
-                article['desc'] = desc.split('\n\n\n', 1)[0].strip().replace(
-                    '\n', ' ')
+                article['desc'] = desc.split('\n\n\n',
+                                             1)[0].strip().replace('\n', ' ')
                 article['url'] = item.cssselect(
                     '.post-title.entry-title>a')[0].get('href', '')
                 article['url_key'] = get_url_key(article['url'])
@@ -598,12 +604,10 @@ async def importpython() -> list:
     # 一周一更, 所以只取第一个就可以了
     limit = 1
     seed = 'https://importpython.com/newsletter/archive/'
-    r = await req.get(
-        seed,
-        retry=1,
-        timeout=20,
-        ssl=False,
-        headers={"User-Agent": CHROME_PC_UA})
+    r = await req.get(seed,
+                      timeout=15,
+                      ssl=False,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -617,8 +621,10 @@ async def importpython() -> list:
             url = add_host(href, 'https://importpython.com/')
             title = item.cssselect('div.caption>.well-add-card>h4')[0].text
             desc_node = item.cssselect('div.caption>div[class="col-lg-12"]')[0]
-            desc = tostring(
-                desc_node, method='html', with_tail=0, encoding='unicode')
+            desc = tostring(desc_node,
+                            method='html',
+                            with_tail=0,
+                            encoding='unicode')
             day, month, year = re.findall(r'- (\d+) (\S+) (\d+)', title)[0]
             month = month[:3]
             raw_time = f'{year}-{month}-{day}'
@@ -659,8 +665,10 @@ async def awesome_python() -> list:
         try:
             article: dict = {'source': source}
             url = add_host(href, 'https://python.libhunt.com/')
-            r = await req.get(
-                url, retry=2, timeout=15, headers={"User-Agent": CHROME_PC_UA})
+            r = await req.get(url,
+                              retry=2,
+                              timeout=15,
+                              headers={"User-Agent": CHROME_PC_UA})
             if not r:
                 logger.error(f'fetch {url} failed: {r}')
                 break
@@ -699,8 +707,10 @@ async def real_python() -> list:
     articles: list = []
     limit = 20
     seed = 'https://realpython.com/'
-    r = await req.get(
-        seed, retry=1, timeout=20, headers={"User-Agent": CHROME_PC_UA})
+    r = await req.get(seed,
+                      retry=1,
+                      timeout=20,
+                      headers={"User-Agent": CHROME_PC_UA})
     if not r:
         logger.error(f'{source} crawl failed: {r}, {r.text}')
         return articles
@@ -804,12 +814,13 @@ async def julien_danjou() -> list:
     source: str = 'Julien Danjou'
     articles: list = []
     seed = 'https://julien.danjou.info/page/1/'
-    scode = await outlands_request({
-        'method': 'get',
-        'timeout': 5,
-        'retry': 2,
-        'url': seed,
-    }, 'u8')
+    scode = await outlands_request(
+        {
+            'method': 'get',
+            'timeout': 5,
+            'retry': 2,
+            'url': seed,
+        }, 'u8')
     items = fromstring(scode).cssselect('.post-feed>article.post-card')
     # 判断发布时间如果是 1 小时前就 break
     break_time = ttime(time.time() - 60 * 60)
@@ -827,20 +838,21 @@ async def julien_danjou() -> list:
                     [null_tree])[0].text
             if not (title and url):
                 raise ValueError(f'{source} no title {url}')
-            detail_scode = await outlands_request({
-                'method': 'get',
-                'timeout': 5,
-                'retry': 2,
-                'url': url,
-            }, 'u8')
+            detail_scode = await outlands_request(
+                {
+                    'method': 'get',
+                    'timeout': 5,
+                    'retry': 2,
+                    'url': url,
+                }, 'u8')
             if not detail_scode:
                 raise ValueError(f'{source} has no detail_scode {url}')
             raw_pub_time = find_one(
                 'property="article:published_time" content="(.+?)"',
                 detail_scode)[1]
             # 2019-05-06T08:58:00.000Z
-            ts_publish = ttime(
-                ptime(raw_pub_time, fmt='%Y-%m-%dT%H:%M:%S.000Z'))
+            ts_publish = ttime(ptime(raw_pub_time,
+                                     fmt='%Y-%m-%dT%H:%M:%S.000Z'))
             cover_item = item.cssselect('img.post-card-image')
             if cover_item:
                 cover = cover_item[0].get('src', '')
@@ -872,11 +884,10 @@ async def doughellmann() -> list:
     max_page: int = 1
     seed = 'https://doughellmann.com/blog/page/{page}/'
     for page in range(1, max_page + 1):
-        r = await req.get(
-            seed.format(page=page),
-            retry=1,
-            timeout=20,
-            headers={"User-Agent": CHROME_PC_UA})
+        r = await req.get(seed.format(page=page),
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -924,12 +935,13 @@ async def mouse_vs_python() -> list:
     seed = 'https://www.blog.pythonlibrary.org/page/{page}/'
     for page in range(1, max_page + 1):
         api = seed.format(page=page)
-        scode = await outlands_request({
-            'method': 'get',
-            'timeout': 5,
-            'retry': 2,
-            'url': api,
-        }, 'u8')
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'timeout': 5,
+                'retry': 2,
+                'url': api,
+            }, 'u8')
         items = fromstring(scode).cssselect('#content>article')
         if max_page > 1:
             logger.info(
@@ -1044,12 +1056,11 @@ async def hn_python() -> list:
     }
     for page in range(max_page):
         params['page'] = page
-        r = await req.get(
-            api,
-            params=params,
-            retry=2,
-            timeout=10,
-            headers={"User-Agent": CHROME_PC_UA})
+        r = await req.get(api,
+                          params=params,
+                          retry=2,
+                          timeout=10,
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -1207,8 +1218,9 @@ async def jiqizhixin() -> list:
                 article['ts_publish'] = ttime(
                     ptime(item['published_at'], fmt='%Y/%m/%d %H:%M'))
                 title = item.get('title') or ''
-                title = title.replace('<em>Python</em>', 'Python').replace(
-                    '<em>python</em>', 'Python')
+                title = title.replace('<em>Python</em>',
+                                      'Python').replace('<em>python</em>',
+                                                        'Python')
                 article['title'] = title
                 article['cover'] = item.get('cover_image_url') or ''
                 article['desc'] = f'「{item["author"]}」 {shorten_desc(desc)}'
@@ -1234,11 +1246,10 @@ async def lilydjwg() -> list:
     max_page: int = 1
     seed = 'https://blog.lilydjwg.me/tag/python?page={page}'
     for page in range(1, max_page + 1):
-        r = await req.get(
-            seed.format(page=page),
-            retry=1,
-            timeout=20,
-            headers={"User-Agent": CHROME_PC_UA})
+        r = await req.get(seed.format(page=page),
+                          retry=1,
+                          timeout=20,
+                          headers={"User-Agent": CHROME_PC_UA})
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
@@ -1263,8 +1274,8 @@ async def lilydjwg() -> list:
                 cover = (item.cssselect('img') or [null_tree])[0].get('src', '')
                 month, day, year = item.cssselect(
                     '.date')[0].text_content().strip().split()
-                month = f'0{month}' [-2:]
-                day = f'0{day}' [-2:]
+                month = f'0{month}'[-2:]
+                day = f'0{day}'[-2:]
                 article['ts_publish'] = ttime(
                     ptime(f'{year}/{month}/{day}', fmt='%Y/%m/%d'))
                 article['title'] = title
@@ -1290,20 +1301,21 @@ async def dev_io() -> list:
     source: str = "DEV Community"
     articles: list = []
     max_page: int = 1
-    per_page: int = 15
+    per_page: int = 30
     filt_score: int = 10
-    curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
-        per_page)
-    curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
     for page in range(0, max_page):
-        curl_string2 = f'&page={page}'
-        curl_string = f'{curl_string1}{curl_string2}{curl_string3}'
-        request_args = curlparse(curl_string)
-        r = await req.request(retry=1, timeout=20, **request_args)
+        r = await req.get(
+            f'https://dev.to/search/feed_content?per_page={per_page}&page={page}&tag=python&sort_by=published_at&sort_direction=desc&tag_names%5B%5D=python&approved=&class_name=Article',
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+                'Referer': 'https://dev.to/t/python/latest'
+            },
+            retry=1,
+            timeout=20)
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
-        items = r.json().get('hits') or []
+        items = r.json().get('result') or []
         if not items:
             break
         host = 'https://dev.to/'
@@ -1313,7 +1325,8 @@ async def dev_io() -> list:
             )
         for item in items:
             try:
-                if item['score'] < filt_score:
+                if item['public_reactions_count'] + item[
+                        'comments_count'] < filt_score:
                     # filt by min score
                     continue
                 article: dict = {'source': source}
@@ -1336,7 +1349,7 @@ async def dev_io() -> list:
     return articles
 
 
-@register_online
+# @register_online
 # @register_history
 # @register_test
 async def pythoncat() -> list:
@@ -1359,6 +1372,22 @@ async def zhihu_zhuanlan_python_cn() -> list:
     """Python之美"""
     source: str = "Python之美"
     name: str = 'python-cn'
+    articles: list = []
+    limit = 10
+    articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
+    logger.info(
+        f'crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)} -> [{source}]. {" ?????????" if not articles else ""}'
+    )
+    return articles
+
+
+@register_online
+# @register_history
+# @register_test
+async def zhihu_zhuanlan_python_cat() -> list:
+    """Python猫"""
+    source: str = "Python猫"
+    name: str = 'pythonCat'
     articles: list = []
     limit = 10
     articles = await common_spider_zhihu_zhuanlan(name, source, limit=limit)
@@ -1529,15 +1558,17 @@ async def tuicool_en() -> list:
     source: str = "推酷(英文)"
     articles: list = []
     max_page: int = 1
-    articles = await common_spider_tuicool(
-        'EN', source, max_page=max_page, ignore_descs={'Real Python'})
+    articles = await common_spider_tuicool('EN',
+                                           source,
+                                           max_page=max_page,
+                                           ignore_descs={'Real Python'})
     logger.info(
         f'crawled {len(articles)} articles in {timeago(time.time() - START_TIME, 1, 1)} -> [{source}]. {" ?????????" if not articles else ""}'
     )
     return articles
 
 
-@register_online
+# @register_online
 # @register_history
 # @register_test
 async def kf_toutiao() -> list:
@@ -1559,18 +1590,19 @@ async def kf_toutiao() -> list:
     ignore_usernames: set = {'豌豆花下猫'}
     for page in range(0, max_page):
         params['page'] = page
-        scode = await outlands_request({
-            'method': 'get',
-            'params': params,
-            'url': api,
-            'ssl': False,
-            'retry': 1,
-            'headers': {
-                'Referer': 'https://juejin.im/tag/Python?sort=popular',
-                'Origin': 'https://juejin.im',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
-            }
-        }, 'u8')
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'params': params,
+                'url': api,
+                'ssl': False,
+                'retry': 1,
+                'headers': {
+                    'Referer': 'https://juejin.im/tag/Python?sort=popular',
+                    'Origin': 'https://juejin.im',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.90 Safari/537.36',
+                }
+            }, 'u8')
         if not scode:
             logger.error(f'{source} crawl failed: {scode}')
             return articles
@@ -1588,8 +1620,8 @@ async def kf_toutiao() -> list:
                 if item.get('user', {}).get('username', '') in ignore_usernames:
                     continue
                 # 2019-05-05T03:51:12.886Z
-                gmt_time = re.sub(r'\..*', '', item['createdAt']).replace(
-                    'T', ' ')
+                gmt_time = re.sub(r'\..*', '',
+                                  item['createdAt']).replace('T', ' ')
                 ts_publish = ttime(ptime(gmt_time, tzone=0))
                 article['ts_publish'] = ts_publish
                 article['lang'] = 'en' if item['english'] else 'CN'
@@ -1823,15 +1855,16 @@ async def nedbatchelder() -> list:
     limit: int = 5
     api: str = 'https://nedbatchelder.com/blog/tag/python.html'
     host: str = 'https://nedbatchelder.com/'
-    scode = await outlands_request({
-        'method': 'get',
-        'timeout': 5,
-        'headers': {
-            'Referer': api,
-            'User-Agent': CHROME_PC_UA,
-        },
-        'url': api,
-    }, 'u8')
+    scode = await outlands_request(
+        {
+            'method': 'get',
+            'timeout': 5,
+            'headers': {
+                'Referer': api,
+                'User-Agent': CHROME_PC_UA,
+            },
+            'url': api,
+        }, 'u8')
     container_html = null_tree.tostring(
         null_tree.css(fromstring(scode), '.category')).decode('utf-8')
     if not container_html:
@@ -1923,8 +1956,8 @@ async def the5fire() -> list:
                 if ':' not in raw_time:
                     if 'm' in raw_time:
                         raw_time = re.sub('m.*', 'm', raw_time)
-                        ts_publish = ttime(
-                            ptime(raw_time, fmt='%Y-%m-%d %I %p'))
+                        ts_publish = ttime(ptime(raw_time,
+                                                 fmt='%Y-%m-%d %I %p'))
                     else:
                         raw_time = raw_time[:10]
                         ts_publish = ttime(ptime(raw_time, fmt='%Y-%m-%d'))
@@ -2197,18 +2230,27 @@ async def reddit() -> list:
     """Reddit"""
     source: str = "Reddit"
     articles: list = []
-    limit: int = 10
+    limit: int = 22
     # 有 20 赞以上的才收录
     min_ups: int = 20
+    # 或者 10 评论的才收录
+    min_cmts: int = 10
     # api doc: https://www.reddit.com/dev/api/#GET_top
     api: str = f'https://api.reddit.com/r/Python/top/?t=day&limit={limit}'
     host: str = 'https://www.reddit.com/'
-
-    scode = await outlands_request({
-        'method': 'get',
-        'url': api,
-    }, 'u8')
-    if not scode:
+    for _ in range(2):
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'url': api,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'
+                }
+            }, 'u8')
+        # print(scode)
+        if scode:
+            break
+    else:
         logger.error(f'{source} crawl failed')
         return articles
     rj: dict = json.loads(scode)
@@ -2218,7 +2260,8 @@ async def reddit() -> list:
             if item['kind'] != 't3':
                 continue
             data = item['data']
-            if (data.get('ups') or 0) < min_ups:
+            if (data.get('ups') or data.get('score') or
+                    0) < min_ups and (data.get('num_comments') or 0) < min_cmts:
                 continue
             article: dict = {'source': source}
             title: str = data['title']
@@ -2446,8 +2489,8 @@ async def medium_python() -> list:
         'method': 'get',
         'url': seed,
     }, 'u8')
-    items = fromstring(
-        scode.encode('utf-8'), parser=XMLParser()).xpath('//channel/item')
+    items = fromstring(scode.encode('utf-8'),
+                       parser=XMLParser()).xpath('//channel/item')
     now = ttime()
     for item in items[:limit]:
         try:

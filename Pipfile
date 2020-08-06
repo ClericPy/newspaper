@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 uvloop = {version = "*",sys_platform = "!= 'win32'"}
-torequests = ">=4.8.13"
+torequests = ">=5.0.10"
 starlette = "*"
 uvicorn = "*"
 aiomysql = "*"
