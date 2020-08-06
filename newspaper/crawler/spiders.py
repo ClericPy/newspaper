@@ -2228,18 +2228,27 @@ async def reddit() -> list:
     """Reddit"""
     source: str = "Reddit"
     articles: list = []
-    limit: int = 10
+    limit: int = 22
     # 有 20 赞以上的才收录
     min_ups: int = 20
+    # 或者 10 评论的才收录
+    min_cmts: int = 10
     # api doc: https://www.reddit.com/dev/api/#GET_top
     api: str = f'https://api.reddit.com/r/Python/top/?t=day&limit={limit}'
     host: str = 'https://www.reddit.com/'
-
-    scode = await outlands_request({
-        'method': 'get',
-        'url': api,
-    }, 'u8')
-    if not scode:
+    for _ in range(2):
+        scode = await outlands_request(
+            {
+                'method': 'get',
+                'url': api,
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'
+                }
+            }, 'u8')
+        # print(scode)
+        if scode:
+            break
+    else:
         logger.error(f'{source} crawl failed')
         return articles
     rj: dict = json.loads(scode)
@@ -2249,7 +2258,8 @@ async def reddit() -> list:
             if item['kind'] != 't3':
                 continue
             data = item['data']
-            if (data.get('ups') or 0) < min_ups:
+            if (data.get('ups') or data.get('score') or
+                    0) < min_ups and (data.get('num_comments') or 0) < min_cmts:
                 continue
             article: dict = {'source': source}
             title: str = data['title']
