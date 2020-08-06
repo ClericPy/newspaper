@@ -9,7 +9,7 @@ name = "pypi"
 uvloop = {version = "*",sys_platform = "!= 'win32'"}
 torequests = ">=5.0.10"
 starlette = "*"
-uvicorn = "*"
+uvicorn = ">=0.11.8"
 aiomysql = "*"
 lxml = "*"
 cssselect = "*"
