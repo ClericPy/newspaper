@@ -61,7 +61,7 @@
 | 17 | [机器之心](https://www.jiqizhixin.com/search/article?keywords=python&search_internet=true&sort=time) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E6%9C%BA%E5%99%A8%E4%B9%8B%E5%BF%83) | 知名公众号 |
 | 18 | [依云's Blog](https://blog.lilydjwg.me/tag/python?page=1) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E4%BE%9D%E4%BA%91%27s+Blog) | 文章质量很高 |
 | 19 | [DEV Community](https://dev.to/t/python/latest) | 3 | EN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=DEV+Community) | 算是个挺好的社区, post 也都不太水 |
-| 20 | [Python猫](https://juejin.im/user/57b26118a341310060fa74da/posts?sort=newest) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E7%8C%AB) | 2018 年末比较热情的博主, 原创 + 优质译文 |
+| 20 | [Python猫](https://zhuanlan.zhihu.com/pythonCat) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E7%8C%AB) | 2018 年末比较热情的博主, 原创 + 优质译文 |
 | 21 | [Python之美](https://zhuanlan.zhihu.com/python-cn) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=Python%E4%B9%8B%E7%BE%8E) | 早期文章较多, 创业以后更新不太多了 |
 | 22 | [静觅](https://cuiqingcai.com/category/technique/python) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E9%9D%99%E8%A7%85) |  崔庆才的个人博客, 保持更新的原创博主 |
 | 23 | [推酷(中文)](https://www.tuicool.com/topics/11130000?st=0&lang=1) | 3 | CN | [√](https://www.clericpy.top/newspaper/articles.query.html?source=%E6%8E%A8%E9%85%B7%28%E4%B8%AD%E6%96%87%29) | 推文类站点. 按热门排序 |

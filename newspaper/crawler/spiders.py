@@ -1299,20 +1299,21 @@ async def dev_io() -> list:
     source: str = "DEV Community"
     articles: list = []
     max_page: int = 1
-    per_page: int = 15
+    per_page: int = 30
     filt_score: int = 10
-    curl_string1 = r'''curl 'https://ye5y9r600c-3.algolianet.com/1/indexes/ordered_articles_production/query?x-algolia-agent=Algolia%20for%20vanilla%20JavaScript%203.20.3&x-algolia-application-id=YE5Y9R600C&x-algolia-api-key=YWVlZGM3YWI4NDg3Mjk1MzJmMjcwNDVjMjIwN2ZmZTQ4YTkxOGE0YTkwMzhiZTQzNmM0ZGFmYTE3ZTI1ZDFhNXJlc3RyaWN0SW5kaWNlcz1zZWFyY2hhYmxlc19wcm9kdWN0aW9uJTJDVGFnX3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2FydGljbGVzX3Byb2R1Y3Rpb24lMkNDbGFzc2lmaWVkTGlzdGluZ19wcm9kdWN0aW9uJTJDb3JkZXJlZF9hcnRpY2xlc19ieV9wdWJsaXNoZWRfYXRfcHJvZHVjdGlvbiUyQ29yZGVyZWRfYXJ0aWNsZXNfYnlfcG9zaXRpdmVfcmVhY3Rpb25zX2NvdW50X3Byb2R1Y3Rpb24lMkNvcmRlcmVkX2NvbW1lbnRzX3Byb2R1Y3Rpb24%3D' -H 'accept: application/json' -H 'Referer: https://dev.to/' -H 'Origin: https://dev.to' -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.106 Safari/537.36' -H 'DNT: 1' --data '{"params":"query=*&hitsPerPage=''' + str(
-        per_page)
-    curl_string3 = r'''&attributesToHighlight=%5B%5D&tagFilters=%5B%22python%22%5D"}' --compressed'''
     for page in range(0, max_page):
-        curl_string2 = f'&page={page}'
-        curl_string = f'{curl_string1}{curl_string2}{curl_string3}'
-        request_args = curlparse(curl_string)
-        r = await req.request(retry=1, timeout=20, **request_args)
+        r = await req.get(
+            f'https://dev.to/search/feed_content?per_page={per_page}&page={page}&tag=python&sort_by=published_at&sort_direction=desc&tag_names%5B%5D=python&approved=&class_name=Article',
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+                'Referer': 'https://dev.to/t/python/latest'
+            },
+            retry=1,
+            timeout=20)
         if not r:
             logger.error(f'{source} crawl failed: {r}, {r.text}')
             return articles
-        items = r.json().get('hits') or []
+        items = r.json().get('result') or []
         if not items:
             break
         host = 'https://dev.to/'
@@ -1322,7 +1323,8 @@ async def dev_io() -> list:
             )
         for item in items:
             try:
-                if item['score'] < filt_score:
+                if item['public_reactions_count'] + item[
+                        'comments_count'] < filt_score:
                     # filt by min score
                     continue
                 article: dict = {'source': source}

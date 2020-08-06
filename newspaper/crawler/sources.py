@@ -159,7 +159,7 @@ content_sources = [
     },
     {
         "title": "Python猫",
-        "url": "https://juejin.im/user/57b26118a341310060fa74da/posts?sort=newest",
+        "url": "https://zhuanlan.zhihu.com/pythonCat",
         "level": 3,
         "lang": "CN",
         "status": "√",
