@@ -239,13 +239,14 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
     proxy = None
     for page in range(0, max_page):
         # st 参数: 0 是按时间顺序, 1 是热门文章
-        api: str = f'https://www.tuicool.com/topics/11130000?st=1&lang={lang_num}&pn={page}'
+        api: str = f'https://www.tuicool.com/ah/0?st=1&lang={lang_num}&pn={page}'
         r = await req.get(api,
                           ssl=False,
                           proxy=proxy,
                           retry=1,
                           timeout=5,
                           headers=headers)
+        # print(r.text)
         if not r:
             logger.info(f'crawl tuicool {lang} page={page} failed: {r}')
             return articles
@@ -277,6 +278,8 @@ async def common_spider_tuicool(lang, source, max_page=1, ignore_descs=None):
             desc = null_tree.css(
                 item,
                 '.aricle_item_info>div.tip>span:nth-of-type(1)').text.strip()
+            if not re.search('Python|python', f'{title}{desc}'):
+                continue
             if desc in ignore_descs:
                 continue
             article['cover'] = cover
@@ -1566,7 +1569,7 @@ async def tuicool_en() -> list:
     return articles
 
 
-@register_online
+# @register_online
 # @register_history
 # @register_test
 async def kf_toutiao() -> list:
