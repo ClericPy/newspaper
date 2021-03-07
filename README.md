@@ -1,5 +1,7 @@
 # python-newspaper
 
+##  服务器将与 2021.4.1 关停不再续费. sqlite 备份在 Release 里, 备份时间 2021-03-07. 之后会考虑通过另一个项目 Watchdogs 开展订阅.
+
 ### Timeline
 - [For English-only reader](https://www.clericpy.top/newspaper/articles.query.html?lang=EN)
 - [中文读者](https://www.clericpy.top/newspaper/articles.query.html?lang=CN)
